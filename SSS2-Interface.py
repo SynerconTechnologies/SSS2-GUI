@@ -1,6 +1,8 @@
 import tkinter as tk
 from tkinter import ttk
-import serial 
+import serial
+import serial.tools.list_ports
+
 import threading
 import queue
 import time
@@ -17,21 +19,118 @@ class SerialThread(threading.Thread):
         self.rx_queue = rx_queue
         self.tx_queue = tx_queue
         self.serial = serial_connection
-        needs_connecting = True
         
     def run(self):
+        try:
+            while self.serial.isOpen():
+                if self.serial.out_waiting ==0:
+                    if self.tx_queue.qsize():
+                        s = self.tx_queue.get_nowait()
+                if self.serial.inWaiting():
+                    line = self.serial.readline(self.serial.inWaiting())
+                    self.rx_queue.put(line)
+        except Exception as e:
+            #print(e)
+            print("Serial Connection Broken. Exiting Thread.")
+            
+                
+
+class setup_serial_connections(tk.Toplevel):
+    def __init__(self, parent):
+        tk.Toplevel.__init__(self, parent)
+        self.transient(parent)
+        self.title("SSS2 Connection Dialog")
+        self.parent = parent
+        self.result = None
+
+        self.serial_frame = tk.Frame(self)
+        self.initial_focus = self.buttonbox()
+        self.serial_frame.pack(padx=5, pady=5)
         
-        while self.serial.isOpen():
-            if self.serial.out_waiting ==0:
-                if self.tx_queue.qsize():
-                    s = self.tx_queue.get_nowait()
-                    
-                    
-                
-            if self.serial.inWaiting():
-                line = self.serial.readline(self.serial.inWaiting())
-                self.rx_queue.put(line)
-                
+        #self.buttonbox()
+        
+        self.grab_set()
+
+        if not self.initial_focus:
+            self.initial_focus = self
+
+        self.protocol("WM_DELETE_WINDOW", self.cancel)
+
+        self.geometry("+%d+%d" % (parent.winfo_rootx()+150,
+                                  parent.winfo_rooty()+150))
+       
+
+        self.initial_focus.focus_set()
+        
+        self.wait_window(self)
+
+    
+    def buttonbox(self):
+       
+
+        connect_button = tk.Button(self.serial_frame, text="Connect", width=10, command=self.ok, default=ACTIVE)
+        connect_button.grid(row=3,column=0, padx=5, pady=5)
+        cancel_button = tk.Button(self.serial_frame, text="Cancel", width=10, command=self.cancel)
+        cancel_button.grid(row=3,column=1, padx=5, pady=5)
+        
+        self.bind("<Return>", self.ok)
+        self.bind("<Escape>", self.cancel)
+
+        
+        tk.Label(self.serial_frame,text="SSS2 COM Port").grid(row=0,column=0,columnspan=2)
+        self.port_combo_box = ttk.Combobox(self.serial_frame,name="serial_port", 
+                                           text="SSS2 COM Port")
+        self.port_combo_box.grid(row=1,column=0,columnspan=2)
+        self.find_serial_ports()
+        
+       
+
+    def find_serial_ports(self):
+        comPorts = []
+        for possibleCOMPort in serial.tools.list_ports.comports():
+            if ('Teensy' in str(possibleCOMPort)):
+                comPort = str(possibleCOMPort).split() #Gets the first digits
+                #print(comPort[0])
+                comPorts.append(comPort[0])
+        comPorts.append("Not Available")
+        self.port_combo_box['values'] = comPorts
+        self.port_combo_box.current(0)
+
+        self.after(3000,self.find_serial_ports)
+
+        
+    # standard button semantics
+
+    def ok(self, event=None):
+
+        if not self.validate():
+            self.initial_focus.focus_set() # put focus back
+            return
+
+        self.withdraw()
+        self.update_idletasks()
+
+        self.apply()
+
+        self.cancel()
+
+    def cancel(self, event=None):
+
+        # put focus back to the parent window
+        self.parent.focus_set()
+        self.destroy()
+
+    #
+    # command hooks
+
+    def validate(self):
+        if self.port_combo_box.get() == "Not Available":
+            return False
+        else:
+            return True
+
+    def apply(self):
+        self.result=self.port_combo_box.get()
         
 
 class SSS2(ttk.Frame):
@@ -52,8 +151,12 @@ class SSS2(ttk.Frame):
 
         self.tabs = ttk.Notebook(self, name='tabs')
         self.tabs.enable_traversal()
-        self.tabs.pack(fill=tk.BOTH,padx=2, pady=2)
+        self.tabs.pack(fill=tk.X,padx=2, pady=2)
 
+        ttk.Label(self, text='Synercon Technologies, LLC').pack(side='left')
+
+        
+        
         # create each Notebook tab in a Frame
         #Create a Settings Tab to amake the adjustments for sensors
         self.settings = tk.Frame(self.tabs, name='settings')
@@ -66,7 +169,7 @@ class SSS2(ttk.Frame):
 
         #Create a Networks Tab to make the adjustments for J1939, CAN amd J1708
         self.networks = tk.Frame(self.tabs, name='networks')
-        tk.Label(self.networks,
+        lab = tk.Label(self.networks,
                  text="Vehicle Newtorking").grid(row=0,column=0)
         self.tabs.add(self.networks, text="Vehicle Newtorking") # add tab to Notebook
 
@@ -76,33 +179,60 @@ class SSS2(ttk.Frame):
                  text="SSS2 to PC Connection").grid(row=0,column=0)
         self.tabs.add(self.connections, text="USB connection with the SSS2") # add tab to Notebook
 
-        self.serial_rx_byte_list = []
-        self.serial_interface()
+        
+        #self.serial_connect_button = tk.Button(self.connections,name="serial_connect", 
+        #                                   text="Connect to SSS2", command=setup_serial_connections)   
+        #self.serial_connect_button.grid(row=1,column=0,sticky="NW")
+
         
         self.root.option_add('*tearOff', 'FALSE')
         self.menubar = tk.Menu(self.root)
  
         self.menu_file = tk.Menu(self.menubar)
-        self.menu_edit = tk.Menu(self.menubar)
+        self.menu_connection = tk.Menu(self.menubar)
 
         self.menu_file.add_command(label='Exit', command=self.root.quit)
+        self.menu_connection.add_command(label='Select COM Port', command=self.connect_to_serial)
 
         self.menubar.add_cascade(menu=self.menu_file, label='File')
-        self.menubar.add_cascade(menu=self.menu_edit, label='Edit')
+        self.menubar.add_cascade(menu=self.menu_connection, label='Connection')
 
+        
 
         self.root.config(menu=self.menubar)
 
-        ttk.Label(self, text='Synercon Technologies, LLC').pack(side='left')
-
+        self.serial_connected = False
+        self.serial_rx_byte_list = []
+        self.serial_interface()
+        
+        
     def serial_interface(self):
-        self.serial = serial.Serial('COM77',baudrate=4000000,parity=serial.PARITY_ODD,timeout=0,
-                                    xonxoff=False, rtscts=False, dsrdtr=False)
+        self.recieved_serial_byte_count = 0
+
+        self.connection_status_string = tk.StringVar()
+        self.connection_label = tk.Label(self, textvariable=self.connection_status_string)
+        self.connection_label.pack(side='right')
+        
         
         self.serial_frame = tk.LabelFrame(self.connections, name="serial_console",text="SSS2 Data Display")
-        self.serial_frame.grid(row=0,column=0,sticky=tk.W)
-        self.text = tkst.ScrolledText(self.serial_frame, font="Courier 10" )
-        self.text.grid(row=0,column=1,rowspan=8,sticky=tk.W)
+        self.serial_frame.grid(row=0,column=0,sticky='NSEW')
+
+        
+        
+        
+        
+        self.text = tkst.ScrolledText(self.serial_frame, font="Courier 10" , wrap="none",
+                                      height=50,width=90,padx=4,pady=4)
+        self.text.grid(row=0,column=1,rowspan=9,columnspan=3,sticky=tk.W+tk.E+tk.N+tk.S )
+        
+        tk.Label(self.serial_frame,text="Command:").grid(row=9,column=1, sticky="E")
+        
+        self.serial_TX_message = ttk.Entry(self.serial_frame,width=60)
+        self.serial_TX_message.grid(row=9,column = 2,sticky="EW")
+        
+        self.serial_TX_message_button = tk.Button(self.serial_frame,name="send_serial_message", width=30,
+                                           text="Send to SSS2", command=self.send_arbitrary_serial_message)
+        self.serial_TX_message_button.grid(row=9,column=3,sticky="W")
 
         self.list_items_button = tk.Button(self.serial_frame,name="list_items",
                                            text="List SSS2 Settings", command=self.send_list_settings)
@@ -114,26 +244,81 @@ class SSS2(ttk.Frame):
 
         self.stream_can0_box =  ttk.Checkbutton(self.serial_frame, text="Stream CAN0 (J1939)",
                                     command=self.send_stream_can0)
-        self.stream_can0_box.grid(row=6,column=0)
+        self.stream_can0_box.grid(row=5,column=0,sticky="SW")
         self.stream_can0_box.state(['!alternate']) #Clears Check Box
+        
+        
         self.stream_can1_box =  ttk.Checkbutton(self.serial_frame, text="Stream CAN1 (E-CAN)",
                                     command=self.send_stream_can1)
-        self.stream_can1_box.grid(row=7,column=0)
+        self.stream_can1_box.grid(row=6,column=0,sticky="NW")
         self.stream_can1_box.state(['!alternate']) #Clears Check Box
+        
+        self.serial_RX_count = ttk.Entry(self.serial_frame,width=12)
+        self.serial_RX_count.grid(row=0,column = 4,sticky="NE")
+
+        self.connect_to_serial()
+        
+        
+    
+
+    def connect_to_serial(self):
+        connection_dialog = setup_serial_connections(self)
+        self.comPort = connection_dialog.result
+        if self.check_serial_connection():
+            print("SSS2 already connected")
+        else:
+            try:
+                self.serial = serial.Serial(self.comPort,baudrate=4000000,parity=serial.PARITY_ODD,timeout=0,
+                                    xonxoff=False, rtscts=False, dsrdtr=False)
+                print(self.serial)
+                self.check_serial_connection()
+                self.send_stream_can0()
+                self.send_stream_can1()
+
+                self.tx_queue = queue.Queue()
+                self.rx_queue = queue.Queue()
+                thread = SerialThread(self.rx_queue,self.tx_queue,self.serial)
+                thread.start()
+                self.process_serial()
+                
+            except Exception as e:
+                print(e)
+                self.check_serial_connection()
+            
+    def check_serial_connection(self):
+        for possibleCOMPort in serial.tools.list_ports.comports():
+            if ('Teensy' in str(possibleCOMPort)):
+                try:
+                    if self.serial.isOpen():
+                        self.serial_connected = True
+                        self.connection_status_string.set('SSS2 Connected on '+str(self.comPort))
+                        self.text['bg']='white'
+                        return True
+                except Exception as e:
+                    print(e)
+        try:
+            self.serial.close()
+        except Exception as e:
+            print(e)
+        self.connection_status_string.set('USB to Serial Connection Unavailable. Please install drivers and plug in the SSS2.')
+        self.serial_connected = False
+        self.text['bg']='red'
+        return False    
 
         
-        self.tx_queue = queue.Queue()
-        self.rx_queue = queue.Queue()
-        thread = SerialThread(self.rx_queue,self.tx_queue,self.serial)
-        thread.start()
-        self.process_serial()
 
+    def send_arbitrary_serial_message(self):
+        commandString = self.serial_TX_message.get()
+        self.send_serial(commandString)
+        
     def send_serial(self,commandString):
         #self.tx_queue.put_nowait(bytes(commandString,'ascii'))
         command_bytes = bytes(commandString,'ascii') + b'\n'
         print(command_bytes)
-        self.serial.write(command_bytes)
-        self.serial.flushOutput()
+        print(self.check_serial_connection())
+        if self.check_serial_connection():
+            self.serial.write(command_bytes)
+            self.serial.flushOutput()
         
     def send_stream_can0(self):
         if self.stream_can0_box.instate(['selected']):
@@ -159,19 +344,28 @@ class SSS2(ttk.Frame):
         
     def process_serial(self):
         gathered_bytes = len(self.serial_rx_byte_list)
+        self.serial_RX_count.delete(0,tk.END)
+        self.serial_RX_count.insert(0,gathered_bytes)
+
+        if self.check_serial_connection():
+            
+            while self.rx_queue.qsize():
+                self.serial_rx_byte_list.append(self.rx_queue.get_nowait())
+                gathered_bytes = len(self.serial_rx_byte_list)
+            
+            if self.recieved_serial_byte_count < gathered_bytes:
+                self.recieved_serial_byte_count = gathered_bytes
+                if  gathered_bytes < 100:
+                    display_list = self.serial_rx_byte_list
+                else:
+                    display_list = self.serial_rx_byte_list[gathered_bytes-100:]
+                self.text.delete('1.0',tk.END)
+                for line in display_list:
+                    self.text.insert(tk.END, line.decode('ascii',"ignore"))
+                    #self.text.insert(tk.END, '\n')
+                self.text.see(tk.END)
+         
         
-        while self.rx_queue.qsize():
-            self.serial_rx_byte_list.append(self.rx_queue.get_nowait())
-            gathered_bytes = len(self.serial_rx_byte_list)
-        
-        if  gathered_bytes < 256:
-            display_list = self.serial_rx_byte_list
-        else:
-            display_list = self.serial_rx_byte_list[gathered_bytes-256:]
-        self.text.delete('1.0',tk.END)
-        for b in display_list:
-            self.text.insert(tk.END, b.decode('ascii',"ignore"))
-            self.text.see(tk.END)
                     
 
         self.after(50, self.process_serial)
@@ -197,6 +391,7 @@ class SSS2(ttk.Frame):
     
     def on_quit(self):
         """Exits program."""
+        self.serial.close()
         quit()
 
 class potentiometer():
@@ -330,11 +525,14 @@ class potentiometer():
         self.other_volt_value.delete(0,tk.END)
         self.other_volt_value.insert(0,self.terminal_A_voltage.get()/1000.0)
 
+
+
         
 
 
 if __name__ == '__main__':
-    root = tix.Tk()
+
+    root = tk.Tk()
     SSS2(root)
     root.mainloop()
     root.destroy() # if mainloop quits, destroy window
