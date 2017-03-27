@@ -13,6 +13,7 @@ from tkinter.constants import *
 import tkinter.scrolledtext as tkst
 
 
+
 class SerialThread(threading.Thread):
     def __init__(self, rx_queue, tx_queue, serial_connection):
         threading.Thread.__init__(self)
@@ -154,7 +155,8 @@ class SSS2(ttk.Frame):
         self.tabs.pack(fill=tk.X,padx=2, pady=2)
 
         ttk.Label(self, text='Synercon Technologies, LLC').pack(side='left')
-
+        
+        
         
         
         # create each Notebook tab in a Frame
@@ -164,8 +166,7 @@ class SSS2(ttk.Frame):
                  text="Smart Sensor Simulator 2 Settings Adjustment").grid(row=0,
                      column=0,columnspan=2,sticky=tk.E)
         self.tabs.add(self.settings, text="SSS2 Settings") # add tab to Notebook
-        self.adjust_settings()
-        
+         
 
         #Create a Networks Tab to make the adjustments for J1939, CAN amd J1708
         self.networks = tk.Frame(self.tabs, name='networks')
@@ -176,7 +177,7 @@ class SSS2(ttk.Frame):
         #Create a Connections Tab to interface with the SSS
         self.connections = tk.Frame(self.tabs, name='connections')
         tk.Label(self.connections,
-                 text="SSS2 to PC Connection").grid(row=0,column=0)
+                 text="SSS2 to PC Connection").grid(row=0,column=0,sticky='NSEW')
         self.tabs.add(self.connections, text="USB connection with the SSS2") # add tab to Notebook
 
         
@@ -203,8 +204,10 @@ class SSS2(ttk.Frame):
 
         self.serial_connected = False
         self.serial_rx_byte_list = []
-        self.serial_interface()
         
+        self.serial_interface()
+        self.adjust_settings() #put this after the serial connections
+       
         
     def serial_interface(self):
         self.recieved_serial_byte_count = 0
@@ -222,7 +225,7 @@ class SSS2(ttk.Frame):
         
         
         self.text = tkst.ScrolledText(self.serial_frame, font="Courier 10" , wrap="none",
-                                      height=50,width=90,padx=4,pady=4)
+                                      height=40,width=120,padx=4,pady=4)
         self.text.grid(row=0,column=1,rowspan=9,columnspan=3,sticky=tk.W+tk.E+tk.N+tk.S )
         
         tk.Label(self.serial_frame,text="Command:").grid(row=9,column=1, sticky="E")
@@ -230,9 +233,12 @@ class SSS2(ttk.Frame):
         self.serial_TX_message = ttk.Entry(self.serial_frame,width=60)
         self.serial_TX_message.grid(row=9,column = 2,sticky="EW")
         
+        self.serial_TX_message.bind('<Return>',self.send_arbitrary_serial_message)
+
         self.serial_TX_message_button = tk.Button(self.serial_frame,name="send_serial_message", width=30,
                                            text="Send to SSS2", command=self.send_arbitrary_serial_message)
         self.serial_TX_message_button.grid(row=9,column=3,sticky="W")
+        
 
         self.list_items_button = tk.Button(self.serial_frame,name="list_items",
                                            text="List SSS2 Settings", command=self.send_list_settings)
@@ -270,6 +276,8 @@ class SSS2(ttk.Frame):
             try:
                 self.serial = serial.Serial(self.comPort,baudrate=4000000,parity=serial.PARITY_ODD,timeout=0,
                                     xonxoff=False, rtscts=False, dsrdtr=False)
+                global ser
+                ser=self.serial
                 print(self.serial)
                 self.check_serial_connection()
                 self.send_stream_can0()
@@ -280,12 +288,13 @@ class SSS2(ttk.Frame):
                 thread = SerialThread(self.rx_queue,self.tx_queue,self.serial)
                 thread.start()
                 self.process_serial()
-                
+                #return self.serial
             except Exception as e:
                 print(e)
                 self.check_serial_connection()
-            
-    def check_serial_connection(self):
+        
+        
+    def check_serial_connection(self,event = None):
         for possibleCOMPort in serial.tools.list_ports.comports():
             if ('Teensy' in str(possibleCOMPort)):
                 try:
@@ -307,7 +316,7 @@ class SSS2(ttk.Frame):
 
         
 
-    def send_arbitrary_serial_message(self):
+    def send_arbitrary_serial_message(self,event = None):
         commandString = self.serial_TX_message.get()
         self.send_serial(commandString)
         
@@ -315,7 +324,7 @@ class SSS2(ttk.Frame):
         #self.tx_queue.put_nowait(bytes(commandString,'ascii'))
         command_bytes = bytes(commandString,'ascii') + b'\n'
         print(command_bytes)
-        print(self.check_serial_connection())
+        print(self.check_serial_connection(self))
         if self.check_serial_connection():
             self.serial.write(command_bytes)
             self.serial.flushOutput()
@@ -379,9 +388,26 @@ class SSS2(ttk.Frame):
         self.adjust_enable_button.state(['!alternate']) #Clears Check Box
         self.adjust_enable = self.adjust_enable_button.instate(['selected'])
 
-        self.potentiometer01 = potentiometer(self.settings,number = 1,row=2,connector="J24:1")
-        self.potentiometer02 = potentiometer(self.settings,number = 2,row=3,connector="J24:2")
-
+        self.potentiometer01 = potentiometer(self.settings,row=2,col=0,connector="J24:1",sss2_setting = 1,tcon_setting = 51 )
+        self.potentiometer02 = potentiometer(self.settings,row=2,col=1,connector="J24:2",sss2_setting = 2,tcon_setting = 52 )
+        self.potentiometer03 = potentiometer(self.settings,row=2,col=2,connector="J24:3",sss2_setting = 3,tcon_setting = 53 )
+        self.potentiometer04 = potentiometer(self.settings,row=2,col=3,connector="J24:4",sss2_setting = 4,tcon_setting = 54 )
+        self.potentiometer05 = potentiometer(self.settings,row=2,col=4,connector="J24:5",sss2_setting = 5,tcon_setting = 55 )
+        self.potentiometer06 = potentiometer(self.settings,row=2,col=5,connector="J24:6",sss2_setting = 6,tcon_setting = 56 )
+        self.potentiometer07 = potentiometer(self.settings,row=2,col=6,connector="J24:7",sss2_setting = 7,tcon_setting = 57 )
+        self.potentiometer08 = potentiometer(self.settings,row=2,col=7,connector="J24:8",sss2_setting = 8,tcon_setting = 58 )
+        self.potentiometer09 = potentiometer(self.settings,row=3,col=0,connector="J24:9",sss2_setting = 9,tcon_setting = 59 )
+        self.potentiometer10 = potentiometer(self.settings,row=3,col=1,connector="J24:10",sss2_setting = 10,tcon_setting = 60 )
+        self.potentiometer11 = potentiometer(self.settings,row=3,col=2,connector="J24:11",sss2_setting = 11,tcon_setting = 61 )
+        self.potentiometer12 = potentiometer(self.settings,row=3,col=3,connector="J24:12",sss2_setting = 12,tcon_setting = 62 )
+        self.potentiometer13 = potentiometer(self.settings,row=3,col=4,connector="J24:13",sss2_setting = 13,tcon_setting = 63 )
+        self.potentiometer14 = potentiometer(self.settings,row=3,col=5,connector="J24:14",sss2_setting = 14,tcon_setting = 64 )
+        self.potentiometer15 = potentiometer(self.settings,row=3,col=6,connector="J24:15",sss2_setting = 15,tcon_setting = 65 )
+        self.potentiometer16 = potentiometer(self.settings,row=3,col=7,connector="J24:16",sss2_setting = 16,tcon_setting = 66 )
+        self.potentiometer17 = potentiometer(self.settings,row=4,col=5,connector="J18:12",sss2_setting = 74,tcon_setting = 78)
+        self.potentiometer18 = potentiometer(self.settings,row=4,col=6,connector="J18:13",sss2_setting = 75,tcon_setting = 79)
+        self.potentiometer19 = potentiometer(self.settings,row=4,col=7,connector="J18:14",sss2_setting = 76,tcon_setting = 80)
+        
     def send_enable_command(self):
         print(self.adjust_enable_button.state())
         if self.adjust_enable_button.instate(['selected']):
@@ -394,18 +420,20 @@ class SSS2(ttk.Frame):
         self.serial.close()
         quit()
 
-class potentiometer():
-    def __init__(self, parent,number = 1, row=2,col=0,connector="J18:X",label="Potentiometer",*args, **kwargs):
-        #ttk.Frame.__init__(self, parent, *args, **kwargs)
+class potentiometer(SSS2):
+    def __init__(self, parent, row = 2,col = 0,connector="J18:X",sss2_setting = 1,
+                 tcon_setting = 51,label="Potentiometer",*args, **kwargs):
+        super(SSS2,self).__init__()
         self.root = parent
         self.pot_row=row
         self.pot_col=col
-        self.pot_number=number
-        self.label = label+" "+str(number)
+        self.pot_number=sss2_setting
+        self.label = label+" "+str(self.pot_number)
         self.name = self.label.lower()
         self.connector=connector
+        self.tcon_setting = tcon_setting
         self.setup_potentometer()
-        
+       
           
     def setup_potentometer(self):        
         self.potentiometer_frame = tk.LabelFrame(self.root, name=self.name,text=self.label)
@@ -421,6 +449,7 @@ class potentiometer():
                                             command=self.send_terminal_A_voltage_command,
                                                   variable = self.terminal_A_setting)
         self.twelve_volt_switch.grid(row=0,column = 0,sticky=tk.W)
+        self.twelve_volt_switch.state(['selected']) 
         
         self.five_volt_switch = ttk.Radiobutton(self.terminal_A_voltage_frame, text="+5V", value="+5V",
                                             command=self.send_terminal_A_voltage_command,
@@ -454,22 +483,27 @@ class potentiometer():
                                             command=self.set_terminals)
         self.terminal_A_connect_button.grid(row=1,column=1,columnspan=2,sticky=tk.NW)
         self.terminal_A_connect_button.state(['!alternate']) #Clears Check Box
+        self.terminal_A_connect_button.state(['selected']) 
         
         self.wiper_position_slider = tk.Scale(self.potentiometer_frame,
-                                              from_ = 1000, to = 0, digits = 1, resolution = 1,
+                                              from_ = 255, to = 0, digits = 1, resolution = 1,
                                               orient = tk.VERTICAL, length = 120,
                                               sliderlength = 10, showvalue = 0, 
                                               label = None,
-                                              command = self.set_terminal_A_voltage)
+                                              command = self.set_wiper_voltage)
         self.wiper_position_slider.grid(row=1,column=0,columnspan=1,rowspan=5,sticky="E")
+        self.wiper_position_slider.set(50)
 
         tk.Label(self.potentiometer_frame,text="Wiper Position").grid(row=2,column=1, sticky="S",columnspan=2)
         self.wiper_position_value = ttk.Entry(self.potentiometer_frame,width=10)
         self.wiper_position_value.grid(row=3,column = 1,sticky="E")
+        self.wiper_position_value.bind('<Return>',self.set_wiper_slider)
 
         self.wiper_position_button = ttk.Button(self.potentiometer_frame,text="Set Position",
-                                            command = self.set_terminal_A_slider)
+                                            command = self.set_wiper_slider)
         self.wiper_position_button.grid(row=3,column = 2,sticky="W")
+
+
        
         self.wiper_connect_button =  ttk.Checkbutton(self.potentiometer_frame, text="Wiper Connected",
                                             command=self.set_terminals)
@@ -483,18 +517,35 @@ class potentiometer():
                                                           command=self.set_terminals)
         self.terminal_B_connect_button.grid(row=5,column=1,columnspan=2,sticky=tk.SW)
         self.terminal_B_connect_button.state(['!alternate']) #Clears Check Box
-        self.terminal_B_connect_button.state(['selected']) #Clears Check Box
+        self.terminal_B_connect_button.state(['selected']) 
         
+        self.set_terminals()
+    def set_wiper_slider(self,event=None):
+        try:
+            self.wiper_position_slider.set(self.wiper_position_value.get())
+            self.wiper_position_value['foreground'] = "black"
+        except:
+            self.root.bell()
+            self.wiper_position_value['foreground'] = "red"
+
+    def set_wiper_voltage(self,event=None):
+        print(self.wiper_position_slider.get())
+        self.wiper_position_value.delete(0,tk.END)
+        self.wiper_position_value.insert(0,self.wiper_position_slider.get())
+        commandString = "{},{}".format(self.pot_number,self.wiper_position_slider.get())
+        command_bytes = bytes(commandString,'ascii') + b'\n'
+        global ser
+        ser.write(command_bytes)
         
-    
     def set_terminals(self):
         self.terminal_A_connect_state = self.terminal_A_connect_button.instate(['selected'])
         self.terminal_B_connect_state = self.terminal_B_connect_button.instate(['selected'])
         self.wiper_connect_state = self.wiper_connect_button.instate(['selected'])
         terminal_setting = self.terminal_B_connect_state + 2*self.wiper_connect_state + 4*self.terminal_A_connect_state
-        print(self.label,end=' ')
-        print(" Terminal Setting = ", end='')
-        print(terminal_setting)
+        commandString = "{},{}".format(self.tcon_setting,terminal_setting)
+        command_bytes = bytes(commandString,'ascii') + b'\n'
+        global ser
+        ser.write(command_bytes)
         
     def send_terminal_A_voltage_command(self):
         print(self.label,end=' ')
