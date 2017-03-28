@@ -15,10 +15,12 @@ def get_default_settings():
 
     g=p["Group A"]
     g["Terminal A Connection"]=True
+    g["SSS2 Setting"] = 73
     g["Pairs"]={"U1U2":{},"U3U4":{},"U5U6":{},"U7U8":{}}
     
     pair = g["Pairs"]["U1U2"]
     pair["Terminal A Voltage"] = "+12V"
+    pair["SSS setting"] = 25
     pair["Pots"] = {"U1":{},"U2":{}}
 
     u=pair["Pots"]["U1"]
@@ -51,6 +53,7 @@ def get_default_settings():
 
     pair = g["Pairs"]["U3U4"]
     pair["Terminal A Voltage"] = "+12V"
+    pair["SSS setting"] = 26
     pair["Pots"] = {"U3":{},"U4":{}}
 
     u=pair["Pots"]["U3"]
@@ -83,6 +86,7 @@ def get_default_settings():
         
     pair = g["Pairs"]["U5U6"]
     pair["Terminal A Voltage"] = "+12V"
+    pair["SSS setting"] = 27
     pair["Pots"] = {"U5":{},"U6":{}}
 
     u=pair["Pots"]["U5"]
@@ -115,6 +119,7 @@ def get_default_settings():
     
     pair = g["Pairs"]["U7U8"]
     pair["Terminal A Voltage"] = "+12V"
+    pair["SSS setting"] = 28
     pair["Pots"] = {"U7":{},"U8":{}}
 
     u=pair["Pots"]["U7"]
@@ -149,6 +154,8 @@ def get_default_settings():
 
     g=p["Group B"]
     g["Terminal A Connection"]=True
+    g["SSS2 Setting"] = 74
+    pair["SSS setting"] = 29
     g["Pairs"]={"U9U10":{},"U11U12":{},"U13U14":{},"U15U16":{}}
     
     pair = g["Pairs"]["U9U10"]
@@ -185,6 +192,7 @@ def get_default_settings():
 
     pair = g["Pairs"]["U11U12"]
     pair["Terminal A Voltage"] = "+12V"
+    pair["SSS setting"] = 30
     pair["Pots"] = {"U11":{},"U12":{}}
 
     u=pair["Pots"]["U11"]
@@ -217,6 +225,7 @@ def get_default_settings():
         
     pair = g["Pairs"]["U13U14"]
     pair["Terminal A Voltage"] = "+12V"
+    pair["SSS setting"] = 31
     pair["Pots"] = {"U13":{},"U14":{}}
 
     u=pair["Pots"]["U13"]
@@ -249,6 +258,7 @@ def get_default_settings():
     
     pair = g["Pairs"]["U15U16"]
     pair["Terminal A Voltage"] = "+12V"
+    pair["SSS setting"] = 32
     pair["Pots"] = {"U15":{},"U16":{}}
 
     u=pair["Pots"]["U15"]
@@ -340,7 +350,10 @@ def get_default_settings():
     d["Highest Voltage"]=5
     d["Average Voltage"]=2.5 #DC value
     d["Amplitude"]=0
+    d["SSS2 setting"] = 17
+    d["Show Amplitude"]=False
     d["Frequency"]=0
+    d["Show Frequency"]=False
     d["Shape"]="Constant" #Sine, Square, Triangle or Sawtooth
     d["ECU Pins"]="ECU Pins"
     d["Application"]="Application Description"
@@ -354,8 +367,11 @@ def get_default_settings():
     d["Lowest Voltage"]=0
     d["Highest Voltage"]=5
     d["Average Voltage"]=2.5 #DC value
+    d["SSS2 setting"] = 18
     d["Amplitude"]=0
+    d["Show Amplitude"]=False
     d["Frequency"]=0
+    d["Show Frequency"]=False
     d["Shape"]="Constant" #Sine, Square, Triangle or Sawtooth
     d["ECU Pins"]="ECU Pins"
     d["Application"]="Application Description"
@@ -371,7 +387,10 @@ def get_default_settings():
     d["Highest Voltage"]=5
     d["Average Voltage"]=2.5 #DC value
     d["Amplitude"]=0
+    d["SSS2 setting"] = 19
+    d["Show Amplitude"]=False
     d["Frequency"]=0
+    d["Show Frequency"]=False
     d["Shape"]="Constant" #Sine, Square, Triangle or Sawtooth
     d["ECU Pins"]="ECU Pins"
     d["Application"]="Application Description"
@@ -385,8 +404,11 @@ def get_default_settings():
     d["Lowest Voltage"]=0
     d["Highest Voltage"]=5
     d["Average Voltage"]=2.5 #DC value
+    d["SSS2 setting"] = 20
     d["Amplitude"]=0
+    d["Show Amplitude"]=False
     d["Frequency"]=0
+    d["Show Frequency"]=False
     d["Shape"]="Constant" #Sine, Square, Triangle or Sawtooth
     d["ECU Pins"]="ECU Pins"
     d["Application"]="Application Description"
@@ -400,8 +422,11 @@ def get_default_settings():
     d["Lowest Voltage"]=0
     d["Highest Voltage"]=5
     d["Average Voltage"]=2.5 #DC value
+    d["SSS2 setting"] = 21
     d["Amplitude"]=0
+    d["Show Amplitude"]=False
     d["Frequency"]=0
+    d["Show Frequency"]=False
     d["Shape"]="Constant" #Sine, Square, Triangle or Sawtooth
     d["ECU Pins"]="ECU Pins"
     d["Application"]="Application Description"
@@ -415,8 +440,11 @@ def get_default_settings():
     d["Lowest Voltage"]=0
     d["Highest Voltage"]=5
     d["Average Voltage"]=2.5 #DC value
+    d["SSS2 setting"] = 22
     d["Amplitude"]=0
+    d["Show Amplitude"]=False
     d["Frequency"]=0
+    d["Show Frequency"]=False
     d["Shape"]="Constant" #Sine, Square, Triangle or Sawtooth
     d["ECU Pins"]="ECU Pins"
     d["Application"]="Application Description"
@@ -430,8 +458,11 @@ def get_default_settings():
     d["Lowest Voltage"]=0
     d["Highest Voltage"]=5
     d["Average Voltage"]=2.5 #DC value
+    d["SSS2 setting"] = 23
     d["Amplitude"]=0
+    d["Show Amplitude"]=False
     d["Frequency"]=0
+    d["Show Frequency"]=False
     d["Shape"]="Constant" #Sine, Square, Triangle or Sawtooth
     d["ECU Pins"]="ECU Pins"
     d["Application"]="Application Description"
@@ -445,8 +476,11 @@ def get_default_settings():
     d["Lowest Voltage"]=0
     d["Highest Voltage"]=5
     d["Average Voltage"]=2.5 #DC value
+    d["SSS2 setting"] = 24
     d["Amplitude"]=0
+    d["Show Amplitude"]=False
     d["Frequency"]=0
+    d["Show Frequency"]=False
     d["Shape"]="Constant" #Sine, Square, Triangle or Sawtooth
     d["ECU Pins"]="ECU Pins"
     d["Application"]="Application Description"
@@ -457,14 +491,162 @@ def get_default_settings():
     d["Name"] = "Vout 2-H"
  
     settings["PWMs"]={}
-    for i in range(4):
+    for i in range(1,5):
         settings["PWMs"]["PWM{}".format(i)]={}
 
+    d=settings["PWMs"]["PWM1"]
+    d["Name"] = "PWM1"
+    d["Lowest Voltage"]=0
+    d["Highest Voltage"]=5
+    d["Duty Cycle"]=127 
+    d["SSS2 setting"] = 33
+    d["Frequency"]=200
+    d["SSS2 freq setting"] = 81
+    d["Show Frequency"]=True
+    d["ECU Pins"]="ECU Pins"
+    d["Application"]="Application Description"
+    d["Port"]= "31"
+    d["Pin"]= "J18:15"
+    d["Pin Connect"]=True
+    d["SSS2 pin setting"] = 67
+    d["Alt. Port"]="13"
+    d["Alt. Pin"]="J24:13"
+    d["Alt. Pin Connect"]=True
+    d["SSS2 alt setting"] = 40
 
+
+    d=settings["PWMs"]["PWM2"]
+    d["Name"] = "PWM2"
+    d["Lowest Voltage"]=0
+    d["Highest Voltage"]=5
+    d["Duty Cycle"]=127 
+    d["SSS2 setting"] = 34
+    d["Frequency"]=200
+    d["SSS2 freq setting"] = 82
+    d["Show Frequency"]=True
+    d["ECU Pins"]="ECU Pins"
+    d["Application"]="Application Description"
+    d["Port"]= "32"
+    d["Pin"]= "J18:16"
+    d["Pin Connect"]=True
+    d["SSS2 pin setting"] = 68
+    d["Alt. Port"]="14"
+    d["Alt. Pin"]="J24:14"
+    d["Alt. Pin Connect"]=True
+    d["SSS2 alt setting"] = 40
+
+    d=settings["PWMs"]["PWM3"]
+    d["Name"] = "PWM3"
+    d["Lowest Voltage"]=0
+    d["Highest Voltage"]=5
+    d["Duty Cycle"]=127 
+    d["SSS2 setting"] = 35
+    d["Frequency"]=200
+    d["SSS2 freq setting"] = 83
+    d["Show Frequency"]=True
+    d["ECU Pins"]="ECU Pins"
+    d["Application"]="Application Description"
+    d["Port"]= "27"
+    d["Pin"]= "J18:10"
+    d["Pin Connect"]=True
+    d["SSS2 pin setting"] = 69
+    d["Alt. Port"]=None
+    d["Alt. Pin"]=None
+    d["Alt. Pin Connect"]=None
+    d["SSS2 alt setting"] =None
+
+    d=settings["PWMs"]["PWM4"]
+    d["Name"] = "PWM4"
+    d["Lowest Voltage"]=0
+    d["Highest Voltage"]=5
+    d["Duty Cycle"]=127 
+    d["SSS2 setting"] = 36
+    d["Frequency"]=200
+    d["SSS2 freq setting"] = 84
+    d["Show Frequency"]=True
+    d["ECU Pins"]="ECU Pins"
+    d["Application"]="Application Description"
+    d["Port"]= "17"
+    d["Pin"]= "J18:1"
+    d["Pin Connect"]=True
+    d["SSS2 pin setting"] = 70
+    d["Alt. Port"]=None
+    d["Alt. Pin"]=None
+    d["Alt. Pin Connect"]=None
+    d["SSS2 alt setting"] =None
+
+    settings["HVAdjOut"]={}
+    d=settings["HVAdjOut"]
+    d["Lowest Voltage"]=4
+    d["Highest Voltage"]=12
+    d["Average Voltage"]=8 #DC value
+    d["SSS2 setting"] = 49
+    d["ECU Pins"]="ECU Pins"
+    d["Application"]="Application Description"
+    d["Pin"]= "J24:19"
+    d["Alt. Pin"]="J18:11"
+    d["Name"] = "High Current Regulator"
+    
     settings["Switches"]={}
+    s=settings["Switches"]
+    s["Port 10 or 19"]={"SSS2 setting":37,"State":False}
+    s["Port 15 or 18"]={"SSS2 setting":38,"State":False}
+    s["CAN1 or J1708"]={"SSS2 setting":39,"State":True}
+    s["PWMs or CAN2"]={"SSS2 setting":40,"State":True}
+    s["CAN0 Termination Resistor"]={"SSS2 setting":41,"State":True}
+    s["CAN1 Termination Resistor"]={"SSS2 setting":42,"State":True}
+    s["CAN2 Termination Resistor"]={"SSS2 setting":43,"State":True}
+    s["LIN Master Pullup Resistor"]={"SSS2 setting":44,"State":True}
+    s["12V Out 1"]={"SSS2 setting":45,"State":False}
+    s["12V Out 2"]={"SSS2 setting":46,"State":False}
+    s["Ground Out 1"]={"SSS2 setting":47,"State":False}
+    s["Ground Out 2"]={"SSS2 setting":47,"State":False}
+    s["LIN to SHLD"]={"SSS2 setting":71,"State":False}
+    s["LIN to Port 16"]={"SSS2 setting":72,"State":False}
+    
+    
 
-    settings["CAN"]={}
-
+    settings["CAN"]={"Preprogrammed":{},"Custom":{}}
+    t=settings["CAN"]["Preprogrammed"]
+    t["08FF0001"]={"Transmit":True,"Application":"Detroit Diesel Message from MCM to CPC"} 
+    t["08FF0003"]={"Transmit":True,"Application":""}
+    t["08FF0103"]={"Transmit":True,"Application":""}
+    t["08FF0203"]={"Transmit":True,"Application":""}
+    t["08FF0303"]={"Transmit":True,"Application":""}
+    t["08FF0603"]={"Transmit":True,"Application":""}
+    t["08FF0703"]={"Transmit":True,"Application":""}
+    t["0CFF0703"]={"Transmit":True,"Application":""}
+    t["0CFE6E0B"]={"Transmit":True,"Application":""}
+    t["10FF0903"]={"Transmit":True,"Application":""}
+    t["18F00131"]={"Transmit":True,"Application":""}
+    t["18F0010B"]={"Transmit":True,"Application":""}
+    t["18FEF117"]={"Transmit":True,"Application":""}
+    t["18FEF128"]={"Transmit":True,"Application":""}
+    t["18FEF121"]={"Transmit":True,"Application":""}
+    t["18FEF131"]={"Transmit":True,"Application":""}
+    t["18E00017"]={"Transmit":True,"Application":""}
+    t["18E00019"]={"Transmit":True,"Application":""}
+    t["18E00021"]={"Transmit":True,"Application":""}
+    t["18E00028"]={"Transmit":True,"Application":""}
+    t["18E00031"]={"Transmit":True,"Application":""}
+    t["10ECFF3D"]={"Transmit":True,"Application":""}
+    t["10ECFF01"]={"Transmit":True,"Application":""}
+    t["18FEF803"]={"Transmit":True,"Application":""}
+    t["18FEF521"]={"Transmit":True,"Application":""}
+    t["18FEF017"]={"Transmit":True,"Application":""}
+    t["18FEF021"]={"Transmit":True,"Application":""}
+    t["18FEF028"]={"Transmit":True,"Application":""}
+    t["18DF00F9"]={"Transmit":True,"Application":""}
+    t["18DFFFF9"]={"Transmit":True,"Application":""}
+    t["0CF00203"]={"Transmit":True,"Application":""}
+    t["18F00503"]={"Transmit":True,"Application":""}
+    
+    c=settings["CAN"]["Custom"]={}
+    c["Example"]={"Major Period":1000,"Minor Period":5,"Transmit":True,"Messages":[]}
+    m=c["Example"]["Messages"]
+    m.append({"ID":"18FEF125","DLC":8,"Data":[0xD,0xE,0xA,0xD,0xB,0xE,0xE,0xF]})
+    m.append({"ID":"18FEF125","DLC":8,"Data":[0xF,0xE,0xA,0xD,0xB,0xE,0xE,0xF]})
+                  
     #print(settings)
     return settings
 
