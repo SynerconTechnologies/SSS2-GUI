@@ -19,15 +19,16 @@ def get_default_settings():
     g["Pairs"]={"U1U2":{},"U3U4":{},"U5U6":{},"U7U8":{}}
     
     pair = g["Pairs"]["U1U2"]
-    pair["Terminal A Voltage"] = "+12V"
-    pair["SSS setting"] = 25
+    pair["Terminal A Voltage"] = "+5V"
+    pair["SSS Setting"] = 25
+    pair["Name"]="U1 and U2"
     pair["Pots"] = {"U1":{},"U2":{}}
 
     u=pair["Pots"]["U1"]
     u["Term. A Connect"]=True
     u["Term. B Connect"]=True
     u["Wiper Connect"]=True
-    u["Wiper Position"]=50
+    u["Wiper Position"]=210
     u["Pin"]="J24:1"
     u["Port"]="1"
     u["ECU Pins"]="ECU Pins"
@@ -41,7 +42,7 @@ def get_default_settings():
     u["Term. A Connect"]=True
     u["Term. B Connect"]=True
     u["Wiper Connect"]=True
-    u["Wiper Position"]=50
+    u["Wiper Position"]=200
     u["Pin"]="J24:2"
     u["Port"]="2"
     u["ECU Pins"]="ECU Pins"
@@ -53,14 +54,15 @@ def get_default_settings():
 
     pair = g["Pairs"]["U3U4"]
     pair["Terminal A Voltage"] = "+12V"
-    pair["SSS setting"] = 26
+    pair["SSS Setting"] = 26
+    pair["Name"]="U3 and U4"
     pair["Pots"] = {"U3":{},"U4":{}}
 
     u=pair["Pots"]["U3"]
     u["Term. A Connect"]=True
     u["Term. B Connect"]=True
     u["Wiper Connect"]=True
-    u["Wiper Position"]=50
+    u["Wiper Position"]=190
     u["Pin"]="J24:3"
     u["Port"]="3"
     u["ECU Pins"]="ECU Pins"
@@ -72,9 +74,9 @@ def get_default_settings():
     
     u=pair["Pots"]["U4"]
     u["Term. A Connect"]=True
-    u["Term. B Connect"]=True
+    u["Term. B Connect"]=False
     u["Wiper Connect"]=True
-    u["Wiper Position"]=50
+    u["Wiper Position"]=180
     u["Pin"]="J24:4"
     u["Port"]="4"
     u["ECU Pins"]="ECU Pins"
@@ -86,14 +88,15 @@ def get_default_settings():
         
     pair = g["Pairs"]["U5U6"]
     pair["Terminal A Voltage"] = "+12V"
-    pair["SSS setting"] = 27
+    pair["SSS Setting"] = 27
+    pair["Name"]="U5 and U6"
     pair["Pots"] = {"U5":{},"U6":{}}
 
     u=pair["Pots"]["U5"]
     u["Term. A Connect"]=True
     u["Term. B Connect"]=True
     u["Wiper Connect"]=True
-    u["Wiper Position"]=50
+    u["Wiper Position"]=170
     u["Pin"]="J24:5"
     u["Port"]="5"
     u["ECU Pins"]="ECU Pins"
@@ -107,9 +110,9 @@ def get_default_settings():
     u["Term. A Connect"]=True
     u["Term. B Connect"]=True
     u["Wiper Connect"]=True
-    u["Wiper Position"]=50
-    u["Pin"]="6"
-    u["Port"]="J24:6"
+    u["Wiper Position"]=160
+    u["Pin"]="J24:6"
+    u["Port"]="6"
     u["ECU Pins"]="ECU Pins"
     u["Application"]="Application Description"
     u["Name"]="Potentiometer 6"
@@ -119,14 +122,15 @@ def get_default_settings():
     
     pair = g["Pairs"]["U7U8"]
     pair["Terminal A Voltage"] = "+12V"
-    pair["SSS setting"] = 28
+    pair["SSS Setting"] = 28
+    pair["Name"]="U7 and U8"
     pair["Pots"] = {"U7":{},"U8":{}}
 
     u=pair["Pots"]["U7"]
     u["Term. A Connect"]=True
     u["Term. B Connect"]=True
     u["Wiper Connect"]=True
-    u["Wiper Position"]=50
+    u["Wiper Position"]=150
     u["Pin"]="J24:7"
     u["Port"]="7"
     u["ECU Pins"]="ECU Pins"
@@ -140,7 +144,7 @@ def get_default_settings():
     u["Term. A Connect"]=True
     u["Term. B Connect"]=True
     u["Wiper Connect"]=True
-    u["Wiper Position"]=50
+    u["Wiper Position"]=140
     u["Pin"]="J24:8"
     u["Port"]="8"
     u["ECU Pins"]="ECU Pins"
@@ -155,18 +159,19 @@ def get_default_settings():
     g=p["Group B"]
     g["Terminal A Connection"]=True
     g["SSS2 Setting"] = 74
-    pair["SSS setting"] = 29
     g["Pairs"]={"U9U10":{},"U11U12":{},"U13U14":{},"U15U16":{}}
     
     pair = g["Pairs"]["U9U10"]
+    pair["SSS Setting"] = 29
     pair["Terminal A Voltage"] = "+12V"
+    pair["Name"]="U9 and U10"
     pair["Pots"] = {"U9":{},"U10":{}}
 
     u=pair["Pots"]["U9"]
     u["Term. A Connect"]=True
     u["Term. B Connect"]=True
     u["Wiper Connect"]=True
-    u["Wiper Position"]=50
+    u["Wiper Position"]=130
     u["Pin"]= "J24:9"
     u["Port"]= "9"
     u["ECU Pins"]="ECU Pins"
@@ -180,7 +185,7 @@ def get_default_settings():
     u["Term. A Connect"]=True
     u["Term. B Connect"]=True
     u["Wiper Connect"]=True
-    u["Wiper Position"]=50
+    u["Wiper Position"]=120
     u["Pin"]= "J24:10"
     u["Port"]="10"
     u["ECU Pins"]="ECU Pins"
@@ -192,14 +197,15 @@ def get_default_settings():
 
     pair = g["Pairs"]["U11U12"]
     pair["Terminal A Voltage"] = "+12V"
-    pair["SSS setting"] = 30
+    pair["SSS Setting"] = 30
+    pair["Name"]="U11 and U12"
     pair["Pots"] = {"U11":{},"U12":{}}
 
     u=pair["Pots"]["U11"]
     u["Term. A Connect"]=True
     u["Term. B Connect"]=True
     u["Wiper Connect"]=True
-    u["Wiper Position"]=50
+    u["Wiper Position"]=110
     u["Pin"]="J24:11"
     u["Port"]="11"
     u["ECU Pins"]="ECU Pins"
@@ -213,7 +219,7 @@ def get_default_settings():
     u["Term. A Connect"]=True
     u["Term. B Connect"]=True
     u["Wiper Connect"]=True
-    u["Wiper Position"]=50
+    u["Wiper Position"]=100
     u["Pin"]="J24:12"
     u["Port"]="12"
     u["ECU Pins"]="ECU Pins"
@@ -225,14 +231,15 @@ def get_default_settings():
         
     pair = g["Pairs"]["U13U14"]
     pair["Terminal A Voltage"] = "+12V"
-    pair["SSS setting"] = 31
+    pair["SSS Setting"] = 31
+    pair["Name"]="U13 and U14"
     pair["Pots"] = {"U13":{},"U14":{}}
 
     u=pair["Pots"]["U13"]
     u["Term. A Connect"]=True
     u["Term. B Connect"]=True
     u["Wiper Connect"]=True
-    u["Wiper Position"]=50
+    u["Wiper Position"]=90
     u["Pin"]="J24:13"
     u["Port"]="13"
     u["ECU Pins"]="ECU Pins"
@@ -246,7 +253,7 @@ def get_default_settings():
     u["Term. A Connect"]=True
     u["Term. B Connect"]=True
     u["Wiper Connect"]=True
-    u["Wiper Position"]=50
+    u["Wiper Position"]=80
     u["Pin"]="J24:14"
     u["Port"]="14"
     u["ECU Pins"] = "ECU Pins"
@@ -258,14 +265,15 @@ def get_default_settings():
     
     pair = g["Pairs"]["U15U16"]
     pair["Terminal A Voltage"] = "+12V"
-    pair["SSS setting"] = 32
+    pair["SSS Setting"] = 32
+    pair["Name"]="U5 and U6"
     pair["Pots"] = {"U15":{},"U16":{}}
 
     u=pair["Pots"]["U15"]
     u["Term. A Connect"]=True
     u["Term. B Connect"]=True
     u["Wiper Connect"]=True
-    u["Wiper Position"]=50
+    u["Wiper Position"]=70
     u["Pin"]= "J24:15"
     u["Port"]="15"
     u["ECU Pins"]="ECU Pins"
@@ -279,7 +287,7 @@ def get_default_settings():
     u["Term. A Connect"]=True
     u["Term. B Connect"]=True
     u["Wiper Connect"]=True
-    u["Wiper Position"]=50
+    u["Wiper Position"]=60
     u["Pin"]= "J24:16"
     u["Port"]= "16"
     u["ECU Pins"]="ECU Pins"
@@ -303,12 +311,12 @@ def get_default_settings():
     u["Term. A Connect"]=True
     u["Term. B Connect"]=True
     u["Wiper Connect"]=True
-    u["Wiper Position"]=50
+    u["Wiper Position"]=20
     u["Pin"]= "J18:12"
     u["Port"]= "28"
     u["ECU Pins"]="ECU Pins"
     u["Application"]="Application Description"
-    u["Name"]="Potentiometer 9"
+    u["Name"]="Port 28 Potentiometer"
     u["SSS2 Wiper Setting"]=75
     u["SSS2 TCON Setting"]=78
     u["Resistance"]="100k"
@@ -322,7 +330,7 @@ def get_default_settings():
     u["Port"]= "29"
     u["ECU Pins"]="ECU Pins"
     u["Application"]="Application Description"
-    u["Name"]="Potentiometer 9"
+    u["Name"]="Port 29 Potentiometer"
     u["SSS2 Wiper Setting"]=76
     u["SSS2 TCON Setting"]=79
     u["Resistance"]="10k"
@@ -336,7 +344,7 @@ def get_default_settings():
     u["Port"]= "30"
     u["ECU Pins"]="ECU Pins"
     u["Application"]="Application Description"
-    u["Name"]="Potentiometer 9"
+    u["Name"]="Port 30 Potentiometer"
     u["SSS2 Wiper Setting"]=77
     u["SSS2 TCON Setting"]=80
     u["Resistance"]="100k"
