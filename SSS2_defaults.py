@@ -597,20 +597,20 @@ def get_default_settings():
     
     settings["Switches"]={}
     s=settings["Switches"]
-    s["Port 10 or 19"]={"SSS2 setting":37,"State":False}
-    s["Port 15 or 18"]={"SSS2 setting":38,"State":False}
-    s["CAN1 or J1708"]={"SSS2 setting":39,"State":True}
-    s["PWMs or CAN2"]={"SSS2 setting":40,"State":True}
-    s["CAN0 Termination Resistor"]={"SSS2 setting":41,"State":True}
-    s["CAN1 Termination Resistor"]={"SSS2 setting":42,"State":True}
-    s["CAN2 Termination Resistor"]={"SSS2 setting":43,"State":True}
-    s["LIN Master Pullup Resistor"]={"SSS2 setting":44,"State":True}
-    s["12V Out 1"]={"SSS2 setting":45,"State":False}
-    s["12V Out 2"]={"SSS2 setting":46,"State":False}
-    s["Ground Out 1"]={"SSS2 setting":47,"State":False}
-    s["Ground Out 2"]={"SSS2 setting":47,"State":False}
-    s["LIN to SHLD"]={"SSS2 setting":71,"State":False}
-    s["LIN to Port 16"]={"SSS2 setting":72,"State":False}
+    s["11 Port 10 or 19"]={"SSS2 setting":37,"State":False,"Label":"Connect Vout 2 to Port 10 (J24:10)"}
+    s["12 Port 15 or 18"]={"SSS2 setting":38,"State":False,"Label":"Connect Vout 1 to Port 15 (J24:15)"}
+    s["13 CAN1 or J1708"]={"SSS2 setting":39,"State":True,"Label":"Connect J1708 to J24:17 and J24:17"}
+    s["14 PWMs or CAN2"]={"SSS2 setting":40,"State":True,"Label":"Connect CAN2 to J18:15 and J18:16"}
+    s["01 CAN0 Termination Resistor"]={"SSS2 setting":41,"State":True,"Label":"Connect CAN0 Termination Resistor"}
+    s["02 CAN1 Termination Resistor"]={"SSS2 setting":42,"State":True,"Label":"Connect CAN1 Termination Resistor"}
+    s["03 CAN2 Termination Resistor"]={"SSS2 setting":43,"State":True,"Label":"Connect CAN2 Termination Resistor"}
+    s["04 LIN Master Pullup Resistor"]={"SSS2 setting":44,"State":True,"Label":"Connect LIN Master Pullup Resistor"}
+    s["07 12V Out 2"]={"SSS2 setting":46,"State":False,"Label":"Connect +12V to Port 11 (J24:11)"}
+    s["08 12V Out 1"]={"SSS2 setting":45,"State":False,"Label":"Connect +12V to Port 27 (J18:10)"}
+    s["09 Ground Out 1"]={"SSS2 setting":47,"State":False,"Label":"Connect Ground to Port 17 (J18:1)"}
+    s["10 Ground Out 2"]={"SSS2 setting":47,"State":False,"Label":"Connect Ground to Port 12 (J24:12)"}
+    s["05 LIN to SHLD"]={"SSS2 setting":71,"State":False,"Label":"Connect LIN to Round Pin E (J10:5)"}
+    s["06 LIN to Port 16"]={"SSS2 setting":72,"State":False,"Label":"Connect LIN to Port 16 (J24:16)"}
     
     
 
