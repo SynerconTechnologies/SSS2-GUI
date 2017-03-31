@@ -8,7 +8,7 @@ import queue
 import time
 import string
 
-from tkinter import tix
+from tkinter.tix import *
 from tkinter.constants import *
 import tkinter.scrolledtext as tkst
 
@@ -153,6 +153,7 @@ class SSS2(ttk.Frame):
     def __init__(self, parent, *args, **kwargs):
         ttk.Frame.__init__(self, parent, *args, **kwargs)
         self.root = parent
+        self.root.geometry('+0+0')
         self.settings_dict = get_default_settings()
         self.init_gui()
         
@@ -217,6 +218,8 @@ class SSS2(ttk.Frame):
 
         self.serial_connected = False
         self.serial_rx_byte_list = []
+
+        
         
         self.serial_interface()
         
@@ -243,22 +246,31 @@ class SSS2(ttk.Frame):
     def serial_interface(self):
         self.recieved_serial_byte_count = 0
 
+        
+         
         self.connection_status_string = tk.StringVar()
         self.connection_label = tk.Label(self, textvariable=self.connection_status_string)
         self.connection_label.pack(side='right')
         
         
+        
         self.serial_frame = tk.LabelFrame(self.connections, name="serial_console",
                                           text="SSS2 Data Display")
         self.serial_frame.grid(row=0,column=0,sticky='NSEW')
-
-        
-        
-        
-        
         self.text = tkst.ScrolledText(self.serial_frame, font="Courier 10" ,
                                       wrap="none", height=40,width=120,padx=4,pady=4)
         self.text.grid(row=0,column=1,rowspan=9,columnspan=3,sticky=tk.W+tk.E+tk.N+tk.S )
+
+        
+        self.serial_RX_count = ttk.Entry(self.serial_frame,width=12)
+        self.serial_RX_count.grid(row=0,column = 4,sticky="NE")
+
+        self.connect_to_serial()
+        
+        
+        
+        
+        
         
         tk.Label(self.serial_frame,text="Command:").grid(row=9,column=1, sticky="E")
         
@@ -289,18 +301,17 @@ class SSS2(ttk.Frame):
                                     command=self.send_stream_can0)
         self.stream_can0_box.grid(row=5,column=0,sticky="SW")
         self.stream_can0_box.state(['!alternate']) #Clears Check Box
-        
+        self.send_stream_can0()
         
         self.stream_can1_box =  ttk.Checkbutton(self.serial_frame,
                                     text="Stream CAN1 (E-CAN)",
                                     command=self.send_stream_can1)
         self.stream_can1_box.grid(row=6,column=0,sticky="NW")
         self.stream_can1_box.state(['!alternate']) #Clears Check Box
-        
-        self.serial_RX_count = ttk.Entry(self.serial_frame,width=12)
-        self.serial_RX_count.grid(row=0,column = 4,sticky="NE")
+        self.send_stream_can1()
 
-        self.connect_to_serial()
+        
+        
         
         
     
@@ -319,9 +330,7 @@ class SSS2(ttk.Frame):
                 ser=self.serial
                 print(self.serial)
                 self.check_serial_connection()
-                self.send_stream_can0()
-                self.send_stream_can1()
-
+               
                 self.tx_queue = queue.Queue()
                 self.rx_queue = queue.Queue()
                 thread = SerialThread(self.rx_queue,self.tx_queue,self.serial)
@@ -429,13 +438,13 @@ class SSS2(ttk.Frame):
         self.ignition_key_button =  ttk.Checkbutton(self.settings,
                                             text="Ignition Key Switch",
                                             command=self.send_ignition_key_command)
-        self.ignition_key_button.grid(row=1,column=0,sticky=tk.W)
+        self.ignition_key_button.grid(row=0,column=0,sticky=tk.W)
         self.ignition_key_button.state(['!alternate']) #Clears Check Box
 
         #Setup Bank A with a common Switch for Terminal A
         self.potentiometer_bank_A = tk.LabelFrame(self.settings, name="pot_bank_A",
                                                   text="Potentiometers 1 though 8")
-        self.potentiometer_bank_A.grid(row=2,column=0,sticky=tk.W,rowspan=3)
+        self.potentiometer_bank_A.grid(row=1,column=0,sticky=tk.W,columnspan=3)
 
         self.bankA_term_A_voltage_button =  ttk.Checkbutton(self.potentiometer_bank_A,
                                         text="Terminal A Voltage Enabled",
@@ -451,18 +460,18 @@ class SSS2(ttk.Frame):
                            pair_id="U1U2",col=0,row=1)
         potpairU3U4 = potentiometer_pair(self.potentiometer_bank_A,
                            self.settings_dict["Potentiometers"]["Group A"]["Pairs"],
-                           pair_id="U3U4",col=0,row=2)
+                           pair_id="U3U4",col=1,row=1)
         potpairU5U6 = potentiometer_pair(self.potentiometer_bank_A,
                            self.settings_dict["Potentiometers"]["Group A"]["Pairs"],
-                           pair_id="U5U6",col=0,row=3)
+                           pair_id="U5U6",col=2,row=1)
         potpairU7U8 = potentiometer_pair(self.potentiometer_bank_A,
                            self.settings_dict["Potentiometers"]["Group A"]["Pairs"],
-                           pair_id="U7U8",col=0,row=4)
+                           pair_id="U7U8",col=3,row=1)
         
         #Setup Bank B with a common Switch for Terminal A
         self.potentiometer_bank_B = tk.LabelFrame(self.settings, name="pot_bank_B",
                                                   text="Potentiometers 9 though 16")
-        self.potentiometer_bank_B.grid(row=2,column=1,sticky=tk.W,rowspan=3)
+        self.potentiometer_bank_B.grid(row=2,column=0,sticky=tk.W,columnspan=3)
 
         self.bankB_term_A_voltage_button =  ttk.Checkbutton(self.potentiometer_bank_B,
                                         text="Terminal A Voltage Enabled",
@@ -475,32 +484,41 @@ class SSS2(ttk.Frame):
         
         potpairU9U10 = potentiometer_pair(self.potentiometer_bank_B,
                            self.settings_dict["Potentiometers"]["Group B"]["Pairs"],
-                           pair_id="U9U10",col=0,row=1)
+                           pair_id="U9U10",col=0,row=2)
         potpairU11U12 = potentiometer_pair(self.potentiometer_bank_B,
                            self.settings_dict["Potentiometers"]["Group B"]["Pairs"],
-                           pair_id="U11U12",col=0,row=2)
+                           pair_id="U11U12",col=1,row=2)
         potpairU13U14 = potentiometer_pair(self.potentiometer_bank_B,
                            self.settings_dict["Potentiometers"]["Group B"]["Pairs"],
-                           pair_id="U13U14",col=0,row=3)
+                           pair_id="U13U14",col=2,row=2)
         potpairU15U16 = potentiometer_pair(self.potentiometer_bank_B,
                            self.settings_dict["Potentiometers"]["Group B"]["Pairs"],
-                           pair_id="U15U16",col=0,row=4)
+                           pair_id="U15U16",col=3,row=2)
         
         self.potentiometer_other = tk.LabelFrame(self.settings, name="pot_bank_other",
                                                  text="Potentiometers on with +5V on Terminal A")
-        self.potentiometer_other.grid(row=2,column=2,sticky=tk.N)
+        self.potentiometer_other.grid(row=3,column=0,sticky="NW")
 
         other_dict = self.settings_dict["Potentiometers"]["Others"]["Pairs"]["I2CPots"]["Pots"] 
         potpairU34 = potentiometer(self.potentiometer_other, other_dict["U34"], row=1, col=0)
         potpairU36 = potentiometer(self.potentiometer_other, other_dict["U36"], row=1, col=1)
         potpairU37 = potentiometer(self.potentiometer_other, other_dict["U37"], row=1, col=2)
-            
+
+        #hvadj_dict = self.settings_dict["HVAdjOut"]
         #hvadjust = potentiometer(self.potentiometer_other, other_dict["U24"], row=1, col=3)
 
+        self.DAC_bank = tk.LabelFrame(self.settings, name="dac_bank",
+                                                  text="Voltage Outputs")
+        self.DAC_bank.grid(row=3,column=1,sticky="NW",columnspan=1)
+
+        dac_dict=self.settings_dict["DACs"]
+        Vout2A = DAC7678(self.DAC_bank, dac_dict["Vout1"], row=0, col=1)
+        
         
         self.switch_frame = tk.Frame(self.settings, name='switch frame');
-        self.switch_frame.grid(row=4,rowspan=2,column=2,sticky="NW")
+        self.switch_frame.grid(row=3,rowspan=2,column=2, columnspan=3,sticky="NW")
 
+        
         
         #Begin Switch
         self.switch_button_list=[]
@@ -555,20 +573,19 @@ class config_switches(SSS2):
         self.key = key
         self.col=col
         self.row=row
-        
         self.setup_switches()
+
     def setup_switches(self):
-        #key="12V Out 2"
-            self.switch_button =  ttk.Checkbutton(self.root,
-                                                text=self.switch_button_dict[self.key]["Label"],
-                                                command=self.connect_switches)
-            self.switch_button.grid(row=self.row,column=self.col,sticky=tk.W)
-            self.switch_button.state(['!alternate']) #Clears Check Box
-            if self.switch_button_dict[self.key]["State"]:
-                self.switch_button.state(['selected'])
-            else:
-                self.switch_button.state(['!selected'])
-            self.connect_switches()
+        self.switch_button =  ttk.Checkbutton(self.root,
+                                            text=self.switch_button_dict[self.key]["Label"],
+                                            command=self.connect_switches)
+        self.switch_button.grid(row=self.row,column=self.col,sticky=tk.W)
+        self.switch_button.state(['!alternate']) #Clears Check Box
+        if self.switch_button_dict[self.key]["State"]:
+            self.switch_button.state(['selected'])
+        else:
+            self.switch_button.state(['!selected'])
+        self.connect_switches()
             
     def connect_switches(self):
         state=self.switch_button.instate(['selected'])
@@ -635,9 +652,7 @@ class potentiometer_pair(SSS2):
         command_bytes = bytes(commandString,'ascii') + b'\n'
         global ser
         try:
-            #time.sleep(0.01)
             ser.write(command_bytes)
-            
         except Exception as e:
             print(e) 
 
@@ -648,9 +663,9 @@ class potentiometer(SSS2):
         self.pot_col=col
         self.pot_settings_dict = pot_dict
         self.pot_number=self.pot_settings_dict["Port"]
-        self.label = self.pot_settings_dict["Name"]
-        self.name = self.label.lower()
         self.connector=self.pot_settings_dict["Pin"]
+        self.label = self.pot_settings_dict["Name"]+" ("+self.connector+")"
+        self.name = self.label.lower()
         self.tcon_setting = self.pot_settings_dict["SSS2 TCON Setting"]
         self.setup_potentometer()
       
@@ -705,6 +720,20 @@ class potentiometer(SSS2):
         #print(self.set_wiper_voltage())
         #print(self.set_terminals())
         self.set_terminals()
+
+        self.ecu_frame = tk.LabelFrame(self.potentiometer_frame,text="ECU Application")
+        self.ecu_frame.grid(row=6,column=0,columnspan=4,sticky=tk.W)
+
+        tk.Label(self.ecu_frame,text="ECU Pins:").grid(row=0,column=0, sticky="W")
+        
+        self.ecu_pins = ttk.Entry(self.ecu_frame,width=18,name="ecu pins")
+        self.ecu_pins.insert(0,self.pot_settings_dict["ECU Pins"])
+        self.ecu_pins.grid(row=0,column=1,sticky="E")
+
+        self.ecu_app = tk.Entry(self.ecu_frame,width=28,name="ecu application")
+        self.ecu_app.insert(tk.END,self.pot_settings_dict["Application"])
+        self.ecu_app.grid(row=1,column=0,columnspan=3,sticky="W")                                       
+                             
         
     def set_wiper_slider(self,event=None):
         try:
@@ -722,7 +751,6 @@ class potentiometer(SSS2):
         global ser
         try:
             ser.write(command_bytes)
-            
         except Exception as e:
             print(e)
         return command_bytes
@@ -737,56 +765,104 @@ class potentiometer(SSS2):
         global ser
         try:
             ser.write(command_bytes)
-            
         except Exception as e:
             print(e)
         return command_bytes
     
     
-    def set_terminal_A_slider(self):
-        entry_value = self.other_volt_value.get()
-        #print(self.other_volt_value.config())
-        self.other_volt_value['foreground'] = "black"
-        try:
-            print(float(entry_value))
-        except ValueError:
-            #print("Not a good value")
-            self.root.bell()
-            self.other_volt_value['foreground'] = "red"
-            
-    def set_terminal_A_voltage(self,scale):
-        print(self.terminal_A_voltage.get())
-        self.other_volt_value.delete(0,tk.END)
-        self.other_volt_value.insert(0,self.terminal_A_voltage.get()/1000.0)
+##    def set_terminal_A_slider(self):
+##        entry_value = self.other_volt_value.get()
+##        self.other_volt_value['foreground'] = "black"
+##        try:
+##            print(float(entry_value))
+##        except ValueError:
+##            #print("Not a good value")
+##            self.root.bell()
+##            self.other_volt_value['foreground'] = "red"
+##            
+##    def set_terminal_A_voltage(self,scale):
+##        self.other_volt_value.delete(0,tk.END)
+##        self.other_volt_value.insert(0,self.terminal_A_voltage.get()/1000.0)
 
 class DAC7678(SSS2):
-    def __init__(self, parent,sss2_settings, row = 2, col = 0, sss2_setting = 1):
+    def __init__(self, parent,sss2_settings, row = 2, col = 0):
         self.root = parent
         self.row=row
         self.col=col
-        self.setting_number=sss2_setting
-        self.settings = current_settings
-        #self.label = label+" "+str(self.pot_number)
-        #self.name = self.label.lower()
-        #self.connector=connector
-        #self.tcon_setting = tcon_setting
+        self.settings_dict = sss2_settings
+        self.pot_number=self.settings_dict["Port"]
+        self.connector=self.settings_dict["Pin"]
+        self.label = self.settings_dict["Name"]+" ("+self.connector+")"
+        self.name = self.label.lower()
+        self.setting_num = self.settings_dict["SSS2 setting"]
         self.setup_dac_widget()
         
     def setup_dac_widget(self):
-        settings = self.settings[self.setting_number]
-        dac_name = settings["name"]
-        
-        self.dac_frame = tk.LabelFrame(self.root, name=dac_name.toLowerCase(),text=dac_name)
-        self.dac_frame.grid(row=self.pot_row,column=self.pot_col,sticky=tk.W)
-        
-        self.mean_slider = tk.Scale(self.dac_frame,
-                                              from_ = settings["Lower Limit"], to = 5000, digits = 1, resolution = 50,
-                                              orient = tk.HORIZONTAL, length = 180,
-                                              sliderlength = 10, showvalue = 0, 
-                                              label = None,
-                                              command = self.set_terminal_A_voltage)
-        self.terminal_A_voltage.grid(row=2,column=0,columnspan=3)       
+         
+        self.dac_frame = tk.LabelFrame(self.root, name=self.name,text=self.label)
+        self.dac_frame.grid(row=self.row,column=self.col,sticky=tk.W)
+        self.low = float(self.settings_dict["Lowest Voltage"])
+        self.high = float(self.settings_dict["Highest Voltage"])
 
+        tk.Label(self.dac_frame,text="Low: {} V".format(self.low)).grid(row=0,column=0, sticky="E",columnspan=1)
+        tk.Label(self.dac_frame,text="High: {} V".format(self.high)).grid(row=0,column=6,sticky="E",columnspan=1)
+        tk.Label(self.dac_frame,text="Mean Value:").grid(row=1,column=0, sticky="E",columnspan=1)
+        self.dac_mean_slider = tk.Scale(self.dac_frame,
+                                        from_ = self.low*100,
+                                        to = self.high*100,
+                                        digits = 1, resolution = 1,
+                                        orient = tk.HORIZONTAL, length = 120,
+                                        sliderlength = 10, showvalue = 0, 
+                                        label = None,
+                                        name = self.name,
+                                        command = self.set_dac_voltage)
+        self.dac_mean_slider.grid(row=1,column=1,columnspan=3)
+        self.dac_mean_position_value = ttk.Entry(self.dac_frame,width=5)
+        self.dac_mean_position_value.grid(row=1,column = 4,sticky="E")
+        self.dac_mean_position_value.insert(0,self.dac_mean_slider.get())
+        self.dac_mean_position_value.bind('<Return>',self.set_dac_mean_slider)
+
+        self.dac_mean_slider.set(self.settings_dict["Average Voltage"]*100)
+
+
+        self.wiper_position_button = ttk.Button(self.dac_frame,text="Set Voltage",
+                                            command = self.set_dac_mean_slider)
+        self.wiper_position_button.grid(row=1,column = 5,sticky="W",columnspan=2)
+
+        
+   
+    def set_dac_voltage(self,event=None):
+        #self.low,self.high=self.get_limit_values()
+        #self.low=self.dac_mean_slider["from_"]
+        #self.high=self.dac_mean_slider["to"]
+            
+        self.dac_mean_position_value.delete(0,tk.END)
+        self.dac_mean_position_value.insert(0,self.dac_mean_slider.get()/100)
+        
+        slope = 4095/(self.high-self.low)
+        dac_raw_setting = int(slope*(float(self.dac_mean_position_value.get())) - self.low)
+        commandString = "{},{}".format(self.setting_num,dac_raw_setting)
+        command_bytes = bytes(commandString,'ascii') + b'\n'
+        print(command_bytes)
+        global ser
+        try:
+            ser.write(command_bytes)
+        except Exception as e:
+            print(e)
+        return command_bytes
+    
+    def set_dac_mean_slider(self,event=None):
+        entry_value = self.dac_mean_position_value.get()
+        #print(entry_value)
+        self.dac_mean_position_value['foreground'] = "black"
+        try:
+            self.dac_mean_slider.set(float(entry_value)*100)
+        except Exception as e:
+            print(e)
+            self.root.bell()
+            self.dac_mean_position_value['foreground'] = "red"
+            
+            
 if __name__ == '__main__':
 
     root = tk.Tk()

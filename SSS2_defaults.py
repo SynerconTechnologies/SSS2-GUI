@@ -326,7 +326,7 @@ def get_default_settings():
     u["Term. B Connect"]=True
     u["Wiper Connect"]=True
     u["Wiper Position"]=50
-    u["Pin"]= "J18:132"
+    u["Pin"]= "J18:13"
     u["Port"]= "29"
     u["ECU Pins"]="ECU Pins"
     u["Application"]="Application Description"
