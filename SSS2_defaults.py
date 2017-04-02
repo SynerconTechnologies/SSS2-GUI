@@ -16,12 +16,13 @@ def get_default_settings():
     g=p["Group A"]
     g["Terminal A Connection"]=True
     g["SSS2 Setting"] = 73
+    g["Label"]="Potentiometers 1 though 8"
     g["Pairs"]={"U1U2":{},"U3U4":{},"U5U6":{},"U7U8":{}}
     
     pair = g["Pairs"]["U1U2"]
     pair["Terminal A Voltage"] = "+5V"
     pair["SSS Setting"] = 25
-    pair["Name"]="U1 and U2"
+    pair["Name"]="Terminal A Voltage for U1 and U2"
     pair["Pots"] = {"U1":{},"U2":{}}
 
     u=pair["Pots"]["U1"]
@@ -55,7 +56,7 @@ def get_default_settings():
     pair = g["Pairs"]["U3U4"]
     pair["Terminal A Voltage"] = "+12V"
     pair["SSS Setting"] = 26
-    pair["Name"]="U3 and U4"
+    pair["Name"]="Terminal A Voltage for U3 and U4"
     pair["Pots"] = {"U3":{},"U4":{}}
 
     u=pair["Pots"]["U3"]
@@ -89,7 +90,7 @@ def get_default_settings():
     pair = g["Pairs"]["U5U6"]
     pair["Terminal A Voltage"] = "+12V"
     pair["SSS Setting"] = 27
-    pair["Name"]="U5 and U6"
+    pair["Name"]="Terminal A Voltage for U5 and U6"
     pair["Pots"] = {"U5":{},"U6":{}}
 
     u=pair["Pots"]["U5"]
@@ -123,7 +124,7 @@ def get_default_settings():
     pair = g["Pairs"]["U7U8"]
     pair["Terminal A Voltage"] = "+12V"
     pair["SSS Setting"] = 28
-    pair["Name"]="U7 and U8"
+    pair["Name"]="Terminal A Voltage for U7 and U8"
     pair["Pots"] = {"U7":{},"U8":{}}
 
     u=pair["Pots"]["U7"]
@@ -159,15 +160,16 @@ def get_default_settings():
     g=p["Group B"]
     g["Terminal A Connection"]=True
     g["SSS2 Setting"] = 74
-    g["Pairs"]={"U9U10":{},"U11U12":{},"U13U14":{},"U15U16":{}}
+    g["Label"]="Potentiometers 9 though 19"
+    g["Pairs"]={"U09U10":{},"U11U12":{},"U13U14":{},"U15U16":{}}
     
-    pair = g["Pairs"]["U9U10"]
+    pair = g["Pairs"]["U09U10"]
     pair["SSS Setting"] = 29
     pair["Terminal A Voltage"] = "+12V"
-    pair["Name"]="U9 and U10"
-    pair["Pots"] = {"U9":{},"U10":{}}
+    pair["Name"]="Terminal A Voltage for U9 and U10"
+    pair["Pots"] = {"U09":{},"U10":{}}
 
-    u=pair["Pots"]["U9"]
+    u=pair["Pots"]["U09"]
     u["Term. A Connect"]=True
     u["Term. B Connect"]=True
     u["Wiper Connect"]=True
@@ -176,7 +178,7 @@ def get_default_settings():
     u["Port"]= "9"
     u["ECU Pins"]="ECU Pins"
     u["Application"]="Application Description"
-    u["Name"]="Potentiometer 9"
+    u["Name"]="Potentiometer  9"
     u["SSS2 Wiper Setting"]=9
     u["SSS2 TCON Setting"]=59
     u["Resistance"]="10k"
@@ -198,7 +200,7 @@ def get_default_settings():
     pair = g["Pairs"]["U11U12"]
     pair["Terminal A Voltage"] = "+12V"
     pair["SSS Setting"] = 30
-    pair["Name"]="U11 and U12"
+    pair["Name"]="Terminal A Voltage for U11 and U12"
     pair["Pots"] = {"U11":{},"U12":{}}
 
     u=pair["Pots"]["U11"]
@@ -232,7 +234,7 @@ def get_default_settings():
     pair = g["Pairs"]["U13U14"]
     pair["Terminal A Voltage"] = "+12V"
     pair["SSS Setting"] = 31
-    pair["Name"]="U13 and U14"
+    pair["Name"]="Terminal A Voltage for U13 and U14"
     pair["Pots"] = {"U13":{},"U14":{}}
 
     u=pair["Pots"]["U13"]
@@ -266,7 +268,7 @@ def get_default_settings():
     pair = g["Pairs"]["U15U16"]
     pair["Terminal A Voltage"] = "+12V"
     pair["SSS Setting"] = 32
-    pair["Name"]="U5 and U6"
+    pair["Name"]="Terminal A Voltage for U15 and U16"
     pair["Pots"] = {"U15":{},"U16":{}}
 
     u=pair["Pots"]["U15"]
@@ -300,11 +302,15 @@ def get_default_settings():
 
 
     g=p["Others"]
-    g["Terminal A Connection"]=None
+    g["Terminal A Connection"]=False
+    g["Label"]="Potentiometers 17 though 19"
+    g["SSS2 Setting"] = None
     g["Pairs"]={"I2CPots":{}}
     
     pair = g["Pairs"]["I2CPots"]
-    pair["Terminal A Voltage"] = "+5V Fixed"
+    pair["Terminal A Voltage"] = False
+    pair["Name"] = "Terminal A Voltage is Fixed at +5V"
+    pair["SSS Setting"] = None    
     pair["Pots"] = {"U34":{},"U36":{},"U37":{}}
 
     u=pair["Pots"]["U34"]
@@ -369,7 +375,7 @@ def get_default_settings():
     d["Port"]= "18"
     d["Alt. Pin"]="J24:15"
     d["Alt. Pin Connect"]=False
-    d["Name"] = "Vout 2-A"
+    d["Name"] = "Vout A"
      
     d=settings["DACs"]["Vout2"]
     d["Lowest Voltage"]=0
@@ -387,7 +393,7 @@ def get_default_settings():
     d["Port"]= "19"
     d["Alt. Pin"]="J24:10"
     d["Alt. Pin Connect"]=False
-    d["Name"] = "Vout 2-B"
+    d["Name"] = "Vout B"
  
 
     d=settings["DACs"]["Vout3"]
@@ -406,7 +412,7 @@ def get_default_settings():
     d["Port"]= "20"
     d["Alt. Pin"]=None
     d["Alt. Pin Connect"]=False
-    d["Name"] = "Vout 2-C"
+    d["Name"] = "Vout C"
   
     d=settings["DACs"]["Vout4"]
     d["Lowest Voltage"]=0
@@ -424,7 +430,7 @@ def get_default_settings():
     d["Port"]= "21"
     d["Alt. Pin"]=None
     d["Alt. Pin Connect"]=False
-    d["Name"] = "Vout 2-D"
+    d["Name"] = "Vout D"
  
     d=settings["DACs"]["Vout5"]
     d["Lowest Voltage"]=0
@@ -442,7 +448,7 @@ def get_default_settings():
     d["Port"]= "22"
     d["Alt. Pin"]=None
     d["Alt. Pin Connect"]=False
-    d["Name"] = "Vout 2-E"
+    d["Name"] = "Vout E"
  
     d=settings["DACs"]["Vout6"]
     d["Lowest Voltage"]=0
@@ -460,7 +466,7 @@ def get_default_settings():
     d["Port"]= "23"
     d["Alt. Pin"]=None
     d["Alt. Pin Connect"]=False
-    d["Name"] = "Vout 2-F"
+    d["Name"] = "Vout F"
 
     d=settings["DACs"]["Vout7"]
     d["Lowest Voltage"]=0
@@ -478,7 +484,7 @@ def get_default_settings():
     d["Port"]= "24"
     d["Alt. Pin"]=None
     d["Alt. Pin Connect"]=False
-    d["Name"] = "Vout 2-G"
+    d["Name"] = "Vout G"
 
     d=settings["DACs"]["Vout8"]
     d["Lowest Voltage"]=0
@@ -496,8 +502,29 @@ def get_default_settings():
     d["Port"]= "25"
     d["Alt. Pin"]=None
     d["Alt. Pin Connect"]=False
-    d["Name"] = "Vout 2-H"
- 
+    d["Name"] = "Vout H"
+
+    settings["DACs"]["HVAdjOut"]={}
+    d=settings["DACs"]["HVAdjOut"]
+    d["Shape"]="Constant" #Sine, Square, Triangle or Sawtooth
+    d["ECU Pins"]="ECU Pins"
+    d["Show Amplitude"]=False
+    d["Frequency"]=0
+    d["Show Frequency"]=False
+    d["Frequency"]= 0
+    d["Average Voltage"]=8.5
+    d["Lowest Voltage"]= 4
+    d["Pin"]= "J24:19"
+    d["Port"]= " "
+    d["Alt. Pin"]=None
+    d["Alt. Pin Connect"]=False
+    d["Name"] ="High Current Regulator"
+    d["Application"]="Application Description"
+    d["SSS2 setting"] = 49
+    d["Highest Voltage"] = 11.5
+    d["Amplitude"]=0
+
+            
     settings["PWMs"]={}
     for i in range(1,5):
         settings["PWMs"]["PWM{}".format(i)]={}
@@ -506,19 +533,21 @@ def get_default_settings():
     d["Name"] = "PWM1"
     d["Lowest Voltage"]=0
     d["Highest Voltage"]=5
-    d["Duty Cycle"]=127 
+    d["Duty Cycle"]=1 
     d["SSS2 setting"] = 33
     d["Frequency"]=200
+    d["Lowest Frequency"]=0
+    d["Highest Frequency"]=5000
     d["SSS2 freq setting"] = 81
     d["Show Frequency"]=True
     d["ECU Pins"]="ECU Pins"
     d["Application"]="Application Description"
     d["Port"]= "31"
-    d["Pin"]= "J18:15"
+    d["Pin"]= "J24:13"
     d["Pin Connect"]=True
     d["SSS2 pin setting"] = 67
     d["Alt. Port"]="13"
-    d["Alt. Pin"]="J24:13"
+    d["Alt. Pin"]="J18:15"
     d["Alt. Pin Connect"]=True
     d["SSS2 alt setting"] = 40
 
@@ -527,19 +556,21 @@ def get_default_settings():
     d["Name"] = "PWM2"
     d["Lowest Voltage"]=0
     d["Highest Voltage"]=5
-    d["Duty Cycle"]=127 
+    d["Duty Cycle"]=2
     d["SSS2 setting"] = 34
     d["Frequency"]=200
+    d["Lowest Frequency"]=0
+    d["Highest Frequency"]=5000
     d["SSS2 freq setting"] = 82
     d["Show Frequency"]=True
     d["ECU Pins"]="ECU Pins"
     d["Application"]="Application Description"
     d["Port"]= "32"
-    d["Pin"]= "J18:16"
+    d["Pin"]= "J24:14"
     d["Pin Connect"]=True
     d["SSS2 pin setting"] = 68
     d["Alt. Port"]="14"
-    d["Alt. Pin"]="J24:14"
+    d["Alt. Pin"]="J18:16"
     d["Alt. Pin Connect"]=True
     d["SSS2 alt setting"] = 40
 
@@ -547,9 +578,11 @@ def get_default_settings():
     d["Name"] = "PWM3"
     d["Lowest Voltage"]=0
     d["Highest Voltage"]=5
-    d["Duty Cycle"]=127 
+    d["Duty Cycle"]=3 
     d["SSS2 setting"] = 35
     d["Frequency"]=200
+    d["Lowest Frequency"]=0
+    d["Highest Frequency"]=5000
     d["SSS2 freq setting"] = 83
     d["Show Frequency"]=True
     d["ECU Pins"]="ECU Pins"
@@ -559,7 +592,7 @@ def get_default_settings():
     d["Pin Connect"]=True
     d["SSS2 pin setting"] = 69
     d["Alt. Port"]=None
-    d["Alt. Pin"]=None
+    d["Alt. Pin"]=""
     d["Alt. Pin Connect"]=None
     d["SSS2 alt setting"] =None
 
@@ -567,9 +600,11 @@ def get_default_settings():
     d["Name"] = "PWM4"
     d["Lowest Voltage"]=0
     d["Highest Voltage"]=5
-    d["Duty Cycle"]=127 
+    d["Duty Cycle"]=4 
     d["SSS2 setting"] = 36
     d["Frequency"]=200
+    d["Lowest Frequency"]=0
+    d["Highest Frequency"]=5000
     d["SSS2 freq setting"] = 84
     d["Show Frequency"]=True
     d["ECU Pins"]="ECU Pins"
@@ -579,7 +614,7 @@ def get_default_settings():
     d["Pin Connect"]=True
     d["SSS2 pin setting"] = 70
     d["Alt. Port"]=None
-    d["Alt. Pin"]=None
+    d["Alt. Pin"]=""
     d["Alt. Pin Connect"]=None
     d["SSS2 alt setting"] =None
 
@@ -597,20 +632,24 @@ def get_default_settings():
     
     settings["Switches"]={}
     s=settings["Switches"]
-    s["11 Port 10 or 19"]={"SSS2 setting":37,"State":False,"Label":"Connect Vout 2 to Port 10 (J24:10)"}
-    s["12 Port 15 or 18"]={"SSS2 setting":38,"State":False,"Label":"Connect Vout 1 to Port 15 (J24:15)"}
+    s["Port 10 or 19"]={"SSS2 setting":37,"State":False,"Label A":"Connect Vout B to J24:10","Label B":"Connect Potentiometer 10 to J24:10"}
+    s["Port 15 or 18"]={"SSS2 setting":38,"State":False,"Label A":"Connect Vout A to J24:15","Label B":"Connect Potentiometer 15 to J24:15"}
     s["13 CAN1 or J1708"]={"SSS2 setting":39,"State":True,"Label":"Connect J1708 to J24:17 and J24:17"}
-    s["14 PWMs or CAN2"]={"SSS2 setting":40,"State":True,"Label":"Connect CAN2 to J18:15 and J18:16"}
-    s["01 CAN0 Termination Resistor"]={"SSS2 setting":41,"State":True,"Label":"Connect CAN0 Termination Resistor"}
-    s["02 CAN1 Termination Resistor"]={"SSS2 setting":42,"State":True,"Label":"Connect CAN1 Termination Resistor"}
-    s["03 CAN2 Termination Resistor"]={"SSS2 setting":43,"State":True,"Label":"Connect CAN2 Termination Resistor"}
-    s["04 LIN Master Pullup Resistor"]={"SSS2 setting":44,"State":True,"Label":"Connect LIN Master Pullup Resistor"}
-    s["07 12V Out 2"]={"SSS2 setting":46,"State":False,"Label":"Connect +12V to Port 11 (J24:11)"}
-    s["08 12V Out 1"]={"SSS2 setting":45,"State":False,"Label":"Connect +12V to Port 27 (J18:10)"}
-    s["09 Ground Out 1"]={"SSS2 setting":47,"State":False,"Label":"Connect Ground to Port 17 (J18:1)"}
-    s["10 Ground Out 2"]={"SSS2 setting":47,"State":False,"Label":"Connect Ground to Port 12 (J24:12)"}
-    s["05 LIN to SHLD"]={"SSS2 setting":71,"State":False,"Label":"Connect LIN to Round Pin E (J10:5)"}
-    s["06 LIN to Port 16"]={"SSS2 setting":72,"State":False,"Label":"Connect LIN to Port 16 (J24:16)"}
+    s["PWMs or CAN2"]={"SSS2 setting":40,"State":True,"Label A":"Connect CAN2 to J18:15 and J18:16","Label B":"Connect PWM1 to J18:15 and PWM2 to J18:16"}
+    s["CAN0"]={"SSS2 setting":41,"State":True,"Label":"Connect CAN0 Termination Resistor (J1939)"}
+    s["CAN1"]={"SSS2 setting":42,"State":True,"Label":"Connect CAN1 Termination Resistor (MCP CAN) "}
+    s["CAN2"]={"SSS2 setting":43,"State":True,"Label":"Connect CAN2 Termination Resistor (E-CAN)"}
+    s["LIN Master Pullup Resistor"]={"SSS2 setting":44,"State":True,"Label":"Connect LIN Master Pullup Resistor"}
+    s["12V Out 2"]={"SSS2 setting":46,"State":False,"Label":"Connect +12V to Port 11 (J24:11)"}
+    s["12V Out 1"]={"SSS2 setting":45,"State":False,"Label":"Connect +12V to Port 27 (J18:10)"}
+    s["Ground Out 1"]={"SSS2 setting":47,"State":False,"Label":"Connect Ground to Port 17 (J18:1)"}
+    s["Ground Out 2"]={"SSS2 setting":48,"State":False,"Label":"Connect Ground to Port 12 (J24:12)"}
+    s["LIN to SHLD"]={"SSS2 setting":71,"State":False,"Label":"Connect LIN to Round Pin E (J10:5)"}
+    s["LIN to Port 16"]={"SSS2 setting":72,"State":False,"Label":"Connect LIN to Port 16 (J24:16)"}
+    s["PWM1 Connect"]={"SSS2 setting":67,"State":True,"Label":"Connect PWM1 Output to J24:13"}
+    s["PWM2 Connect"]={"SSS2 setting":68,"State":True,"Label":"Connect PWM2 Output to J24:14"}
+    s["PWM3 or 12V"]={"SSS2 setting":45,"State":False,"Label A":"Connect J18:10 to +12VDC","Label B":"Connect PWM3 Output to J18:10"}
+    s["PWM4 or Ground"]={"SSS2 setting":47,"State":False,"Label A":"Connect J18:1 to Ground","Label B":"Connect PWM4 Output to J18:1"}
     
     
 
