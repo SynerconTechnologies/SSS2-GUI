@@ -1,12 +1,16 @@
 import tkinter as tk
+from tkinter import filedialog
 from tkinter import ttk
+from tkinter import messagebox
 import serial
 import serial.tools.list_ports
-
+import os
 import threading
 import queue
 import time
 import string
+import hashlib
+from pprint import pformat
 
 from tkinter.tix import *
 from tkinter.constants import *
@@ -36,9 +40,10 @@ class SerialThread(threading.Thread):
                     #b = self.serial.read()
                     #self.rx_queue.put(b)
         except Exception as e:
-            #print(e)
+            print(e)
             print("Serial Connection Broken. Exiting Thread.")
-            setup_serial_connections(mainwindow)
+            #setup_serial_connections(mainwindow)
+            
             
                 
 
@@ -117,12 +122,12 @@ class setup_serial_connections(tk.Toplevel):
         self.withdraw()
         self.update_idletasks()
 
-        
+        self.apply() #usually this is in the OK function
 
         self.cancel()
 
     def cancel(self, event=None):
-        self.apply() #usually this is in the OK function
+        
         # put focus back to the parent window
         self.parent.focus_set()
         self.destroy()
@@ -140,6 +145,7 @@ class setup_serial_connections(tk.Toplevel):
                                     parity=serial.PARITY_ODD,timeout=0,
                                     xonxoff=False, rtscts=False, dsrdtr=False)
                 print(ser)
+                ser.close()
                 return True
             except Exception as e:
                 print(e)
@@ -152,6 +158,10 @@ class setup_serial_connections(tk.Toplevel):
 
     def apply(self):
         self.result=self.port_combo_box.get()
+        global ser
+        ser = serial.Serial(self.port_combo_box.get(),baudrate=4000000,
+                            parity=serial.PARITY_ODD,timeout=0,
+                            xonxoff=False, rtscts=False, dsrdtr=False)
 
 def all_children (wid) :
     _list = wid.winfo_children()
@@ -171,7 +181,10 @@ class SSS2(ttk.Frame):
         self.settings_dict = get_default_settings()
         self.root.title('Smart Sensor Simulator Interface')
         self.grid( column=0, row=0, sticky='NSEW') #needed to display
-        
+        self.filename=os.path.expanduser('~')+'\\SSS2settings.SSS2'
+        self.file_authenticated = False
+        self.file_OK_received = tk.BooleanVar(name='file_OK_received')
+        self.file_OK_received.set(False)
         self.init_gui()
         
  
@@ -195,7 +208,6 @@ class SSS2(ttk.Frame):
         self.serial_rx_entry.grid(row=0,column=2,sticky=tk.W+tk.E)
         
         self.tabs = ttk.Notebook(self, name='tabs')
-        self.tabs.enable_traversal()
         self.tabs.grid(row=1,column=0,columnspan=3,sticky=tk.W)
         
         ttk.Label(self, text='Synercon Technologies, LLC',name='synercon_label').grid(row=2,column=0,sticky=tk.W)
@@ -218,6 +230,8 @@ class SSS2(ttk.Frame):
         self.connections = tk.Frame(self.tabs, name='usb_serial_connections')
         self.tabs.add(self.connections, text="USB/Serial Interface") # add tab to Notebook
 
+        self.tabs.enable_traversal()
+        
           
         self.root.option_add('*tearOff', 'FALSE')
         self.menubar = tk.Menu(self.root,name='main_menus')
@@ -225,10 +239,11 @@ class SSS2(ttk.Frame):
         self.menu_file = tk.Menu(self.menubar)
         self.menu_connection = tk.Menu(self.menubar)
 
-        self.menu_file.add_command(label='Open...', command=self.load_settings_file)
-        self.menu_file.add_command(label='Save As...', command=self.save_settings_file)
+        self.menu_file.add_command(label='Open...', command=self.open_settings_file)
+        self.menu_file.add_command(label='Save', command=self.save_settings_file)
+        self.menu_file.add_command(label='Save As...', command=self.saveas_settings_file)
         self.menu_file.add_separator()
-        self.menu_file.add_command(label='Reset to Defaults', command=self.init_tabs)
+        self.menu_file.add_command(label='Refresh', command=self.init_tabs)
         self.menu_file.add_separator()
         self.menu_file.add_command(label='Exit', command=self.root.quit)
         self.menu_connection.add_command(label='Select COM Port',
@@ -237,7 +252,10 @@ class SSS2(ttk.Frame):
         self.menubar.add_cascade(menu=self.menu_file, label='File')
         self.menubar.add_cascade(menu=self.menu_connection, label='Connection')
 
-        
+        self.file_status_string = tk.StringVar(name='file_status_string')
+        self.file_status_string.set("Default")
+        self.file_status_label = tk.Label(self, textvariable=self.file_status_string,name="file_status_label")
+        self.file_status_label.grid(row=2,column=1)
 
         self.root.config(menu=self.menubar)
 
@@ -247,15 +265,22 @@ class SSS2(ttk.Frame):
         self.received_can1_messages=[]
         self.received_can2_messages=[]
         self.received_j1708_messages=[]
-        self.init_tabs()
-        
-    def init_tabs(self):
-                
+
         self.serial_interface()
         thread = SerialThread(self.rx_queue,self.tx_queue)
         thread.start()
         self.process_serial()
         
+        self.init_tabs()
+        
+    def init_tabs(self):
+        for child in self.settings_tab.winfo_children():
+            child.destroy()        
+        for child in self.voltage_out_tab.winfo_children():
+            child.destroy()
+        for child in self.truck_networks_tab.winfo_children():
+            child.destroy()
+            
         self.potentiometer_settings() #put this after the serial connections
 
         self.voltage_out_settings()
@@ -264,63 +289,219 @@ class SSS2(ttk.Frame):
         
 
     def open_settings_file(self):
-        #tkFileDialog.askopenfilename([options])
-        pass
-    def load_settings_file(self):
-        self.settings_dict["Potentiometers"][bank_key]["Terminal A Connection"]=state
+            
+        try:
+            if not ser.isOpen():
+                messagebox.showerror("Connect SSS2",
+                   "Please connect to the Smart Sensor Simulator 2 unit with serial number {} to open a file. Be sure the SSS2 product code under the\n USB/Serial Interface tab is correct. The current code that is entered is {}.".format(self.settings_dict["Serial Number"],self.settings_dict["SSS2 Product Code"]) )
+                return False
+        except Exception as e:
+            print(e)
+            messagebox.showerror("Connect SSS2",
+                   "Please connect to the Smart Sensor Simulator 2 unit with serial number {} to open a file. Be sure the SSS2 product code under the\n USB/Serial Interface tab is correct. The current code that is entered is {}.".format(self.settings_dict["Serial Number"],self.settings_dict["SSS2 Product Code"]) )
+            return False
+          
+        types = [('Smart Sensor Simulator 2 Settings Files', '*.SSS2'),('All Files', '*')]
+        idir = os.path.expanduser('~')
+        ifile = self.filename
+        title='SSS2 Settings File'
+        self.filename = filedialog.askopenfilename(filetypes=types,
+                                                     initialdir=idir,
+                                                     initialfile=ifile,
+                                                     title=title,
+                                                     defaultextension=".SSS2")
+        with open(self.filename,'r') as infile:
+            self.settings_dict=json.load(infile)
+
+        self.file_status_string.set("Opened "+self.filename)
+        print("Opened "+self.filename)
+
         
+
+        digest_from_file=self.settings_dict["SHA265 Digest"]
+        print("digest_from_file: ",end='')
+        print(digest_from_file)
+
+         
+        
+        self.settings_dict.pop("SHA265 Digest",None)
+
+        tempjsonfile = pformat(self.settings_dict)
+        newhash=hashlib.sha256(bytes(tempjsonfile,'utf-8')).hexdigest()
+        print("newhash:          ",end='')
+        print(newhash)
+        if newhash==digest_from_file:
+            print("Good to go!")
+            sss2_id = self.settings_dict["SSS2 Product Code"]
+            command_string = "OK,"+sss2_id
+            send_serial_command(command_string)
+
+            pause = self.file_OK_received.get()
+
+            time.sleep(.25)
+            self.wait_variable(self.file_OK_received)       
+            print("self.file_OK_received: ",end='')
+            print(self.file_OK_received)
+            
+            if self.file_authenticated:
+                self.init_tabs()
+            else:
+                messagebox.showerror("Incompatible SSS2",
+                    "The unique ID for the SSS2 does not match the file. Please plug in the unit with serial number {} and try again.".format(self.settings_dict["Serial Number"]) )
+            self.file_OK_received.set(False)
+                  
+        else:
+            print("Hash values different, Reloading defaults.")
+            self.settings_dict = get_default_settings()
+            
+            messagebox.showerror("File Integrity Error",
+                    "The hash value from the file\n {}\n does not match the new calculated hash.\n The file may have been altered. \nReloading defaults.".format(self.filename) )
+            self.file_status_string.set("Error Opening "+self.filename)
+        
+            
+        return True
+        
+    def load_settings_file(self):
+        self.init_tabs()
     
     def saveas_settings_file(self):
-        #tkFileDialog.asksaveasfilename([options]).
-        pass
+        types = [('Smart Sensor Simulator 2 Settings Files', '*.SSS2')]
+        idir = os.path.expanduser('~')
+        ifile = self.filename
+        title='SSS2 Settings File'
+        self.filename = filedialog.asksaveasfilename( filetypes=types,
+                                           initialdir=idir,
+                                           initialfile=ifile,
+                                           title=title,
+                                           defaultextension=".SSS2")
+        self.save_settings_file()
 
     def save_settings_file(self):
-        group = self.settings_dict["Potentiometers"]["Group A"]
-        group["Terminal A Connection"] = self.bankA_term_A_voltage_button.instate(['selected'])
+        for bank_key in self.pot_bank.keys():
+            group=self.settings_dict["Potentiometers"][bank_key]
+            
+            if group["Terminal A Connection"]:
+                group["Terminal A Connection"] = self.pot_bank[bank_key].bank_button.instate(['selected'])
+            for pair_key in self.pot_bank[bank_key].pot_pairs.keys():
+                pair=group["Pairs"][pair_key]
+                if self.pot_bank[bank_key].pot_pairs[pair_key].twelve_volt_switch is not None:
+                    if self.pot_bank[bank_key].pot_pairs[pair_key].twelve_volt_switch.instate(['selected']):
+                        pair["Terminal A Voltage"] = "+12V"
+                    else:
+                        pair["Terminal A Voltage"] = "+5V"
+                for pot_key in self.pot_bank[bank_key].pot_pairs[pair_key].pots.keys():
+                    pot=pair["Pots"][pot_key]
+                    pot_object = self.pot_bank[bank_key].pot_pairs[pair_key].pots[pot_key]
+                    pot["Term. A Connect"] =    pot_object.terminal_A_connect_button.instate(['selected']) 
+                    pot["Term. B Connect"] =    pot_object.terminal_B_connect_button.instate(['selected']) 
+                    pot["Wiper Connect"]   =    pot_object.wiper_connect_button.instate(['selected']) 
+                    pot["Wiper Position"] = int(pot_object.wiper_position_slider.get())
+                    pot["ECU Pins"] =           pot_object.ecu_app.ecu_pins.get()
+                    pot["Application"] =        pot_object.ecu_app.ecu_app.get()
 
-        pair = group["Pairs"]["U1U2"]
-        if self.potpairU1U2.twelve_volt_switch.instate(['selected']):
-            pair["Terminal A Voltage"] = "+12V"
-        else:
-            pair["Terminal A Voltage"] = "+5V"
-        pot = pair["Pots"]["U1"]
-        pot["Term. A Connect"] =  self.potpairU1U2.pots["U1"].terminal_A_connect_button.instate(['selected']) 
-        pot["Term. B Connect"] =  self.potpairU1U2.pots["U1"].terminal_B_connect_button.instate(['selected']) 
-        pot["Wiper Connect"] =  self.potpairU1U2.pots["U1"].wiper_connect_button.instate(['selected']) 
-        pot["Wiper Position"] = int(self.potpairU1U2.pots["U1"].wiper_position_slider.get())
-        pot["ECU Pins"] = self.potpairU1U2.pots["U1"].ecu_app.ecu_pins.get()
-        pot["Application"] = self.potpairU1U2.pots["U1"].ecu_app.ecu_app.get()
+        for dac_key in self.dac_objects.keys():
+            dac_dict=self.settings_dict["DACs"][dac_key]
+            dac_dict["Average Voltage"] = self.dac_objects[dac_key].dac_mean_slider.get()
+            dac_dict["ECU Pins"] =        self.dac_objects[dac_key].ecu_app.ecu_pins.get()
+            dac_dict["Application"] =     self.dac_objects[dac_key].ecu_app.ecu_app.get()
+
+        for pwm_key in self.pwm_objects.keys():
+            pwm_dict=self.settings_dict["PWMs"][pwm_key]
+            pwm_dict["Duty Cycle"] = self.pwm_objects[pwm_key].pwm_duty_cycle_slider.get()
+            pwm_dict["Frequency"] = self.pwm_objects[pwm_key].pwm_frequency_slider.get()
+            pwm_dict["ECU Pins"] =        self.pwm_objects[pwm_key].ecu_app.ecu_pins.get()
+            pwm_dict["Application"] =     self.pwm_objects[pwm_key].ecu_app.ecu_app.get()
+
+        hv_dict=self.settings_dict["HVAdjOut"]
+        hv_dict["Average Voltage"] = self.hvadjout.dac_mean_slider.get()
+        hv_dict["ECU Pins"] =        self.hvadjout.ecu_app.ecu_pins.get()
+        hv_dict["Application"] =     self.hvadjout.ecu_app.ecu_app.get()
+
+        s=self.settings_dict["Switches"]        
+        s["Port 10 or 19"]["State"]=self.vout2a_switch.switch_buttonA.instate(['selected'])
+        s["Port 15 or 18"]["State"]=self.vout2b_switch.switch_buttonA.instate(['selected'])
+        s["CAN1 or J1708"]["State"]=self.j1708_switch.switch_buttonA.instate(['selected'])
+        s["PWMs or CAN2"]["State"]=self.pwm12_switch.switch_buttonA.instate(['selected'])
+        s["CAN0"]["State"]=self.can0_term.switch_button.instate(['selected'])
+        s["CAN1"]["State"]=self.can1_term.switch_button.instate(['selected'])
+        s["CAN2"]["State"]=self.can2_term.switch_button.instate(['selected'])
+        s["LIN Master Pullup Resistor"]["State"]=self.lin_to_master.switch_button.instate(['selected'])
+        s["12V Out 2"]["State"]=self.twelve2_switch.switch_button.instate(['selected'])
+        s["12V Out 1"]["State"]=self.pwm3_switch.switch_buttonB.instate(['selected'])
+        s["Ground Out 1"]["State"]=self.pwm4_switch.switch_buttonB.instate(['selected'])
+        s["Ground Out 2"]["State"]=self.ground2_switch.switch_button.instate(['selected'])
+        s["LIN to SHLD"]["State"]=self.lin_to_shield_switch.switch_button.instate(['selected'])
+        s["LIN to Port 16"]["State"]=self.lin_to_port_16.switch_button.instate(['selected'])
+        s["PWM1 Connect"]["State"]=self.pwm1_switch.switch_button.instate(['selected'])
+        s["PWM2 Connect"]["State"]=self.pwm2_switch.switch_button.instate(['selected'])
+        s["PWM3 or 12V"]["State"]=self.pwm3_switch.switch_buttonA.instate(['selected'])
+        s["PWM4 or Ground"]["State"]=self.pwm4_switch.switch_buttonA.instate(['selected'])
+
+        pm=self.settings_dict["CAN"]["Preprogrammed"]
+        for can_key in pm:
+            pm[can_key]["State"] = self.preset_messages[can_key].box.instate(['selected'])
         
 
-        filename='SSS2settings.json'
-        with open(filename,'w') as outfile:
+        #self.settings_dict["SSS2 Product Code"]="04:E9:E5:04:E9:E5"
+        
+        self.settings_dict.pop("SHA265 Digest",None)
+
+        tempjsonfile = pformat(self.settings_dict)
+        file_hash = hashlib.sha256(bytes(tempjsonfile,'utf-8')).hexdigest()
+        
+        self.settings_dict["SHA265 Digest"]=file_hash
+        print(self.settings_dict["SHA265 Digest"])
+        
+        with open(self.filename,'w') as outfile:
             json.dump(self.settings_dict,outfile,indent=4)
-        print("Saved "+filename)
+        self.file_status_string.set("Saved "+self.filename)
+        print("Saved "+self.filename)
         
     def vehicle_networks_settings(self):
        
         self.preset_message_frame = tk.LabelFrame(self.truck_networks_tab, name="preset CAN Messages",
                                                   text="Preset CAN Messages")
         self.preset_message_frame.grid(row=0,column=0,sticky="NW",columnspan=1)
-
-        
+        #label styles can be relief=tk.GROOVE, relief=tk.RIDGE, relief=tk.SUNKEN or relief=tk.RAISED
+        tk.Label(self.preset_message_frame,text="CAN HEX ID ",relief=tk.GROOVE).grid(row=0,column=0)
+        tk.Label(self.preset_message_frame,text="  Data Bytes ",relief=tk.GROOVE).grid(row=0,column=1)
+        tk.Label(self.preset_message_frame,text="Period ",relief=tk.GROOVE).grid(row=0,column=2)
+        tk.Label(self.preset_message_frame,text="Parameter Group Name ",relief=tk.GROOVE).grid(row=0,column=3,)
+        tk.Label(self.preset_message_frame,text="Source Address ",relief=tk.GROOVE).grid(row=0,column=4,)
+        tk.Label(self.preset_message_frame,text="Notes",relief=tk.GROOVE).grid(row=0,column=5,)
+        self.preset_messages={}
+        preset_mesg_dict=self.settings_dict["CAN"]["Preprogrammed"]
+        row_index=1
+        col_index=0
+        for key in sorted(preset_mesg_dict.keys()):
+            self.preset_messages[key] = preprogrammed_message(self.preset_message_frame,
+                            preset_mesg_dict,key,row=row_index,col=col_index)
+            
+            row_index+=1
+            if row_index==36:
+                row_index=0
+                col_index+=1
         
         self.message_config_frame = tk.LabelFrame(self.truck_networks_tab, name="network Configurations",
                                                   text="Network Configurations")
         self.message_config_frame.grid(row=0,column=1,sticky="NW",columnspan=1)
 
-        lin_to_shield_switch = config_switches(self.message_config_frame,
+        self.lin_to_shield_switch = config_switches(self.message_config_frame,
                             self.settings_dict["Switches"],"LIN to SHLD",row=0,col=0)
-        lin_to_port_16 = config_switches(self.message_config_frame,
+        self.lin_to_port_16 = config_switches(self.message_config_frame,
                             self.settings_dict["Switches"],"LIN to Port 16",row=1,col=0)
-        lin_to_master = config_switches(self.message_config_frame,
+        self.lin_to_master = config_switches(self.message_config_frame,
                             self.settings_dict["Switches"],"LIN Master Pullup Resistor",row=2,col=0)
-        can0_term = config_switches(self.message_config_frame,
+        self.can0_term = config_switches(self.message_config_frame,
                             self.settings_dict["Switches"],"CAN0",row=3,col=0)
-        can1_term = config_switches(self.message_config_frame,
+        self.can1_term = config_switches(self.message_config_frame,
                             self.settings_dict["Switches"],"CAN1",row=5,col=0)
-        can2_term = config_switches(self.message_config_frame,
+        self.can2_term = config_switches(self.message_config_frame,
                             self.settings_dict["Switches"],"CAN2",row=4,col=0)
+        self.j1708_switch = config_radio_switches(self.message_config_frame,
+                            self.settings_dict["Switches"],"CAN1 or J1708",rowA=6,colA=0,rowB=7,colB=0)
+
+
         
     def voltage_out_settings(self):
        
@@ -329,47 +510,43 @@ class SSS2(ttk.Frame):
         self.DAC_bank.grid(row=0,column=0,sticky="NW",columnspan=1)
 
         dac_dict=self.settings_dict["DACs"]
-        Vout2A = DAC7678(self.DAC_bank, dac_dict["Vout1"], row=0, col=0)
-        Vout2B = DAC7678(self.DAC_bank, dac_dict["Vout2"], row=0, col=1)
-        Vout2C = DAC7678(self.DAC_bank, dac_dict["Vout3"], row=0, col=2)
-        Vout2D = DAC7678(self.DAC_bank, dac_dict["Vout4"], row=0, col=3)
-        Vout2E = DAC7678(self.DAC_bank, dac_dict["Vout5"], row=1, col=0)
-        Vout2F = DAC7678(self.DAC_bank, dac_dict["Vout6"], row=1, col=1)
-        Vout2G = DAC7678(self.DAC_bank, dac_dict["Vout7"], row=1, col=2)
-        Vout2H = DAC7678(self.DAC_bank, dac_dict["Vout8"], row=1, col=3)
-
-        vout2a_switch = config_radio_switches(self.DAC_bank,
+        self.dac_objects={}
+        for key,c,r in zip(sorted(dac_dict.keys()),[0,1,2,3,0,1,2,3],[0,0,0,0,1,1,1,1]):
+            self.dac_objects[key] = DAC7678(self.DAC_bank, dac_dict[key], row=r, col=c)
+        
+        self.vout2a_switch = config_radio_switches(self.DAC_bank,
                             self.settings_dict["Switches"],"Port 10 or 19",rowA=2,colA=1,rowB=3,colB=1)
-        vout2b_switch = config_radio_switches(self.DAC_bank,
+        self.vout2b_switch = config_radio_switches(self.DAC_bank,
                             self.settings_dict["Switches"],"Port 15 or 18",rowA=2,colA=0,rowB=3,colB=0)
         
         self.hvadjout_bank = tk.LabelFrame(self.voltage_out_tab, name="hvadjout_bank",
                                                   text="High Current Adjustable Regulator")
         self.hvadjout_bank.grid(row=1,column=0,sticky="N",columnspan=1)
-        hvadjout = DAC7678(self.hvadjout_bank, dac_dict["HVAdjOut"], row=0, col=0)
+        self.hvadjout = DAC7678(self.hvadjout_bank, self.settings_dict["HVAdjOut"], row=0, col=0)
         
         self.pwm_bank=tk.LabelFrame(self.voltage_out_tab, name="pwm_bank",
-                                                  text="Pulse Width Modulated Outputs")
+                                                  text="Pulse Width Modulated (PWM) Outputs")
         self.pwm_bank.grid(row=2,column=0,sticky="NW",columnspan=1)
 
-        pwm1_switch = config_switches(self.pwm_bank,
+        self.pwm1_switch = config_switches(self.pwm_bank,
                             self.settings_dict["Switches"],"PWM1 Connect",row=1,col=0)
-        pwm2_switch = config_switches(self.pwm_bank,
+        self.pwm2_switch = config_switches(self.pwm_bank,
                             self.settings_dict["Switches"],"PWM2 Connect",row=1,col=1)
-        pwm3_switch = config_radio_switches(self.pwm_bank,
+        self.pwm3_switch = config_radio_switches(self.pwm_bank,
                             self.settings_dict["Switches"],"PWM3 or 12V",rowA=1,colA=2,rowB=2,colB=2)
         
-        pwm4_switch = config_radio_switches(self.pwm_bank,
+        self.pwm4_switch = config_radio_switches(self.pwm_bank,
                             self.settings_dict["Switches"],"PWM4 or Ground",rowA=1,colA=3,rowB=2,colB=3)
         
-        pwm12_switch = config_radio_switches(self.pwm_bank,
+        self.pwm12_switch = config_radio_switches(self.pwm_bank,
                             self.settings_dict["Switches"],"PWMs or CAN2",rowA=2,colA=0,rowB=3,colB=0)
-        
+        self.pwm_objects={}
         pwm_dict=self.settings_dict["PWMs"]
-        PWM1 = pwm_out(self.pwm_bank, pwm_dict["PWM1"], row=0, col=0)
-        PWM2 = pwm_out(self.pwm_bank, pwm_dict["PWM2"], row=0, col=1)
-        PWM3 = pwm_out(self.pwm_bank, pwm_dict["PWM3"], row=0, col=2)
-        PWM4 = pwm_out(self.pwm_bank, pwm_dict["PWM4"], row=0, col=3)
+        col_index=0
+        for key in sorted(pwm_dict.keys()):
+            self.pwm_objects[key] = pwm_out(self.pwm_bank, pwm_dict[key], row=0, col=col_index)
+            col_index+=1
+        
         
     def serial_interface(self):
         self.recieved_serial_byte_count = 0
@@ -478,10 +655,11 @@ class SSS2(ttk.Frame):
                 except Exception as e:
                     print(e)
                     setup_serial_connections(self)
-        try:
-            ser.close()
-        except Exception as e:
-            print(e)
+        if ser:
+            try:
+                ser.close()
+            except Exception as e:
+                print(e)
         self.connection_status_string.set('USB to Serial Connection Unavailable. Please install drivers and plug in the SSS2.')
         self.serial_connected = False
         self.text['bg']='red'
@@ -529,10 +707,17 @@ class SSS2(ttk.Frame):
                 new_serial_line = self.rx_queue.get_nowait()
                 self.serial_rx_byte_list.append(new_serial_line)
                 gathered_bytes = len(self.serial_rx_byte_list)
-                if new_serial_line[0:3]==b'CAN 0':
+                if new_serial_line[0:5]==b'CAN 0':
                     self.received_can0_messages.append(new_serial_line)
-                elif new_serial_line[0:3]==b'CAN 1':
+                elif new_serial_line[0:5]==b'CAN 1':
                     self.received_can2_messages.append(new_serial_line)
+                elif new_serial_line[:16]==b'OK:Authenticated':
+                    self.file_authenticated = True
+                    self.file_OK_received.set(True)
+                elif new_serial_line[0:4]==b'OK:D':
+                    self.file_authenticated = False
+                    self.file_OK_received.set(True)
+              
             if self.recieved_serial_byte_count < gathered_bytes:
                 self.recieved_serial_byte_count = gathered_bytes
                 if  gathered_bytes < self.serial_window_lines:
@@ -552,33 +737,13 @@ class SSS2(ttk.Frame):
         """Adjusts the potentiometers and other analog outputs"""
 
         self.pot_bank={}
-        self.bank_button={}
         row_index=0
-        for self.bank_key in sorted(self.settings_dict["Potentiometers"]):
-            #Setup Bank with a common Switch for Terminal A
-            label=self.settings_dict["Potentiometers"][self.bank_key]["Label"]
-            self.pot_bank[self.bank_key] = tk.LabelFrame(self.settings_tab,
-                                                    name=label.lower(),
-                                                    text=label)
-            self.pot_bank[self.bank_key].grid(row=row_index,column=0,sticky=tk.W,columnspan=3)
-            if self.settings_dict["Potentiometers"][self.bank_key]["Terminal A Connection"]:
-                self.bank_button[self.bank_key] =  ttk.Checkbutton(self.pot_bank[self.bank_key],
-                                                    text="Terminal A Voltage Enabled",
-                                                    name='terminal_A_voltage_connect',
-                                                    command=self.send_bank_term_A_voltage_command)
-                self.bank_button[self.bank_key].grid(row=0,column=0,sticky=tk.W)
-                self.bank_button[self.bank_key].state(['!alternate']) #Clears Check Box
-                if self.settings_dict["Potentiometers"][self.bank_key]["Terminal A Connection"]:
-                    self.bank_button[self.bank_key].state(['selected'])
-                self.send_bank_term_A_voltage_command() #Call the command once
-
-            self.potpair={}
-            col_index=0
-            for key in sorted(self.settings_dict["Potentiometers"][self.bank_key]["Pairs"]):
-                self.potpair[key] = potentiometer_pair(self.pot_bank[self.bank_key],
-                               self.settings_dict["Potentiometers"][self.bank_key]["Pairs"],
-                               pair_id=key,col=col_index,row=1)
-                col_index += 1
+        pot_dict=self.settings_dict["Potentiometers"]
+        for bank_key in sorted(pot_dict.keys()):
+            if bank_key == "Others":
+                self.pot_bank[bank_key] = pot_bank(self.settings_tab,pot_dict,bank_key,row=row_index,col=1,colspan=1)
+            else:
+                self.pot_bank[bank_key] = pot_bank(self.settings_tab,pot_dict,bank_key,row=row_index,col=1,colspan=3)
             row_index += 1
  
         self.settings_tab.grid_columnconfigure(1,weight=2)
@@ -600,15 +765,7 @@ class SSS2(ttk.Frame):
         image_label.grid(row=2,column=2,sticky=tk.E)
 
            
-    def send_bank_term_A_voltage_command(self):
-        state=self.bank_button[self.bank_key].instate(['selected'])
-        setting = self.settings_dict["Potentiometers"][self.bank_key]["SSS2 Setting"]
-        if setting is not None:
-            if state:
-                commandString = "{:d},1".format(setting)
-            else:
-                commandString = "{:d},0".format(setting)
-            send_serial_command(commandString)
+    
 
     def send_ignition_key_command(self):
         if self.ignition_key_button.instate(['selected']):
@@ -620,12 +777,101 @@ class SSS2(ttk.Frame):
     
     def on_quit(self):
         """Exits program."""
-        self.serial.close()
+        ser.close()
         quit()
 
-#class pot_bank(SSS2):
-    
+class preprogrammed_message(SSS2):
+    def __init__(self, parent,msg_dict,msg_id, row = 0, col = 0):
+        self.root=parent
+        self.msg_dict = msg_dict
+        self.msg_id = msg_id
+        self.col=col
+        self.row=row
+        self.setup_messages()
+    def setup_messages(self):
+        label = " "
+        for dat in self.msg_dict[self.msg_id]["Data"]:
+            label += " {:02X}".format(dat)
+        label+=", Period: {}ms, PGN: {}, SA: {}, Note:{}".format(self.msg_dict[self.msg_id]["Period"],
+                                                            self.msg_dict[self.msg_id]["PGN Name"],
+                                                            self.msg_dict[self.msg_id]["Source Address"],
+                                                            self.msg_dict[self.msg_id]["Label"])
+        
+        self.box =  ttk.Checkbutton(self.root,
+                                    text=self.msg_id,
+                                    command=self.toggle_preprogrammed_can)
+        self.box.grid(row=self.row,column=self.col,sticky="NW")
+        self.box.state(['!alternate']) #Clears Check Box
+        if self.msg_dict[self.msg_id]["State"]:
+            self.box.state(['selected'])
+        self.toggle_preprogrammed_can()
 
+        datalabel = " "
+        for dat in self.msg_dict[self.msg_id]["Data"]:
+            datalabel += " {:02X}".format(dat)
+        datalabel+=" "
+        tk.Label(self.root,text=datalabel).grid(row=self.row,column=self.col+1,sticky=tk.W)
+        tk.Label(self.root,text="{}ms ".format(self.msg_dict[self.msg_id]["Period"])).grid(row=self.row,column=self.col+2,sticky=tk.W)
+        tk.Label(self.root,text="{} ".format(self.msg_dict[self.msg_id]["PGN Name"])).grid(row=self.row,column=self.col+3,sticky=tk.W)
+        tk.Label(self.root,text="{} ".format(self.msg_dict[self.msg_id]["Source Address"])).grid(row=self.row,column=self.col+4,sticky=tk.W)
+        tk.Label(self.root,text=self.msg_dict[self.msg_id]["Label"]).grid(row=self.row,column=self.col+5,sticky=tk.W)
+        
+    def toggle_preprogrammed_can(self):
+        state = self.box.instate(['selected'])
+        setting = self.msg_dict[self.msg_id]["Setting"]
+        if state:
+            commandString = "CN,{},1".format(setting)
+        else:
+            commandString = "CN,{},0".format(setting)
+        send_serial_command(commandString)
+    
+class pot_bank(SSS2):
+    def __init__(self, parent,pot_dict,key, row = 0, col = 0,colspan=3):
+        self.root=parent
+        self.pot_dict = pot_dict
+        self.bank_key = key
+        self.col=col
+        self.row=row
+        self.colspan=colspan
+        self.setup_pot_bank()
+    def setup_pot_bank(self):
+        #Setup Bank with a common Switch for Terminal A
+            print(self.bank_key)
+            label=self.pot_dict[self.bank_key]["Label"]
+            self.pot_bank = tk.LabelFrame(self.root,name=label.lower(),text=label)
+            self.pot_bank.grid(row=self.row,column=self.col,columnspan=self.colspan,sticky=tk.W)
+            if self.pot_dict[self.bank_key]["Terminal A Connection"]:
+                self.bank_button =  ttk.Checkbutton(self.pot_bank,
+                                                    text="Terminal A Voltage Enabled",
+                                                    name='terminal_A_voltage_connect',
+                                                    command=self.send_bank_term_A_voltage_command)
+                self.bank_button.grid(row=0,column=0,sticky=tk.W)
+                self.bank_button.state(['!alternate']) #Clears Check Box
+                if self.pot_dict[self.bank_key]["Terminal A Connection"]:
+                    self.bank_button.state(['selected'])
+                self.send_bank_term_A_voltage_command() #Call the command once
+
+            self.pot_pairs={}
+            col_index=0
+            for key in sorted(self.pot_dict[self.bank_key]["Pairs"].keys()):
+                print("potpair key:",end='')
+                print(key)
+                self.pot_pairs[key] = potentiometer_pair(self.pot_bank,
+                               self.pot_dict[self.bank_key]["Pairs"],
+                               pair_id=key,col=col_index,row=1)
+                col_index += 1
+            
+    def send_bank_term_A_voltage_command(self):
+        state=self.bank_button.instate(['selected'])
+        setting = self.pot_dict[self.bank_key]["SSS2 Setting"]
+        if setting is not None:
+            if state:
+                commandString = "{:d},1".format(setting)
+            else:
+                commandString = "{:d},0".format(setting)
+            send_serial_command(commandString)
+
+            
 class config_switches(SSS2):
     def __init__(self, parent,switch_dict,key, row = 0, col = 0):
         self.root=parent
@@ -649,7 +895,7 @@ class config_switches(SSS2):
             
     def connect_switches(self):
         state=self.switch_button.instate(['selected'])
-        self.switch_button_dict[self.key]["State"]=state
+        #self.switch_button_dict[self.key]["State"]=state
         SSS2_setting = self.switch_button_dict[self.key]["SSS2 setting"]
         if state:
             commandString = "{},1".format(SSS2_setting)
@@ -708,7 +954,7 @@ class config_radio_switches(SSS2):
             
     def connect_switches(self):
         state=self.switch_buttonA.instate(['selected'])
-        self.switch_button_dict[self.key]["State"]=state
+        #self.switch_button_dict[self.key]["State"]=state
         SSS2_setting = self.switch_button_dict[self.key]["SSS2 setting"]
         if state:
             commandString = "{},1".format(SSS2_setting)
@@ -738,8 +984,7 @@ class potentiometer_pair(SSS2):
                                                       name='button_12',
                                                       variable = self.terminal_A_setting)
             self.twelve_volt_switch.grid(row=0,column = 0,sticky=tk.E)
-            if self.pair_dict["Terminal A Voltage"] == "+12V":
-                self.twelve_volt_switch.state(['selected']) 
+            
             
             self.five_volt_switch = ttk.Radiobutton(self.potentiometer_pair, text="+5V", value="+5V",
                                                 command=self.send_terminal_A_voltage_command,
@@ -747,10 +992,15 @@ class potentiometer_pair(SSS2):
                                                     variable = self.terminal_A_setting)
             self.five_volt_switch.grid(row=0,column = 1,sticky=tk.W)
             if self.pair_dict["Terminal A Voltage"] == "+5V":
-                self.five_volt_switch.state(['selected']) 
-
+                self.five_volt_switch.state(['selected'])
+                self.terminal_A_setting.set("+5V")
+            else:
+                self.twelve_volt_switch.state(['selected'])
+                self.terminal_A_setting.set("+12V")
             self.send_terminal_A_voltage_command() #run once
-        
+        else:
+            self.twelve_volt_switch = None
+
         col_count = 0
         self.pots={}
         for key in sorted(self.pair_dict["Pots"].keys()):
@@ -803,7 +1053,9 @@ class potentiometer(SSS2):
                                               command = self.set_wiper_voltage)
         self.wiper_position_slider.grid(row=1,column=0,columnspan=1,rowspan=5,sticky="E")
         self.wiper_position_slider.set(self.pot_settings_dict["Wiper Position"])
-        tk.Label(self.potentiometer_frame,text="Wiper Position",name="wiper label").grid(row=2,column=1, sticky="S",columnspan=2)
+        tk.Label(self.potentiometer_frame,text="Wiper Position",name="wiper label").grid(row=2,column=1, sticky="SW",columnspan=2)
+        tk.Label(self.potentiometer_frame,text=self.pot_settings_dict["Resistance"],
+                 name="wiper resistance").grid(row=2,column=2, sticky="NE",columnspan=1)
         self.wiper_position_value = ttk.Entry(self.potentiometer_frame,width=10,name='wiper_position_value')
         self.wiper_position_value.grid(row=3,column = 1,sticky="E")
         self.wiper_position_value.bind('<Return>',self.set_wiper_slider)
@@ -968,7 +1220,7 @@ class pwm_out(SSS2):
         self.pwm_duty_cycle_slider.set(self.settings_dict["Duty Cycle"])
         self.pwm_duty_cycle_value.insert(0,self.pwm_duty_cycle_slider.get())
         self.pwm_duty_cycle_value.bind('<Return>',self.set_pwm_duty_cycle_slider)
-
+        self.set_pwm_duty_cycle_slider()
 
         self.wiper_position_button = ttk.Button(self.pwm_frame,text="Set Duty Cycle",
                                                 width=15,
@@ -994,7 +1246,7 @@ class pwm_out(SSS2):
         self.pwm_frequency_slider.set(self.settings_dict["Frequency"])
         self.pwm_frequency_value.insert(0,self.pwm_frequency_slider.get())
         self.pwm_frequency_value.bind('<Return>',self.set_pwm_frequency_slider)
-
+        self.set_pwm_frequency_slider()
 
         self.frequency_button = ttk.Button(self.pwm_frame,text="Set Frequency",
                                                 width=15,
@@ -1077,13 +1329,17 @@ def send_serial_command(commandString):
         command_bytes = bytes(commandString,'ascii') + b'\n'
         print(command_bytes)
         global ser
-        try:
-            ser.write(command_bytes)
-            return command_bytes    
-        except Exception as e:
-            print(e)
-            return False            
-            
+        if ser:
+            try:
+                ser.write(command_bytes)
+                return command_bytes    
+            except Exception as e:
+                print(e)
+                return False            
+        else:
+            return False
+
+        
 if __name__ == '__main__':
 
     root = tk.Tk()
