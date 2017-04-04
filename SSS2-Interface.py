@@ -11,6 +11,7 @@ import time
 import string
 import hashlib
 from pprint import pformat
+import re
 
 from tkinter.tix import *
 from tkinter.constants import *
@@ -31,21 +32,21 @@ class SerialThread(threading.Thread):
     def run(self):
         global ser
         try:
-            while ser.isOpen():
-                if self.tx_queue.qsize():
-                    s = self.tx_queue.get_nowait()
-                if ser.inWaiting():
-                    line = ser.readline()
-                    self.rx_queue.put(line)
-                    #b = self.serial.read()
-                    #self.rx_queue.put(b)
+            while True:
+                if ser:
+                    if self.tx_queue.qsize():
+                        s = self.tx_queue.get_nowait()
+                    if ser.inWaiting():
+                        lines = ser.readlines(ser.inWaiting())
+                        for line in lines:
+                            self.rx_queue.put(line)
+                        #b = self.serial.read()
+                        #self.rx_queue.put(b)
+                time.sleep(.001)
         except Exception as e:
             print(e)
             print("Serial Connection Broken. Exiting Thread.")
-            #setup_serial_connections(mainwindow)
-            
-            
-                
+        
 
 class setup_serial_connections(tk.Toplevel):
     def __init__(self, parent):
@@ -102,13 +103,13 @@ class setup_serial_connections(tk.Toplevel):
         comPorts = []
         for possibleCOMPort in serial.tools.list_ports.comports():
             if ('Teensy' in str(possibleCOMPort)):
-                comPort = str(possibleCOMPort).split() #Gets the first digits
-                comPorts.append(comPort[0])
+                comPort =  str(possibleCOMPort).split() #Gets the first digits
+                comPorts.append(re.sub(r'\W+', '',comPort[0]))
         comPorts.append("Not Available")
         self.port_combo_box['values'] = comPorts
         self.port_combo_box.current(0)
 
-        self.after(2000,self.find_serial_ports)
+        self.after(1000,self.find_serial_ports)
 
         
     # standard button semantics
@@ -127,7 +128,7 @@ class setup_serial_connections(tk.Toplevel):
         self.cancel()
 
     def cancel(self, event=None):
-        
+        self.result= self.port_combo_box.get()
         # put focus back to the parent window
         self.parent.focus_set()
         self.destroy()
@@ -136,32 +137,40 @@ class setup_serial_connections(tk.Toplevel):
     # command hooks
 
     def validate(self):
-        if self.port_combo_box.get() == "Not Available":
-            return False
-        else:
+        global ser
+        if ser:
             try:
-                global ser
-                ser = serial.Serial(self.port_combo_box.get(),baudrate=4000000,
-                                    parity=serial.PARITY_ODD,timeout=0,
-                                    xonxoff=False, rtscts=False, dsrdtr=False)
-                print(ser)
+                
                 ser.close()
+                print("Closed Serial")
                 return True
             except Exception as e:
                 print(e)
-                try:
-                    ser.close()
-                except Exception as e:
-                    print(e)
-                #TODO raise an error window
-                return False
+                messagebox.showerror("SSS2 Serial Connection Error",
+                   "The SSS2 serial connection that was previously defined did not close properly. The program gives the following error: {}".format(e) )
+                self.cancel()
+                
+                
+        elif self.port_combo_box.get() == "Not Available":
+            messagebox.showerror("SSS2 Serial Connection Error",
+                   "SSS2 Connection is not available. Please plug in the SSS2 and be sure the drivers are installed." )
+            self.cancel()
+            return False
+        else:
+            try:
+                ser = serial.Serial(self.port_combo_box.get(),baudrate=4000000,
+                                    parity=serial.PARITY_ODD,timeout=0,
+                                    xonxoff=False, rtscts=False, dsrdtr=False)
+                return True
+            except Exception as e:
+                print(e)
+                messagebox.showerror("SSS2 Serial Connection Error",
+                   "The new SSS2 serial connection did not respond properly. The program gives the following error: {}".format(e) )
+                self.cancel()
 
     def apply(self):
-        self.result=self.port_combo_box.get()
-        global ser
-        ser = serial.Serial(self.port_combo_box.get(),baudrate=4000000,
-                            parity=serial.PARITY_ODD,timeout=0,
-                            xonxoff=False, rtscts=False, dsrdtr=False)
+        
+        print(ser)
 
 def all_children (wid) :
     _list = wid.winfo_children()
@@ -636,32 +645,34 @@ class SSS2(ttk.Frame):
                 self.check_serial_connection()
             except Exception as e:
                 print(e)
+                messagebox.showerror("SSS2 Serial Connection Error",
+                   "The SSS2 serial connection. The program gives the following error: {}".format(e) )
+                
                 self.check_serial_connection()
         
         
     def check_serial_connection(self,event = None):
         
         global ser
-        for possibleCOMPort in serial.tools.list_ports.comports():
-            if ('Teensy' in str(possibleCOMPort)):
-                try:
-                    if ser.isOpen():
-                        self.serial_connected = True
-                        self.connection_status_string.set('SSS2 Connected on '+
-                                                          str(self.comPort))
-                        self.text['bg']='white'
-                        self.serial_rx_entry['bg']='white'
-                        return True
-                except Exception as e:
-                    print(e)
-                    setup_serial_connections(self)
         if ser:
-            try:
-                ser.close()
-            except Exception as e:
-                print(e)
+            for possibleCOMPort in serial.tools.list_ports.comports():
+                if ('Teensy' in str(possibleCOMPort)):
+                    try:
+                        if ser.isOpen():
+                            self.serial_connected = True
+                            self.connection_status_string.set('SSS2 Connected on '+self.comPort)
+                            self.text['bg']='white'
+                            self.serial_rx_entry['bg']='white'
+                            return True
+                    except Exception as e:
+                        print(e)
+                        messagebox.showerror("SSS2 Serial Connection Error",
+                           "The SSS2 serial connection had an error. The program gives the following error: {}".format(e) )
+                        ser = False
+                        setup_serial_connections(self)
         self.connection_status_string.set('USB to Serial Connection Unavailable. Please install drivers and plug in the SSS2.')
         self.serial_connected = False
+        ser = False
         self.text['bg']='red'
         self.serial_rx_entry['bg']='red'
         

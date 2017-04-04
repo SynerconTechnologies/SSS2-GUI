@@ -4,7 +4,7 @@ import json
 def get_default_settings():
 
     settings = {}
-    settings["SSS2 Product Code"]="04:E9:E5:04:E9:E5:E5:E6:E7"
+    settings["SSS2 Product Code"]="0008ffff-ffffffff-4e453567-4008002c"
     settings["Component ID"] = "SYNER*SSS2-R03*0018*UNIVERSAL"
     settings["Serial Number"]="SSS2-R03*0018"
     settings["Software ID"]="SSS2*Rev3*0.4*bb1672fcd2fb80092faaea9b7877db6d12e86da2"
