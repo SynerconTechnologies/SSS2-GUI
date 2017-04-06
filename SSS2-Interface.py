@@ -40,8 +40,7 @@ class SerialThread(threading.Thread):
                         lines = ser.readlines(ser.inWaiting())
                         for line in lines:
                             self.rx_queue.put(line)
-                        #b = self.serial.read()
-                        #self.rx_queue.put(b)
+                        
                 time.sleep(.001)
         except Exception as e:
             print(e)
@@ -208,7 +207,7 @@ class SSS2(ttk.Frame):
         self.ignition_key_button =  ttk.Checkbutton(self,name='ignition_key_switch',
                                             text="Ignition Key Switch",
                                             command=self.send_ignition_key_command)
-        self.ignition_key_button.grid(row=0,column=0,sticky=tk.W)
+        self.ignition_key_button.grid(row=0,column=1)
         self.ignition_key_button.state(['!alternate']) #Clears Check Box
         
         
@@ -219,7 +218,17 @@ class SSS2(ttk.Frame):
         self.tabs = ttk.Notebook(self, name='tabs')
         self.tabs.grid(row=1,column=0,columnspan=3,sticky=tk.W)
         
-        ttk.Label(self, text='Synercon Technologies, LLC',name='synercon_label').grid(row=2,column=0,sticky=tk.W)
+        self.id_box = tk.Frame(self)
+        self.id_box.grid(row=2,column=0,sticky=tk.W)
+        tk.Label(self.id_box,text="SSS2 Serial Number:").grid(row=0,column=0,sticky=tk.W)
+        tk.Label(self.id_box,text="SSS2 Unique ID:").grid(row=1,column=0,sticky=tk.W)
+        self.sss2_serial_number = tk.Entry(self.id_box, name="sss2_serial",width=40)
+        self.sss2_serial_number.grid(row=0,column=1,sticky=tk.W)
+        self.sss2_serial_number.insert(0,self.settings_dict["Serial Number"])
+        self.sss2_product_code = tk.Entry(self.id_box,name="sss2_uid",width=40)
+        self.sss2_product_code.grid(row=1,column=1,sticky=tk.W)
+        self.sss2_product_code.insert(0,self.settings_dict["SSS2 Product Code"])
+
         
         # create each Notebook tab in a Frame
         #Create a Settings Tab to amake the adjustments for sensors
@@ -261,11 +270,8 @@ class SSS2(ttk.Frame):
         self.menubar.add_cascade(menu=self.menu_file, label='File')
         self.menubar.add_cascade(menu=self.menu_connection, label='Connection')
 
-        self.file_status_string = tk.StringVar(name='file_status_string')
-        self.file_status_string.set("Default")
-        self.file_status_label = tk.Label(self, textvariable=self.file_status_string,name="file_status_label")
-        self.file_status_label.grid(row=2,column=1)
-
+        
+        
         self.root.config(menu=self.menubar)
 
         self.serial_connected = False
@@ -281,7 +287,9 @@ class SSS2(ttk.Frame):
         self.process_serial()
         
         self.init_tabs()
-        
+        self.display_file_shas()
+        self.update_sha()
+
     def init_tabs(self):
         for child in self.settings_tab.winfo_children():
             child.destroy()        
@@ -296,7 +304,31 @@ class SSS2(ttk.Frame):
 
         self.vehicle_networks_settings()
         
+    def display_file_shas(self):
+        self.file_box = tk.Frame(self)
+        self.file_box.grid(row=2,column=1,rowspan=3)
 
+        tk.Label(self.file_box,text="Settings File:").grid(row=0,column=0,sticky=tk.E)
+        self.file_status_string = tk.StringVar(name='file_status_string')
+        self.file_status_string.set("Default Settings Loaded")
+        self.file_status_label = tk.Label(self.file_box, textvariable=self.file_status_string,name="file_status_label")
+        self.file_status_label.grid(row=0,column=1,sticky=tk.W)
+
+        tk.Label(self.file_box,text="Current SHA-256 Digest:").grid(row=1,column=0,sticky=tk.E)
+        self.settings_sha_string = tk.StringVar(name='settings-SHA')
+        self.settings_sha_string.set(self.get_settings_hash())
+        self.settings_sha_label = tk.Label(self.file_box, textvariable=self.settings_sha_string,name="settings_sha_label")
+        self.settings_sha_label.grid(row=1,column=1,sticky=tk.W,columnspan=3)
+
+        tk.Label(self.file_box,text="Saved File SHA-256 Digest:").grid(row=2,column=0,sticky=tk.E)
+        self.file_sha_string = tk.StringVar(name='file-SHA')
+        self.file_sha_string.set(self.settings_dict["Original File SHA"])
+        self.file_sha_label = tk.Label(self.file_box, textvariable=self.file_sha_string,name="file_sha_label")
+        self.file_sha_label.grid(row=2,column=1,sticky=tk.W,columnspan=3)
+
+        
+        
+        
     def open_settings_file(self):
             
         try:
@@ -327,16 +359,13 @@ class SSS2(ttk.Frame):
 
         
 
-        digest_from_file=self.settings_dict["SHA265 Digest"]
+        digest_from_file=self.settings_dict["SHA256 Digest"]
         print("digest_from_file: ",end='')
         print(digest_from_file)
 
-         
+        self.load_settings_file()
         
-        self.settings_dict.pop("SHA265 Digest",None)
-
-        tempjsonfile = pformat(self.settings_dict)
-        newhash=hashlib.sha256(bytes(tempjsonfile,'utf-8')).hexdigest()
+        newhash=self.get_settings_hash()
         print("newhash:          ",end='')
         print(newhash)
         if newhash==digest_from_file:
@@ -350,11 +379,13 @@ class SSS2(ttk.Frame):
             time.sleep(.25)
             self.wait_variable(self.file_OK_received)       
             print("self.file_OK_received: ",end='')
-            print(self.file_OK_received)
+            print(self.file_OK_received.get())
             
             if self.file_authenticated:
                 self.init_tabs()
+                return True
             else:
+                self.settings_dict = get_default_settings()
                 messagebox.showerror("Incompatible SSS2",
                     "The unique ID for the SSS2 does not match the file. Please plug in the unit with serial number {} and try again.".format(self.settings_dict["Serial Number"]) )
             self.file_OK_received.set(False)
@@ -363,15 +394,22 @@ class SSS2(ttk.Frame):
             print("Hash values different, Reloading defaults.")
             self.settings_dict = get_default_settings()
             
+       
+            
             messagebox.showerror("File Integrity Error",
                     "The hash value from the file\n {}\n does not match the new calculated hash.\n The file may have been altered. \nReloading defaults.".format(self.filename) )
             self.file_status_string.set("Error Opening "+self.filename)
         
-            
-        return True
+        self.load_settings_file()
+        return False
         
     def load_settings_file(self):
-        self.init_tabs()
+        self.sss2_product_code.delete(0,tk.END)
+        self.sss2_product_code.insert(0,self.settings_dict["SSS2 Product Code"])
+        self.sss2_serial_number.delete(0,tk.END)
+        self.sss2_serial_number.insert(0,self.settings_dict["Serial Number"])
+        
+        
     
     def saveas_settings_file(self):
         types = [('Smart Sensor Simulator 2 Settings Files', '*.SSS2')]
@@ -386,6 +424,61 @@ class SSS2(ttk.Frame):
         self.save_settings_file()
 
     def save_settings_file(self):
+        self.update_dict()
+        self.settings_dict["SHA256 Digest"]=self.get_settings_hash()
+        self.settings_dict["Original File SHA"]=self.settings_dict["SHA256 Digest"]
+        with open(self.filename,'w') as outfile:
+            json.dump(self.settings_dict,outfile,indent=4)
+        self.file_status_string.set("Saved "+self.filename)
+        print("Saved "+self.filename)
+
+        try:
+            if ser.isOpen():
+                sss2_id = self.settings_dict["SSS2 Product Code"]
+                command_string = "OK,"+sss2_id
+                send_serial_command(command_string)
+
+                #pause = self.file_OK_received.get()
+
+                time.sleep(.25)
+                self.wait_variable(self.file_OK_received)       
+                print("self.file_OK_received: ",end='')
+                print(self.file_OK_received.get())
+                
+                if not self.file_authenticated:
+                    messagebox.showerror("Incompatible SSS2",
+                        "The unique ID entered for the SSS2 does not match the unit. While the file was saved, the settings cannot be reloaded into the program without the correct SSS2 code.".format(self.settings_dict["Serial Number"]) )
+                self.file_OK_received.set(False)
+            else:
+                messagebox.showerror("Connect to SSS2",
+                   "Please connect to the Smart Sensor Simulator 2 unit to check if the SSS2 Product codes match.  These settings have been tuned for the unit with the following serial number: {}. Press OK to continue saving.".format(self.settings_dict["Serial Number"]) )
+
+        except Exception as e:
+           print(e)
+           messagebox.showerror("SSS2 Connection Error",
+                   "Please connect to the Smart Sensor Simulator 2 unit to check if the SSS2 Product codes match.  These settings have been tuned for the unit with the following serial number: {}. Press OK to continue saving.".format(self.settings_dict["Serial Number"]) )
+
+          
+        
+        
+    def get_settings_hash(self):
+        
+        digest_from_file=self.settings_dict["Original File SHA"]
+        self.settings_dict.pop("SHA256 Digest",None)
+        self.settings_dict.pop("Original File SHA",None)
+        temp_settings_dict = pformat(self.settings_dict)
+        new_hash = hashlib.sha256(bytes(temp_settings_dict,'utf-8')).hexdigest()
+        self.settings_dict["SHA256 Digest"] = new_hash
+        self.settings_dict["Original File SHA"] = digest_from_file
+        return new_hash
+    
+    def update_sha(self):
+        self.update_dict()
+        self.file_sha_string.set(self.settings_dict["Original File SHA"])
+        self.settings_sha_string.set(self.get_settings_hash())
+        self.after(500,self.update_sha)
+
+    def update_dict(self):
         for bank_key in self.pot_bank.keys():
             group=self.settings_dict["Potentiometers"][bank_key]
             
@@ -449,22 +542,10 @@ class SSS2(ttk.Frame):
         pm=self.settings_dict["CAN"]["Preprogrammed"]
         for can_key in pm:
             pm[can_key]["State"] = self.preset_messages[can_key].box.instate(['selected'])
-        
 
-        #self.settings_dict["SSS2 Product Code"]="04:E9:E5:04:E9:E5"
-        
-        self.settings_dict.pop("SHA265 Digest",None)
-
-        tempjsonfile = pformat(self.settings_dict)
-        file_hash = hashlib.sha256(bytes(tempjsonfile,'utf-8')).hexdigest()
-        
-        self.settings_dict["SHA265 Digest"]=file_hash
-        print(self.settings_dict["SHA265 Digest"])
-        
-        with open(self.filename,'w') as outfile:
-            json.dump(self.settings_dict,outfile,indent=4)
-        self.file_status_string.set("Saved "+self.filename)
-        print("Saved "+self.filename)
+        self.settings_dict["SSS2 Product Code"] = self.sss2_product_code.get()
+        self.settings_dict["Serial Number"] = self.sss2_serial_number.get()  
+       
         
     def vehicle_networks_settings(self):
        
