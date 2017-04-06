@@ -232,6 +232,10 @@ class SSS2(ttk.Frame):
         
         # create each Notebook tab in a Frame
         #Create a Settings Tab to amake the adjustments for sensors
+        self.profile_tab = tk.Frame(self.tabs, name='settings_tab')
+        self.tabs.add(self.profile_tab, text="ECU Profile Settings") # add tab to Notebook
+
+        #Create a Potentiometers Tab to amake the adjustments for sensors
         self.settings_tab = tk.Frame(self.tabs, name='potentiometer_tab')
         self.tabs.add(self.settings_tab, text="Digital Potentiometers") # add tab to Notebook
          
@@ -303,7 +307,10 @@ class SSS2(ttk.Frame):
         self.voltage_out_settings()
 
         self.vehicle_networks_settings()
-        
+
+        self.profile_settings()
+
+         
     def display_file_shas(self):
         self.file_box = tk.Frame(self)
         self.file_box.grid(row=2,column=1,rowspan=3)
@@ -374,17 +381,15 @@ class SSS2(ttk.Frame):
             command_string = "OK,"+sss2_id
             send_serial_command(command_string)
 
-            pause = self.file_OK_received.get()
+            #pause = self.file_OK_received.get()
 
-            time.sleep(.25)
+            time.sleep(.15)
             self.wait_variable(self.file_OK_received)       
             print("self.file_OK_received: ",end='')
             print(self.file_OK_received.get())
             
-            if self.file_authenticated:
-                self.init_tabs()
-                return True
-            else:
+            if not self.file_authenticated:
+                
                 self.settings_dict = get_default_settings()
                 messagebox.showerror("Incompatible SSS2",
                     "The unique ID for the SSS2 does not match the file. Please plug in the unit with serial number {} and try again.".format(self.settings_dict["Serial Number"]) )
@@ -401,14 +406,10 @@ class SSS2(ttk.Frame):
             self.file_status_string.set("Error Opening "+self.filename)
         
         self.load_settings_file()
+        self.init_tabs()
         return False
         
-    def load_settings_file(self):
-        self.sss2_product_code.delete(0,tk.END)
-        self.sss2_product_code.insert(0,self.settings_dict["SSS2 Product Code"])
-        self.sss2_serial_number.delete(0,tk.END)
-        self.sss2_serial_number.insert(0,self.settings_dict["Serial Number"])
-        
+       
         
     
     def saveas_settings_file(self):
@@ -467,7 +468,7 @@ class SSS2(ttk.Frame):
         self.settings_dict.pop("SHA256 Digest",None)
         self.settings_dict.pop("Original File SHA",None)
         temp_settings_dict = pformat(self.settings_dict)
-        new_hash = hashlib.sha256(bytes(temp_settings_dict,'utf-8')).hexdigest()
+        new_hash = str(hashlib.sha256(bytes(temp_settings_dict,'utf-8')).hexdigest())
         self.settings_dict["SHA256 Digest"] = new_hash
         self.settings_dict["Original File SHA"] = digest_from_file
         return new_hash
@@ -478,6 +479,44 @@ class SSS2(ttk.Frame):
         self.settings_sha_string.set(self.get_settings_hash())
         self.after(500,self.update_sha)
 
+    def profile_settings(self):
+        self.profile_frame = tk.LabelFrame(self.profile_tab, name="profile tab",
+                                                  text="User and ECU Settings")
+        self.profile_frame.grid(row=0,column=0,sticky="NW",columnspan=1)
+        #User Changable values
+        tk.Label(self.profile_frame,text="ECU Year:").grid(row=0,column=0,sticky=tk.E)
+        self.ecu_year = tk.Entry(self.profile_frame,width=5)
+        self.ecu_year.grid(row=0,column=1,sticky=tk.W,padx=5,pady=8)
+
+        tk.Label(self.profile_frame,text="ECU Make:").grid(row=0,column=3,sticky=tk.E)
+        self.ecu_make = tk.Entry(self.profile_frame,width=20)
+        self.ecu_make.grid(row=0,column=4,sticky=tk.W,padx=5,pady=8)
+
+        tk.Label(self.profile_frame,text="ECU Model:").grid(row=0,column=5,sticky=tk.E)
+        self.ecu_model = tk.Entry(self.profile_frame,width=20)
+        self.ecu_model.grid(row=0,column=6,sticky=tk.W,padx=5,pady=8)
+
+        
+    
+        self.sss_software_id_text = tk.StringVar(value = self.settings_dict["Software ID"])
+        tk.Label(self.profile_frame,text="SSS2 Software ID:").grid(row=1,column=0)
+        self.sss_software_id = tk.Entry(self.profile_frame, textvariable= self.sss_software_id_text, width=78)
+        self.sss_software_id.grid(row=1,column=1,sticky=tk.W,padx=5,pady=8,columnspan=6)
+        tk.Button(self.profile_frame,text="Get ID",command=self.get_sss2_software_id).grid(row=1,column=7,sticky=tk.W)
+        
+           
+    def get_sss2_software_id(self):
+        commandString = "SW"
+        send_serial_command(commandString)
+       
+    def load_settings_file(self):
+        self.sss2_product_code.delete(0,tk.END)
+        self.sss2_product_code.insert(0,self.settings_dict["SSS2 Product Code"])
+        self.sss2_serial_number.delete(0,tk.END)
+        self.sss2_serial_number.insert(0,self.settings_dict["Serial Number"])
+        self.ecu_year.delete(0,tk.END)
+        self.ecu_year.insert(0,self.settings_dict["ECU Year"])
+     
     def update_dict(self):
         for bank_key in self.pot_bank.keys():
             group=self.settings_dict["Potentiometers"][bank_key]
@@ -545,7 +584,7 @@ class SSS2(ttk.Frame):
 
         self.settings_dict["SSS2 Product Code"] = self.sss2_product_code.get()
         self.settings_dict["Serial Number"] = self.sss2_serial_number.get()  
-       
+        self.settings_dict["ECU Year"] = self.ecu_year.get()
         
     def vehicle_networks_settings(self):
        
@@ -809,7 +848,9 @@ class SSS2(ttk.Frame):
                 elif new_serial_line[0:4]==b'OK:D':
                     self.file_authenticated = False
                     self.file_OK_received.set(True)
-              
+                elif new_serial_line[0:7]==b'INFO SW':
+                    temp_data = str(new_serial_line,'utf-8').split(':')
+                    self.sss_software_id_text.set(temp_data[1])
             if self.recieved_serial_byte_count < gathered_bytes:
                 self.recieved_serial_byte_count = gathered_bytes
                 if  gathered_bytes < self.serial_window_lines:
