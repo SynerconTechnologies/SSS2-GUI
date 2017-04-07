@@ -5,21 +5,23 @@ def get_default_settings():
 
     settings = {}
     settings["Original File SHA"]="Current Settings Not Saved."
-    settings["SSS2 Product Code"]="0008ffff-ffffffff-4e453567-4008002c"
+    settings["SSS2 Product Code"]="UNIVERSAL"
     settings["Component ID"] = "SYNER*SSS2-R03*0018*UNIVERSAL"
-    settings["Serial Number"]="SSS2-R03*0018"
+    settings["Serial Number"]="SSS2-R03-XXXX"
     settings["Software ID"]="SSS2*Rev3*0.4*bb1672fcd2fb80092faaea9b7877db6d12e86da2"
     settings["SSS2 Source Address"] = 0xFA
-    settings["ECU Year"] = 2016
+    settings["ECU Year"] = 2007
     settings["ECU Make"] = "Caterpillar"
     settings["ECU Model"] = "ADEM III"
     settings["Engine Serial Number"] = "BSX1234"
+    settings["Engine Model"] = "3126"
+    settings["Engine Configuration"] = " "
     settings["Vehicle VIN"] = "ENTER VIN HERE"
     settings["Vehicle Year"] = 2007
     settings["Vehicle Make"] = "Peterbilt"
     settings["Vehicle Model"] = "379"
     settings["ECU Component ID"] = "ADEM III"
-    settings["ECU Software Version"] = "ADEM III"
+    settings["ECU Software Version"] = ""
     settings["Notes"]="Enter Notes Here."
     settings["Programmed By"]="Synercon Technologies, LLC"
     settings["Original Creation Date"]="4/5/17"

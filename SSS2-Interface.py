@@ -218,16 +218,7 @@ class SSS2(ttk.Frame):
         self.tabs = ttk.Notebook(self, name='tabs')
         self.tabs.grid(row=1,column=0,columnspan=3,sticky=tk.W)
         
-        self.id_box = tk.Frame(self)
-        self.id_box.grid(row=2,column=0,sticky=tk.W)
-        tk.Label(self.id_box,text="SSS2 Serial Number:").grid(row=0,column=0,sticky=tk.W)
-        tk.Label(self.id_box,text="SSS2 Unique ID:").grid(row=1,column=0,sticky=tk.W)
-        self.sss2_serial_number = tk.Entry(self.id_box, name="sss2_serial",width=40)
-        self.sss2_serial_number.grid(row=0,column=1,sticky=tk.W)
-        self.sss2_serial_number.insert(0,self.settings_dict["Serial Number"])
-        self.sss2_product_code = tk.Entry(self.id_box,name="sss2_uid",width=40)
-        self.sss2_product_code.grid(row=1,column=1,sticky=tk.W)
-        self.sss2_product_code.insert(0,self.settings_dict["SSS2 Product Code"])
+        
 
         
         # create each Notebook tab in a Frame
@@ -380,19 +371,17 @@ class SSS2(ttk.Frame):
             sss2_id = self.settings_dict["SSS2 Product Code"]
             command_string = "OK,"+sss2_id
             send_serial_command(command_string)
-
-            #pause = self.file_OK_received.get()
-
-            time.sleep(.15)
             self.wait_variable(self.file_OK_received)       
             print("self.file_OK_received: ",end='')
             print(self.file_OK_received.get())
             
-            if not self.file_authenticated:
-                
+            if self.file_authenticated or sss2_id == "UNIVERSAL":
+                pass
+            else:
                 self.settings_dict = get_default_settings()
                 messagebox.showerror("Incompatible SSS2",
                     "The unique ID for the SSS2 does not match the file. Please plug in the unit with serial number {} and try again.".format(self.settings_dict["Serial Number"]) )
+                
             self.file_OK_received.set(False)
                   
         else:
@@ -438,16 +427,12 @@ class SSS2(ttk.Frame):
                 sss2_id = self.settings_dict["SSS2 Product Code"]
                 command_string = "OK,"+sss2_id
                 send_serial_command(command_string)
-
-                #pause = self.file_OK_received.get()
-
-                time.sleep(.25)
                 self.wait_variable(self.file_OK_received)       
-                print("self.file_OK_received: ",end='')
-                print(self.file_OK_received.get())
                 
-                if not self.file_authenticated:
-                    messagebox.showerror("Incompatible SSS2",
+                if self.file_authenticated or sss2_id == "UNIVERSAL": ###Take out the second clause for production
+                    pass
+                else:
+                        messagebox.showerror("Incompatible SSS2",
                         "The unique ID entered for the SSS2 does not match the unit. While the file was saved, the settings cannot be reloaded into the program without the correct SSS2 code.".format(self.settings_dict["Serial Number"]) )
                 self.file_OK_received.set(False)
             else:
@@ -480,33 +465,107 @@ class SSS2(ttk.Frame):
         self.after(500,self.update_sha)
 
     def profile_settings(self):
-        self.profile_frame = tk.LabelFrame(self.profile_tab, name="profile tab",
-                                                  text="User and ECU Settings")
-        self.profile_frame.grid(row=0,column=0,sticky="NW",columnspan=1)
+        self.ecu_frame = tk.LabelFrame(self.profile_tab, name="ecu_frame",
+                                                  text="Electronic Control Unit (ECU) Settings")
+        self.ecu_frame.grid(row=0,column=0,sticky=tk.E+tk.W,columnspan=1)
         #User Changable values
-        tk.Label(self.profile_frame,text="ECU Year:").grid(row=0,column=0,sticky=tk.E)
-        self.ecu_year = tk.Entry(self.profile_frame,width=5)
+        tk.Label(self.ecu_frame,text="ECU Year:").grid(row=0,column=0,sticky=tk.W)
+        self.ecu_year_text = tk.StringVar(value = self.settings_dict["ECU Year"])
+        self.ecu_year = tk.Entry(self.ecu_frame,textvariable= self.ecu_year_text, width=5)
         self.ecu_year.grid(row=0,column=1,sticky=tk.W,padx=5,pady=8)
 
-        tk.Label(self.profile_frame,text="ECU Make:").grid(row=0,column=3,sticky=tk.E)
-        self.ecu_make = tk.Entry(self.profile_frame,width=20)
+        tk.Label(self.ecu_frame,text="ECU Make:").grid(row=0,column=3,sticky=tk.E)
+        self.ecu_make_text = tk.StringVar(value = self.settings_dict["ECU Make"])
+        self.ecu_make = tk.Entry(self.ecu_frame,textvariable= self.ecu_make_text, width=16)
         self.ecu_make.grid(row=0,column=4,sticky=tk.W,padx=5,pady=8)
 
-        tk.Label(self.profile_frame,text="ECU Model:").grid(row=0,column=5,sticky=tk.E)
-        self.ecu_model = tk.Entry(self.profile_frame,width=20)
+        tk.Label(self.ecu_frame,text="ECU Model:").grid(row=0,column=5,sticky=tk.E)
+        self.ecu_model_text = tk.StringVar(value = self.settings_dict["ECU Model"])
+        self.ecu_model = tk.Entry(self.ecu_frame,textvariable= self.ecu_model_text, width=16)
         self.ecu_model.grid(row=0,column=6,sticky=tk.W,padx=5,pady=8)
 
+        tk.Label(self.ecu_frame,text="ECU Software Version:").grid(row=2,column=0,sticky=tk.W,columnspan=2)
+        self.sss_ecu_id_text = tk.StringVar(value = self.settings_dict["ECU Software Version"])
+        self.sss_ecu_id = tk.Entry(self.ecu_frame, textvariable= self.sss_ecu_id_text, width=64)
+        self.sss_ecu_id.grid(row=2,column=2,sticky=tk.W,padx=5,pady=8,columnspan=6)
+        tk.Button(self.ecu_frame,text="Get SW",command=self.get_ecu_software_id).grid(row=2,column=8,sticky=tk.W,padx=5)
+
+        tk.Label(self.ecu_frame,text="Engine Serial Number:").grid(row=1,column=0,sticky=tk.W,columnspan=2)
+        self.engine_serial_text = tk.StringVar(value = self.settings_dict["Engine Serial Number"])
+        self.engine_serial = tk.Entry(self.ecu_frame, textvariable= self.engine_serial_text, width=64)
+        self.engine_serial.grid(row=1,column=2,sticky=tk.W,padx=5,pady=8,columnspan=6)
         
-    
+        tk.Label(self.ecu_frame,text="Veh. Year:").grid(row=3,column=0,sticky=tk.W)
+        self.vehicle_year_text = tk.StringVar(value = self.settings_dict["Vehicle Year"])
+        self.vehicle_year = tk.Entry(self.ecu_frame,textvariable= self.vehicle_year_text, width=5)
+        self.vehicle_year.grid(row=3,column=1,sticky=tk.W,padx=5,pady=8)
+
+        tk.Label(self.ecu_frame,text="Vehicle Make:").grid(row=3,column=3,sticky=tk.E)
+        self.vehicle_make_text = tk.StringVar(value = self.settings_dict["Vehicle Make"])
+        self.vehicle_make = tk.Entry(self.ecu_frame,textvariable= self.vehicle_make_text, width=16)
+        self.vehicle_make.grid(row=3,column=4,sticky=tk.W,padx=5,pady=8)
+
+        tk.Label(self.ecu_frame,text="Vehicle Model:").grid(row=3,column=5,sticky=tk.E)
+        self.vehicle_model_text = tk.StringVar(value = self.settings_dict["Vehicle Model"])
+        self.vehicle_model = tk.Entry(self.ecu_frame,textvariable= self.vehicle_model_text, width=16)
+        self.vehicle_model.grid(row=3,column=6,sticky=tk.W,padx=5,pady=8)
+
+        tk.Label(self.ecu_frame,text="Vehicle ID (VIN):").grid(row=4,column=0,sticky=tk.W,columnspan=2)
+        self.vehicle_vin_text = tk.StringVar(value = self.settings_dict["Vehicle VIN"])
+        self.vehicle_vin = tk.Entry(self.ecu_frame, textvariable= self.engine_serial_text, width=64)
+        self.vehicle_vin.grid(row=4,column=2,sticky=tk.W,padx=5,pady=8,columnspan=6)
+
+        tk.Label(self.ecu_frame,text="ECU Component ID:").grid(row=5,column=0,sticky=tk.W,columnspan=2)
+        self.ecu_component_id_text = tk.StringVar(value = self.settings_dict["ECU Component ID"])
+        self.ecu_component_id = tk.Entry(self.ecu_frame, textvariable= self.ecu_component_id_text, width=64)
+        self.ecu_component_id.grid(row=5,column=2,sticky=tk.W,padx=5,pady=8,columnspan=6)
+        tk.Button(self.ecu_frame,text="Get ID",command=self.get_ecu_software_id).grid(row=5,column=8,sticky=tk.W,padx=5)
+
+        tk.Label(self.ecu_frame,text="ECU Configuration:").grid(row=6,column=0,sticky=tk.W,columnspan=2)
+        self.ecu_configuration_text = tk.StringVar(value = self.settings_dict["Engine Configuration"])
+        self.ecu_configuration = tk.Entry(self.ecu_frame, textvariable= self.ecu_configuration_text, width=64)
+        self.ecu_configuration.grid(row=6,column=2,sticky=tk.W,padx=5,pady=8,columnspan=6)
+        
+        
+        self.sss2_frame = tk.LabelFrame(self.profile_tab, name="sss2_frame",
+                                                  text="Smart Sensor Simulator 2 (SSS2) Settings")
+        self.sss2_frame.grid(row=1,column=0,sticky=tk.E+tk.W,columnspan=1)
+
+        tk.Label(self.sss2_frame,text="SSS2 Serial Number:").grid(row=0,column=0,sticky=tk.W)
+        self.sss2_serial_number = tk.Entry(self.sss2_frame, name="sss2_serial",width=40)
+        self.sss2_serial_number.grid(row=0,column=1,sticky=tk.W,padx=5,pady=8)
+        self.sss2_serial_number.insert(0,self.settings_dict["Serial Number"])
+
+        tk.Label(self.sss2_frame,text="SSS2 Unique ID:").grid(row=1,column=0,sticky=tk.W)
+        self.sss2_product_code_text = tk.StringVar(value = self.settings_dict["SSS2 Product Code"])
+        self.sss2_product_code = tk.Entry(self.sss2_frame,textvariable= self.sss2_product_code_text,width=58)
+        self.sss2_product_code.grid(row=1,column=1,sticky=tk.W,padx=5,pady=8)
+        tk.Button(self.sss2_frame,text="Get ID",command=self.get_sss2_unique_id).grid(row=1,column=7,sticky=tk.W)
+
+
+        tk.Label(self.sss2_frame,text="SSS2 Software ID:").grid(row=2,column=0,sticky=tk.W)
         self.sss_software_id_text = tk.StringVar(value = self.settings_dict["Software ID"])
-        tk.Label(self.profile_frame,text="SSS2 Software ID:").grid(row=1,column=0)
-        self.sss_software_id = tk.Entry(self.profile_frame, textvariable= self.sss_software_id_text, width=78)
-        self.sss_software_id.grid(row=1,column=1,sticky=tk.W,padx=5,pady=8,columnspan=6)
-        tk.Button(self.profile_frame,text="Get ID",command=self.get_sss2_software_id).grid(row=1,column=7,sticky=tk.W)
+        self.sss_software_id = tk.Entry(self.sss2_frame, textvariable= self.sss_software_id_text, width=58)
+        self.sss_software_id.grid(row=2,column=1,sticky=tk.W,padx=5,pady=8,columnspan=6)
+        tk.Button(self.sss2_frame,text="Get ID",command=self.get_sss2_software_id).grid(row=2,column=7,sticky=tk.W)
+
+    def get_ecu_software_id(self):
+        pass
+
+    def get_sss2_unique_id(self):
+        commandString = "ID"
+        send_serial_command(commandString)
         
-           
     def get_sss2_software_id(self):
         commandString = "SW"
+        send_serial_command(commandString)
+
+    def get_sss2_component_id(self):
+        commandString = "CI"
+        send_serial_command(commandString)
+
+    def set_sss2_component_id(self):
+        commandString = "CI,SYNER*SSS2-R3*{}*UNIVERSAL".format(self.sss2_serial_number.get())
         send_serial_command(commandString)
        
     def load_settings_file(self):
@@ -851,6 +910,9 @@ class SSS2(ttk.Frame):
                 elif new_serial_line[0:7]==b'INFO SW':
                     temp_data = str(new_serial_line,'utf-8').split(':')
                     self.sss_software_id_text.set(temp_data[1])
+                elif new_serial_line[0:4]==b'ID: ':
+                    temp_data = str(new_serial_line[4:],'utf-8')
+                    self.sss2_product_code_text.set(temp_data)
             if self.recieved_serial_byte_count < gathered_bytes:
                 self.recieved_serial_byte_count = gathered_bytes
                 if  gathered_bytes < self.serial_window_lines:
