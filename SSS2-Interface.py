@@ -19,33 +19,38 @@ import tkinter.scrolledtext as tkst
 
 from SSS2_defaults import *
 
-global ser
-ser = False
 
-
+            
 class SerialThread(threading.Thread):
-    def __init__(self, rx_queue, tx_queue):
+    def __init__(self, parent, rx_queue, tx_queue,serial):
+        self.root = parent
         threading.Thread.__init__(self)
         self.rx_queue = rx_queue
         self.tx_queue = tx_queue
+        self.serial=serial
         
     def run(self):
-        global ser
+        time.sleep(1)
         try:
             while True:
-                if ser:
-                    if self.tx_queue.qsize():
-                        s = self.tx_queue.get_nowait()
-                    if ser.inWaiting():
-                        lines = ser.readlines(ser.inWaiting())
-                        for line in lines:
-                            self.rx_queue.put(line)
-                        
-                time.sleep(.001)
+            
+                if self.tx_queue.qsize():
+                    s = self.tx_queue.get_nowait()
+                    self.serial.write(bytes(s,'utf-8') + b'\x0A')
+                    print('TX: ', end='')
+                    print(s)
+                if self.serial.inWaiting():
+                    lines = self.serial.readlines(self.serial.inWaiting())
+                    for line in lines:
+                        self.rx_queue.put(line)
+                        print('RX: ', end='')
+                        print(line)
+                time.sleep(.003)
         except Exception as e:
             print(e)
             print("Serial Connection Broken. Exiting Thread.")
-        
+            self.serial.close()
+            
 
 class setup_serial_connections(tk.Toplevel):
     def __init__(self, parent):
@@ -71,7 +76,7 @@ class setup_serial_connections(tk.Toplevel):
         self.geometry("+%d+%d" % (parent.winfo_rootx()+150,
                                   parent.winfo_rooty()+150))
        
-
+        self.serial=False
         self.initial_focus.focus_set()
         
         self.wait_window(self)
@@ -94,22 +99,29 @@ class setup_serial_connections(tk.Toplevel):
         self.port_combo_box = ttk.Combobox(self.serial_frame,name="serial_port", 
                                            text="SSS2 COM Port")
         self.port_combo_box.grid(row=1,column=0,columnspan=2)
-        self.find_serial_ports()
+        self.populate_combo_box()
         
        
 
     def find_serial_ports(self):
         comPorts = []
-        for possibleCOMPort in serial.tools.list_ports.comports():
-            if ('Teensy' in str(possibleCOMPort)):
-                comPort =  str(possibleCOMPort).split() #Gets the first digits
-                comPorts.append(re.sub(r'\W+', '',comPort[0]))
         comPorts.append("Not Available")
-        self.port_combo_box['values'] = comPorts
+        for possibleCOMPort in serial.tools.list_ports.comports():
+            comPortstr =  str(possibleCOMPort).split()  
+                
+            if ('Teensy' in str(possibleCOMPort)):
+                comPort = re.sub(r'\W+', '',comPortstr[0])+ " (SSS2)"
+            else:
+                comPort =  re.sub(r'\W+', '',comPortstr[0])
+            comPorts.append(comPort)
+        return comPorts
+    
+    def populate_combo_box(self):
+        comPorts = self.find_serial_ports()
+        self.port_combo_box['values'] = comPorts[::-1]
         self.port_combo_box.current(0)
 
-        self.after(1000,self.find_serial_ports)
-
+        self.after(4000,self.populate_combo_box)
         
     # standard button semantics
 
@@ -125,10 +137,11 @@ class setup_serial_connections(tk.Toplevel):
         self.apply() #usually this is in the OK function
 
         self.cancel()
-
+        
     def cancel(self, event=None):
-        self.result= self.port_combo_box.get()
+        
         # put focus back to the parent window
+        
         self.parent.focus_set()
         self.destroy()
 
@@ -136,40 +149,29 @@ class setup_serial_connections(tk.Toplevel):
     # command hooks
 
     def validate(self):
-        global ser
-        if ser:
-            try:
-                
-                ser.close()
-                print("Closed Serial")
-                return True
-            except Exception as e:
-                print(e)
-                messagebox.showerror("SSS2 Serial Connection Error",
-                   "The SSS2 serial connection that was previously defined did not close properly. The program gives the following error: {}".format(e) )
-                self.cancel()
-                
-                
-        elif self.port_combo_box.get() == "Not Available":
+        if self.port_combo_box.get() == "Not Available":
             messagebox.showerror("SSS2 Serial Connection Error",
                    "SSS2 Connection is not available. Please plug in the SSS2 and be sure the drivers are installed." )
-            self.cancel()
-            return False
+            self.result= None
+            
         else:
             try:
-                ser = serial.Serial(self.port_combo_box.get(),baudrate=4000000,
-                                    parity=serial.PARITY_ODD,timeout=0,
+                comport=(self.port_combo_box.get().split(" "))[0]
+                ser = serial.Serial(comport,baudrate=4000000,timeout=0,
+                                    parity=serial.PARITY_ODD,write_timeout=0,
                                     xonxoff=False, rtscts=False, dsrdtr=False)
+                self.result = ser
                 return True
             except Exception as e:
                 print(e)
                 messagebox.showerror("SSS2 Serial Connection Error",
                    "The new SSS2 serial connection did not respond properly. The program gives the following error: {}".format(e) )
-                self.cancel()
-
+                self.result= False
+        return False
     def apply(self):
         
-        print(ser)
+        self.parent.focus_set()
+        self.destroy()
 
 def all_children (wid) :
     _list = wid.winfo_children()
@@ -199,9 +201,9 @@ class SSS2(ttk.Frame):
     def init_gui(self):
         """Builds GUI."""
         
-
         self.tx_queue = queue.Queue()
         self.rx_queue = queue.Queue()
+       
 
         # Button to do something on the right
         self.ignition_key_button =  ttk.Checkbutton(self,name='ignition_key_switch',
@@ -223,7 +225,7 @@ class SSS2(ttk.Frame):
         
         # create each Notebook tab in a Frame
         #Create a Settings Tab to amake the adjustments for sensors
-        self.profile_tab = tk.Frame(self.tabs, name='settings_tab')
+        self.profile_tab = tk.Frame(self.tabs, name='profile_tab')
         self.tabs.add(self.profile_tab, text="ECU Profile Settings") # add tab to Notebook
 
         #Create a Potentiometers Tab to amake the adjustments for sensors
@@ -252,20 +254,27 @@ class SSS2(ttk.Frame):
         self.menu_file = tk.Menu(self.menubar)
         self.menu_connection = tk.Menu(self.menubar)
 
-        self.menu_file.add_command(label='Open...', command=self.open_settings_file)
-        self.menu_file.add_command(label='Save', command=self.save_settings_file)
-        self.menu_file.add_command(label='Save As...', command=self.saveas_settings_file)
+        self.menu_file.add_command(label='Open...', command=self.open_settings_file, accelerator="Ctrl+O")
+        self.menu_file.add_command(label='Save', command=self.save_settings_file, accelerator="Ctrl+S")
+        self.menu_file.add_command(label='Save As...', command=self.saveas_settings_file, accelerator="Ctrl+A")
+        self.menu_file.add_command(label='Save Serial Log', command=self.save_log_file, accelerator="Ctrl+L")
         self.menu_file.add_separator()
-        self.menu_file.add_command(label='Refresh', command=self.init_tabs)
+        self.menu_file.add_command(label='Refresh', command=self.init_tabs, accelerator="Ctrl+R")
         self.menu_file.add_separator()
-        self.menu_file.add_command(label='Exit', command=self.root.quit)
+        self.menu_file.add_command(label='Exit', command=self.root.quit, accelerator="Ctrl+Q")
         self.menu_connection.add_command(label='Select COM Port',
                                          command=self.connect_to_serial)
 
         self.menubar.add_cascade(menu=self.menu_file, label='File')
         self.menubar.add_cascade(menu=self.menu_connection, label='Connection')
 
-        
+        self.bind_all("<Control-o>",self.open_settings_file)
+        self.bind_all("<Control-s>",self.save_settings_file)
+        self.bind_all("<Control-a>",self.saveas_settings_file)
+        self.bind_all("<Control-r>",self.init_tabs)
+        self.bind_all("<Control-q>",self.on_quit)
+        self.bind_all("<Control-k>",self.send_ignition_key_command)
+        self.bind_all("<Control-l>",self.save_log_file)
         
         self.root.config(menu=self.menubar)
 
@@ -277,22 +286,21 @@ class SSS2(ttk.Frame):
         self.received_j1708_messages=[]
 
         self.serial_interface()
-        thread = SerialThread(self.rx_queue,self.tx_queue)
-        thread.start()
+        self.connect_to_serial()
         self.process_serial()
         
-        self.init_tabs()
-        self.display_file_shas()
-        self.update_sha()
-
-    def init_tabs(self):
+    def init_tabs(self,event=None):
         for child in self.settings_tab.winfo_children():
             child.destroy()        
         for child in self.voltage_out_tab.winfo_children():
             child.destroy()
         for child in self.truck_networks_tab.winfo_children():
             child.destroy()
-            
+
+        self.send_stream_A21()
+        self.send_stream_can0()
+        self.send_stream_can1()
+
         self.potentiometer_settings() #put this after the serial connections
 
         self.voltage_out_settings()
@@ -301,6 +309,16 @@ class SSS2(ttk.Frame):
 
         self.profile_settings()
 
+        self.display_file_shas()
+
+        self.update_sha()
+
+        self.tabs.select(self.connections)
+        self.tabs.select(self.truck_networks_tab)
+        self.tabs.select(self.voltage_out_tab)
+        self.tabs.select(self.settings_tab)
+        self.tabs.select(self.profile_tab)
+        
          
     def display_file_shas(self):
         self.file_box = tk.Frame(self)
@@ -327,18 +345,7 @@ class SSS2(ttk.Frame):
         
         
         
-    def open_settings_file(self):
-            
-        try:
-            if not ser.isOpen():
-                messagebox.showerror("Connect SSS2",
-                   "Please connect to the Smart Sensor Simulator 2 unit with serial number {} to open a file. Be sure the SSS2 product code under the\n USB/Serial Interface tab is correct. The current code that is entered is {}.".format(self.settings_dict["Serial Number"],self.settings_dict["SSS2 Product Code"]) )
-                return False
-        except Exception as e:
-            print(e)
-            messagebox.showerror("Connect SSS2",
-                   "Please connect to the Smart Sensor Simulator 2 unit with serial number {} to open a file. Be sure the SSS2 product code under the\n USB/Serial Interface tab is correct. The current code that is entered is {}.".format(self.settings_dict["Serial Number"],self.settings_dict["SSS2 Product Code"]) )
-            return False
+    def open_settings_file(self,event=None):
           
         types = [('Smart Sensor Simulator 2 Settings Files', '*.SSS2'),('All Files', '*')]
         idir = os.path.expanduser('~')
@@ -362,91 +369,114 @@ class SSS2(ttk.Frame):
         print(digest_from_file)
 
         self.load_settings_file()
+        ok_to_open = False
         
         newhash=self.get_settings_hash()
         print("newhash:          ",end='')
         print(newhash)
         if newhash==digest_from_file:
-            print("Good to go!")
+            print("Hash digests match.")
             sss2_id = self.settings_dict["SSS2 Product Code"]
-            command_string = "OK,"+sss2_id
-            send_serial_command(command_string)
-            self.wait_variable(self.file_OK_received)       
-            print("self.file_OK_received: ",end='')
-            print(self.file_OK_received.get())
-            
-            if self.file_authenticated or sss2_id == "UNIVERSAL":
-                pass
-            else:
-                self.settings_dict = get_default_settings()
-                messagebox.showerror("Incompatible SSS2",
-                    "The unique ID for the SSS2 does not match the file. Please plug in the unit with serial number {} and try again.".format(self.settings_dict["Serial Number"]) )
-                
-            self.file_OK_received.set(False)
+            if not sss2_id == "UNIVERSAL":
+                try:
+                    if self.serial.isOpen():
+                        
+                        command_string = "OK,"+sss2_id
+                        self.tx_queue.put_nowait(command_string)
+                        self.wait_variable(self.file_OK_received)       
+                        print("self.file_OK_received: ",end='')
+                        self.file_OK_received.set(False)
+                        if not self.file_authenticated:
+                            self.settings_dict = get_default_settings()
+                            messagebox.showwarning("Incompatible SSS2",
+                                "The Unique ID for the SSS2 does not match the file. Files are save for specific SSS2 units only and cannot be transfered from one to another. Please enter or get the correct Unique ID")
+                            self.tabs.select(self.profile_tab)
+                            self.sss2_product_code.focus()
+                            self.sss2_product_code['bg']='yellow'
+                        else:
+                            ok_to_open = True    
+                    else:
+                        messagebox.showerror("SSS2 Needed to Open File",
+                           "Please connect the Smart Sensor Simulator 2 with USB to open a file. User saved files are spcific to each SSS2 unit.")
+                        self.connect_to_serial()
+
+
+                except Exception as e:
+                    print(e)
+                    messagebox.showerror("Connect SSS2",
+                           "Please connect to the Smart Sensor Simulator 2 unit with serial number {} to open a file. Be sure the SSS2 product code under the\n USB/Serial Interface tab is correct. The current code that is entered is {}.".format(self.settings_dict["Serial Number"],self.settings_dict["SSS2 Product Code"]) )
+                    self.connect_to_serial()
                   
         else:
             print("Hash values different, Reloading defaults.")
             self.settings_dict = get_default_settings()
-            
-       
-            
             messagebox.showerror("File Integrity Error",
                     "The hash value from the file\n {}\n does not match the new calculated hash.\n The file may have been altered. \nReloading defaults.".format(self.filename) )
             self.file_status_string.set("Error Opening "+self.filename)
-        
-        self.load_settings_file()
+        if ok_to_open:
+            self.load_settings_file()
+        else:
+            self.settings_dict = get_default_settings()    
         self.init_tabs()
-        return False
         
-       
         
     
-    def saveas_settings_file(self):
+    def saveas_settings_file(self,event=None):
         types = [('Smart Sensor Simulator 2 Settings Files', '*.SSS2')]
         idir = os.path.expanduser('~')
         ifile = self.filename
         title='SSS2 Settings File'
         self.filename = filedialog.asksaveasfilename( filetypes=types,
-                                           initialdir=idir,
+                                           initialdir=idir+"Documents",
                                            initialfile=ifile,
                                            title=title,
                                            defaultextension=".SSS2")
         self.save_settings_file()
 
-    def save_settings_file(self):
-        self.update_dict()
-        self.settings_dict["SHA256 Digest"]=self.get_settings_hash()
-        self.settings_dict["Original File SHA"]=self.settings_dict["SHA256 Digest"]
-        with open(self.filename,'w') as outfile:
-            json.dump(self.settings_dict,outfile,indent=4)
-        self.file_status_string.set("Saved "+self.filename)
-        print("Saved "+self.filename)
+    def save_settings_file(self,event=None):
+        ok_to_save = False
+        sss2_id = self.sss2_product_code_text.get()
+        ###Take out this Conditional for production
+        if not sss2_id == "UNIVERSAL":
+            #print(self.serial)
+            if self.serial:
+                if self.serial is not None:
+                    command_string = "OK,"+sss2_id
+                    self.tx_queue.put_nowait(command_string)
+                    self.wait_variable(self.file_OK_received)       
+                    self.file_OK_received.set(False)
+                    if self.file_authenticated: 
+                        ok_to_save = True 
+        else:
+            ok_to_save = True
 
-        try:
-            if ser.isOpen():
-                sss2_id = self.settings_dict["SSS2 Product Code"]
-                command_string = "OK,"+sss2_id
-                send_serial_command(command_string)
-                self.wait_variable(self.file_OK_received)       
-                
-                if self.file_authenticated or sss2_id == "UNIVERSAL": ###Take out the second clause for production
-                    pass
-                else:
-                        messagebox.showerror("Incompatible SSS2",
-                        "The unique ID entered for the SSS2 does not match the unit. While the file was saved, the settings cannot be reloaded into the program without the correct SSS2 code.".format(self.settings_dict["Serial Number"]) )
-                self.file_OK_received.set(False)
-            else:
-                messagebox.showerror("Connect to SSS2",
-                   "Please connect to the Smart Sensor Simulator 2 unit to check if the SSS2 Product codes match.  These settings have been tuned for the unit with the following serial number: {}. Press OK to continue saving.".format(self.settings_dict["Serial Number"]) )
+        if ok_to_save:
+            self.update_dict()
+            self.settings_dict["SHA256 Digest"]=self.get_settings_hash()
+            
 
-        except Exception as e:
-           print(e)
-           messagebox.showerror("SSS2 Connection Error",
-                   "Please connect to the Smart Sensor Simulator 2 unit to check if the SSS2 Product codes match.  These settings have been tuned for the unit with the following serial number: {}. Press OK to continue saving.".format(self.settings_dict["Serial Number"]) )
-
-          
+            ###Take out this Conditional for production
+            if sss2_id == "UNIVERSAL":
+                self.settings_dict["Original File SHA"]=self.settings_dict["SHA256 Digest"]
+            
+            with open(self.filename,'w') as outfile:
+                json.dump(self.settings_dict,outfile,indent=4)
+            self.file_status_string.set("Saved "+self.filename)
+            print("Saved "+self.filename) 
+        else:
+            self.file_status_string.set("File not saved.")
+            print("File not saved.") 
+            messagebox.showerror("Incompatible SSS2 for Saving",
+                            "The unique ID entered for the SSS2 does not match the unit. Please press the Get ID button for the SSS2 Unique ID to populate the form.")
+            self.tabs.select(self.profile_tab)
+            self.sss2_product_code.focus()
+            self.sss2_product_code['bg']='yellow'
         
-        
+    def save_log_file(self,event=None):
+        with open(self.filename+".log",'w') as log_file:
+            for byte_entry in self.serial_rx_byte_list:
+                log_file.write(byte_entry.decode('ascii',"ignore"))
+                               
     def get_settings_hash(self):
         
         digest_from_file=self.settings_dict["Original File SHA"]
@@ -554,19 +584,20 @@ class SSS2(ttk.Frame):
 
     def get_sss2_unique_id(self):
         commandString = "ID"
-        send_serial_command(commandString)
+        
+        self.tx_queue.put_nowait(commandString)
         
     def get_sss2_software_id(self):
         commandString = "SW"
-        send_serial_command(commandString)
+        self.tx_queue.put_nowait(commandString)
 
     def get_sss2_component_id(self):
         commandString = "CI"
-        send_serial_command(commandString)
+        self.tx_queue.put_nowait(commandString)
 
     def set_sss2_component_id(self):
         commandString = "CI,SYNER*SSS2-R3*{}*UNIVERSAL".format(self.sss2_serial_number.get())
-        send_serial_command(commandString)
+        self.tx_queue.put_nowait(commandString)
        
     def load_settings_file(self):
         self.sss2_product_code.delete(0,tk.END)
@@ -663,7 +694,11 @@ class SSS2(ttk.Frame):
         col_index=0
         for key in sorted(preset_mesg_dict.keys()):
             self.preset_messages[key] = preprogrammed_message(self.preset_message_frame,
-                            preset_mesg_dict,key,row=row_index,col=col_index)
+                                                              self.tx_queue,
+                                                              preset_mesg_dict,
+                                                              key,
+                                                              row=row_index,
+                                                              col=col_index)
             
             row_index+=1
             if row_index==36:
@@ -674,19 +709,19 @@ class SSS2(ttk.Frame):
                                                   text="Network Configurations")
         self.message_config_frame.grid(row=0,column=1,sticky="NW",columnspan=1)
 
-        self.lin_to_shield_switch = config_switches(self.message_config_frame,
+        self.lin_to_shield_switch = config_switches(self.message_config_frame,self.tx_queue,
                             self.settings_dict["Switches"],"LIN to SHLD",row=0,col=0)
-        self.lin_to_port_16 = config_switches(self.message_config_frame,
+        self.lin_to_port_16 = config_switches(self.message_config_frame,self.tx_queue,
                             self.settings_dict["Switches"],"LIN to Port 16",row=1,col=0)
-        self.lin_to_master = config_switches(self.message_config_frame,
+        self.lin_to_master = config_switches(self.message_config_frame,self.tx_queue,
                             self.settings_dict["Switches"],"LIN Master Pullup Resistor",row=2,col=0)
-        self.can0_term = config_switches(self.message_config_frame,
+        self.can0_term = config_switches(self.message_config_frame,self.tx_queue,
                             self.settings_dict["Switches"],"CAN0",row=3,col=0)
-        self.can1_term = config_switches(self.message_config_frame,
+        self.can1_term = config_switches(self.message_config_frame,self.tx_queue,
                             self.settings_dict["Switches"],"CAN1",row=5,col=0)
-        self.can2_term = config_switches(self.message_config_frame,
+        self.can2_term = config_switches(self.message_config_frame,self.tx_queue,
                             self.settings_dict["Switches"],"CAN2",row=4,col=0)
-        self.j1708_switch = config_radio_switches(self.message_config_frame,
+        self.j1708_switch = config_radio_switches(self.message_config_frame,self.tx_queue,
                             self.settings_dict["Switches"],"CAN1 or J1708",rowA=6,colA=0,rowB=7,colB=0)
 
 
@@ -700,39 +735,39 @@ class SSS2(ttk.Frame):
         dac_dict=self.settings_dict["DACs"]
         self.dac_objects={}
         for key,c,r in zip(sorted(dac_dict.keys()),[0,1,2,3,0,1,2,3],[0,0,0,0,1,1,1,1]):
-            self.dac_objects[key] = DAC7678(self.DAC_bank, dac_dict[key], row=r, col=c)
+            self.dac_objects[key] = DAC7678(self.DAC_bank,self.tx_queue, dac_dict[key], row=r, col=c)
         
-        self.vout2a_switch = config_radio_switches(self.DAC_bank,
+        self.vout2a_switch = config_radio_switches(self.DAC_bank,self.tx_queue,
                             self.settings_dict["Switches"],"Port 10 or 19",rowA=2,colA=1,rowB=3,colB=1)
-        self.vout2b_switch = config_radio_switches(self.DAC_bank,
+        self.vout2b_switch = config_radio_switches(self.DAC_bank,self.tx_queue,
                             self.settings_dict["Switches"],"Port 15 or 18",rowA=2,colA=0,rowB=3,colB=0)
         
         self.hvadjout_bank = tk.LabelFrame(self.voltage_out_tab, name="hvadjout_bank",
                                                   text="High Current Adjustable Regulator")
         self.hvadjout_bank.grid(row=1,column=0,sticky="N",columnspan=1)
-        self.hvadjout = DAC7678(self.hvadjout_bank, self.settings_dict["HVAdjOut"], row=0, col=0)
+        self.hvadjout = DAC7678(self.hvadjout_bank,self.tx_queue, self.settings_dict["HVAdjOut"], row=0, col=0)
         
         self.pwm_bank=tk.LabelFrame(self.voltage_out_tab, name="pwm_bank",
                                                   text="Pulse Width Modulated (PWM) Outputs")
         self.pwm_bank.grid(row=2,column=0,sticky="NW",columnspan=1)
 
-        self.pwm1_switch = config_switches(self.pwm_bank,
+        self.pwm1_switch = config_switches(self.pwm_bank,self.tx_queue,
                             self.settings_dict["Switches"],"PWM1 Connect",row=1,col=0)
-        self.pwm2_switch = config_switches(self.pwm_bank,
+        self.pwm2_switch = config_switches(self.pwm_bank,self.tx_queue,
                             self.settings_dict["Switches"],"PWM2 Connect",row=1,col=1)
-        self.pwm3_switch = config_radio_switches(self.pwm_bank,
+        self.pwm3_switch = config_radio_switches(self.pwm_bank,self.tx_queue,
                             self.settings_dict["Switches"],"PWM3 or 12V",rowA=1,colA=2,rowB=2,colB=2)
         
-        self.pwm4_switch = config_radio_switches(self.pwm_bank,
+        self.pwm4_switch = config_radio_switches(self.pwm_bank,self.tx_queue,
                             self.settings_dict["Switches"],"PWM4 or Ground",rowA=1,colA=3,rowB=2,colB=3)
         
-        self.pwm12_switch = config_radio_switches(self.pwm_bank,
+        self.pwm12_switch = config_radio_switches(self.pwm_bank,self.tx_queue,
                             self.settings_dict["Switches"],"PWMs or CAN2",rowA=2,colA=0,rowB=3,colB=0)
         self.pwm_objects={}
         pwm_dict=self.settings_dict["PWMs"]
         col_index=0
         for key in sorted(pwm_dict.keys()):
-            self.pwm_objects[key] = pwm_out(self.pwm_bank, pwm_dict[key], row=0, col=col_index)
+            self.pwm_objects[key] = pwm_out(self.pwm_bank,self.tx_queue, pwm_dict[key], row=0, col=col_index)
             col_index+=1
         
         
@@ -753,7 +788,6 @@ class SSS2(ttk.Frame):
         self.serial_RX_count = ttk.Entry(self.serial_frame,width=12)
         self.serial_RX_count.grid(row=0,column = 4,sticky="NE")
 
-        self.connect_to_serial()
         
         tk.Label(self.serial_frame,text="Command:").grid(row=9,column=1, sticky="E")
         
@@ -784,7 +818,6 @@ class SSS2(ttk.Frame):
                                     command=self.send_stream_can0)
         self.stream_can0_box.grid(row=5,column=0,sticky="SW")
         self.stream_can0_box.state(['!alternate']) #Clears Check Box
-        self.send_stream_can0()
         
         self.stream_can1_box =  ttk.Checkbutton(self.serial_frame,
                                     name="stream CAN2 (E-CAN)",
@@ -792,8 +825,7 @@ class SSS2(ttk.Frame):
                                     command=self.send_stream_can1)
         self.stream_can1_box.grid(row=6,column=0,sticky="NW")
         self.stream_can1_box.state(['!alternate']) #Clears Check Box
-        self.send_stream_can1()
-
+        
         
         self.stream_A21_box =  ttk.Checkbutton(self.serial_frame,
                                     name='stream_A21',
@@ -801,90 +833,111 @@ class SSS2(ttk.Frame):
                                     command=self.send_stream_A21)
         self.stream_A21_box.grid(row=5,column=0,sticky="NW")
         self.stream_A21_box.state(['!alternate']) #Clears Check Box
-        self.send_stream_A21()
 
-        self.serial_window_lines = 500
+        self.serial_window_lines = 300
+
+        
+
+
         
     def send_stream_A21(self):
         if self.stream_A21_box.instate(['selected']):
             commandString = "SV,1"
         else:
             commandString = "SV,0"
-        send_serial_command(commandString)    
+        self.tx_queue.put_nowait(commandString)    
         
     
 
     def connect_to_serial(self):
         connection_dialog = setup_serial_connections(self)
-        self.comPort = connection_dialog.result
-        if self.check_serial_connection():
-            print("SSS2 already connected")
-        else:
-            try:
-                self.check_serial_connection()
-            except Exception as e:
-                print(e)
-                messagebox.showerror("SSS2 Serial Connection Error",
-                   "The SSS2 serial connection. The program gives the following error: {}".format(e) )
-                
-                self.check_serial_connection()
-        
+        self.serial = connection_dialog.result
+        print(self.serial)
+        if self.serial: 
+            if self.serial is not None:
+                if self.serial.isOpen():
+                    print("SSS2 connected")
+                    
+                    self.thread = SerialThread(self,self.rx_queue,self.tx_queue,self.serial)
+                    self.thread.start()
+                    print("Started Serial Thread.")
+                    self.init_tabs()
+                    return
+           
+        messagebox.showerror("SSS2 Serial Connection Error",
+                              "The SSS2 serial connection is not present. Please connect the SSS2." )                
+        self.init_tabs()    
         
     def check_serial_connection(self,event = None):
-        
-        global ser
-        if ser:
-            for possibleCOMPort in serial.tools.list_ports.comports():
-                if ('Teensy' in str(possibleCOMPort)):
-                    try:
-                        if ser.isOpen():
-                            self.serial_connected = True
-                            self.connection_status_string.set('SSS2 Connected on '+self.comPort)
-                            self.text['bg']='white'
-                            self.serial_rx_entry['bg']='white'
-                            return True
-                    except Exception as e:
-                        print(e)
-                        messagebox.showerror("SSS2 Serial Connection Error",
-                           "The SSS2 serial connection had an error. The program gives the following error: {}".format(e) )
-                        ser = False
-                        setup_serial_connections(self)
+        if self.serial:
+            available_comports = setup_serial_connections.find_serial_ports(self)
+            for port in available_comports:
+                if self.serial.port in port.split():
+                    self.serial_connected = True
+                    self.connection_status_string.set('SSS2 Connected on '+self.serial.port)
+                    self.text['bg']='white'
+                    self.serial_rx_entry['bg']='white'
+                    return True
+          
         self.connection_status_string.set('USB to Serial Connection Unavailable. Please install drivers and plug in the SSS2.')
-        self.serial_connected = False
-        ser = False
+        #self.serial_connected = False
+        #self.serial = False
+        
         self.text['bg']='red'
         self.serial_rx_entry['bg']='red'
         
-        return False    
         
+        if self.serial: 
+            if self.serial is not None:
+                self.connect_to_serial()
+            else:
+                self.serial.close()
+                
+                
+        return False
+    
+        self.after(2000,self.check_serial_connection())
         
     def send_arbitrary_serial_message(self,event = None):
         commandString = self.serial_TX_message.get()
-        send_serial_command(commandString)
+        self.tx_queue.put_nowait(commandString)
         self.serial_TX_message.delete(0,tk.END)
         
+##    def send_serial_command(self,commandString):
+##        command_bytes = bytes(commandString,'ascii') + b'\n'
+##        print(command_bytes)
+##        if self.serial:
+##            try:
+##                self.serial.write(command_bytes)
+##                return command_bytes    
+##            except Exception as e:
+##                print(e)
+##                return False            
+##        else:
+##            return False
+
         
     def send_stream_can0(self):
         if self.stream_can0_box.instate(['selected']):
             commandString = "C0,1"
         else:
             commandString = "C0,0"
-        send_serial_command(commandString)
+        self.tx_queue.put_nowait(commandString)
 
     def send_stream_can1(self):
         if self.stream_can1_box.instate(['selected']):
             commandString = "C1,1"
         else:
             commandString = "C1,0"
-        send_serial_command(commandString)
+        self.tx_queue.put_nowait(commandString)
             
     def send_toggle_CAN(self):
         commandString = "DJ"
-        send_serial_command(commandString)
+        self.tx_queue.put_nowait(commandString)
 
     def send_list_settings(self):
         commandString = "LS"
-        send_serial_command(commandString)
+        self.tx_queue.put_nowait(commandString)
         
     def process_serial(self):
         gathered_bytes = len(self.serial_rx_byte_list)
@@ -895,6 +948,7 @@ class SSS2(ttk.Frame):
             
             while self.rx_queue.qsize():
                 new_serial_line = self.rx_queue.get_nowait()
+                #print(new_serial_line)
                 self.serial_rx_byte_list.append(new_serial_line)
                 gathered_bytes = len(self.serial_rx_byte_list)
                 if new_serial_line[0:5]==b'CAN 0':
@@ -913,6 +967,7 @@ class SSS2(ttk.Frame):
                 elif new_serial_line[0:4]==b'ID: ':
                     temp_data = str(new_serial_line[4:],'utf-8')
                     self.sss2_product_code_text.set(temp_data)
+                    self.sss2_product_code['bg']='white'
             if self.recieved_serial_byte_count < gathered_bytes:
                 self.recieved_serial_byte_count = gathered_bytes
                 if  gathered_bytes < self.serial_window_lines:
@@ -936,9 +991,9 @@ class SSS2(ttk.Frame):
         pot_dict=self.settings_dict["Potentiometers"]
         for bank_key in sorted(pot_dict.keys()):
             if bank_key == "Others":
-                self.pot_bank[bank_key] = pot_bank(self.settings_tab,pot_dict,bank_key,row=row_index,col=1,colspan=1)
+                self.pot_bank[bank_key] = pot_bank(self.settings_tab,self.tx_queue,pot_dict,bank_key,row=row_index,col=1,colspan=1)
             else:
-                self.pot_bank[bank_key] = pot_bank(self.settings_tab,pot_dict,bank_key,row=row_index,col=1,colspan=3)
+                self.pot_bank[bank_key] = pot_bank(self.settings_tab,self.tx_queue,pot_dict,bank_key,row=row_index,col=1,colspan=3)
             row_index += 1
  
         self.settings_tab.grid_columnconfigure(1,weight=2)
@@ -946,9 +1001,9 @@ class SSS2(ttk.Frame):
         self.switch_frame.grid(row=2,rowspan=1,column=1, columnspan=1,sticky="NE")
 
         
-        self.twelve2_switch = config_switches(self.switch_frame,
+        self.twelve2_switch = config_switches(self.switch_frame,self.tx_queue,
                             self.settings_dict["Switches"],"12V Out 2",row=0,col=0)
-        self.ground2_switch = config_switches(self.switch_frame,
+        self.ground2_switch = config_switches(self.switch_frame,self.tx_queue,
                             self.settings_dict["Switches"],"Ground Out 2",row=1,col=0)
         
         
@@ -962,22 +1017,23 @@ class SSS2(ttk.Frame):
            
     
 
-    def send_ignition_key_command(self):
+    def send_ignition_key_command(self,event=None):
         if self.ignition_key_button.instate(['selected']):
             commandString = "50,1"
         else:
             commandString = "50,0"
-        send_serial_command(commandString)
+        self.tx_queue.put_nowait(commandString)
         
     
-    def on_quit(self):
+    def on_quit(self,event=None):
         """Exits program."""
-        ser.close()
+        self.serialclose()
         quit()
 
 class preprogrammed_message(SSS2):
-    def __init__(self, parent,msg_dict,msg_id, row = 0, col = 0):
+    def __init__(self, parent,tx_queue,msg_dict,msg_id, row = 0, col = 0):
         self.root=parent
+        self.tx_queue = tx_queue
         self.msg_dict = msg_dict
         self.msg_id = msg_id
         self.col=col
@@ -1018,11 +1074,12 @@ class preprogrammed_message(SSS2):
             commandString = "CN,{},1".format(setting)
         else:
             commandString = "CN,{},0".format(setting)
-        send_serial_command(commandString)
+        self.tx_queue.put_nowait(commandString)
     
 class pot_bank(SSS2):
-    def __init__(self, parent,pot_dict,key, row = 0, col = 0,colspan=3):
+    def __init__(self, parent,tx_queue,pot_dict,key, row = 0, col = 0,colspan=3):
         self.root=parent
+        self.tx_queue = tx_queue
         self.pot_dict = pot_dict
         self.bank_key = key
         self.col=col
@@ -1031,31 +1088,28 @@ class pot_bank(SSS2):
         self.setup_pot_bank()
     def setup_pot_bank(self):
         #Setup Bank with a common Switch for Terminal A
-            print(self.bank_key)
-            label=self.pot_dict[self.bank_key]["Label"]
-            self.pot_bank = tk.LabelFrame(self.root,name=label.lower(),text=label)
-            self.pot_bank.grid(row=self.row,column=self.col,columnspan=self.colspan,sticky=tk.W)
+        label=self.pot_dict[self.bank_key]["Label"]
+        self.pot_bank = tk.LabelFrame(self.root,name=label.lower(),text=label)
+        self.pot_bank.grid(row=self.row,column=self.col,columnspan=self.colspan,sticky=tk.W)
+        if self.pot_dict[self.bank_key]["Terminal A Connection"]:
+            self.bank_button =  ttk.Checkbutton(self.pot_bank,
+                                                text="Terminal A Voltage Enabled",
+                                                name='terminal_A_voltage_connect',
+                                                command=self.send_bank_term_A_voltage_command)
+            self.bank_button.grid(row=0,column=0,sticky=tk.W)
+            self.bank_button.state(['!alternate']) #Clears Check Box
             if self.pot_dict[self.bank_key]["Terminal A Connection"]:
-                self.bank_button =  ttk.Checkbutton(self.pot_bank,
-                                                    text="Terminal A Voltage Enabled",
-                                                    name='terminal_A_voltage_connect',
-                                                    command=self.send_bank_term_A_voltage_command)
-                self.bank_button.grid(row=0,column=0,sticky=tk.W)
-                self.bank_button.state(['!alternate']) #Clears Check Box
-                if self.pot_dict[self.bank_key]["Terminal A Connection"]:
-                    self.bank_button.state(['selected'])
-                self.send_bank_term_A_voltage_command() #Call the command once
+                self.bank_button.state(['selected'])
+            self.send_bank_term_A_voltage_command() #Call the command once
 
-            self.pot_pairs={}
-            col_index=0
-            for key in sorted(self.pot_dict[self.bank_key]["Pairs"].keys()):
-                print("potpair key:",end='')
-                print(key)
-                self.pot_pairs[key] = potentiometer_pair(self.pot_bank,
-                               self.pot_dict[self.bank_key]["Pairs"],
-                               pair_id=key,col=col_index,row=1)
-                col_index += 1
-            
+        self.pot_pairs={}
+        col_index=0
+        for key in sorted(self.pot_dict[self.bank_key]["Pairs"].keys()):
+            self.pot_pairs[key] = potentiometer_pair(self.pot_bank,self.tx_queue,
+                           self.pot_dict[self.bank_key]["Pairs"],
+                           pair_id=key,col=col_index,row=1)
+            col_index += 1
+        
     def send_bank_term_A_voltage_command(self):
         state=self.bank_button.instate(['selected'])
         setting = self.pot_dict[self.bank_key]["SSS2 Setting"]
@@ -1064,12 +1118,13 @@ class pot_bank(SSS2):
                 commandString = "{:d},1".format(setting)
             else:
                 commandString = "{:d},0".format(setting)
-            send_serial_command(commandString)
+            self.tx_queue.put_nowait(commandString)
 
             
 class config_switches(SSS2):
-    def __init__(self, parent,switch_dict,key, row = 0, col = 0):
+    def __init__(self, parent,tx_queue,switch_dict,key, row = 0, col = 0):
         self.root=parent
+        self.tx_queue = tx_queue
         self.switch_button_dict = switch_dict
         self.key = key
         self.col=col
@@ -1096,13 +1151,14 @@ class config_switches(SSS2):
             commandString = "{},1".format(SSS2_setting)
         else:
             commandString = "{},0".format(SSS2_setting)
-        return send_serial_command(commandString)
+        return self.tx_queue.put_nowait(commandString)
 
 class config_radio_switches(SSS2):
-    def __init__(self, parent,switch_dict,key, rowA = 0, colA = 0,
+    def __init__(self, parent,tx_queue,switch_dict,key, rowA = 0, colA = 0,
                  rowB = 0, colB = 1, rowspanA=2, rowspanB=2,
                  colspanA=1, colspanB=1,):
         self.root=parent
+        self.tx_queue =tx_queue
         self.switch_button_dict = switch_dict
         self.key = key
         self.colA=colA
@@ -1155,12 +1211,13 @@ class config_radio_switches(SSS2):
             commandString = "{},1".format(SSS2_setting)
         else:
             commandString = "{},0".format(SSS2_setting)
-        return send_serial_command(commandString)   
+        return self.tx_queue.put_nowait(commandString)   
 
   
 class potentiometer_pair(SSS2):
-    def __init__(self, parent,pair_dict,pair_id, row = 0, col = 0):
+    def __init__(self, parent,tx_queue,pair_dict,pair_id, row = 0, col = 0):
         self.root = parent
+        self.tx_queue = tx_queue
         self.row=row
         self.col=col
         self.key=pair_id
@@ -1199,7 +1256,7 @@ class potentiometer_pair(SSS2):
         col_count = 0
         self.pots={}
         for key in sorted(self.pair_dict["Pots"].keys()):
-            self.pots[key] = potentiometer(self.potentiometer_pair, self.pair_dict["Pots"][key], row=1, col=col_count)
+            self.pots[key] = potentiometer(self.potentiometer_pair,self.tx_queue, self.pair_dict["Pots"][key], row=1, col=col_count)
             col_count+=1
 
     def send_terminal_A_voltage_command(self):
@@ -1209,11 +1266,12 @@ class potentiometer_pair(SSS2):
             commandString = "{},0".format(self.pair_dict["SSS Setting"])
         else:
             commandString = "{},1".format(self.pair_dict["SSS Setting"])
-        return send_serial_command(commandString)
+        return self.tx_queue.put_nowait(commandString)
 
 class potentiometer(SSS2):
-    def __init__(self, parent, pot_dict, row = 2, col = 0):
+    def __init__(self, parent,tx_queue, pot_dict, row = 2, col = 0):
         self.root = parent
+        self.tx_queue = tx_queue
         self.pot_row=row
         self.pot_col=col
         self.pot_settings_dict = pot_dict
@@ -1294,7 +1352,7 @@ class potentiometer(SSS2):
         self.wiper_position_value.delete(0,tk.END)
         self.wiper_position_value.insert(0,self.wiper_position_slider.get())
         commandString = "{},{}".format(self.pot_number,self.wiper_position_slider.get())
-        return send_serial_command(commandString)
+        self.tx_queue.put_nowait(commandString)
     
     def set_terminals(self):
         self.terminal_A_connect_state = self.terminal_A_connect_button.instate(['selected'])
@@ -1302,11 +1360,13 @@ class potentiometer(SSS2):
         self.wiper_connect_state = self.wiper_connect_button.instate(['selected'])
         terminal_setting = self.terminal_B_connect_state + 2*self.wiper_connect_state + 4*self.terminal_A_connect_state
         commandString = "{},{}".format(self.tcon_setting,terminal_setting)
-        return send_serial_command(commandString)
+        self.tx_queue.put_nowait(commandString)
+        
 
 class DAC7678(SSS2):
-    def __init__(self, parent,sss2_settings, row = 2, col = 0):
+    def __init__(self, parent,tx_queue,sss2_settings, row = 2, col = 0):
         self.root = parent
+        self.tx_queue = tx_queue
         self.row=row
         self.col=col
         self.settings_dict = sss2_settings
@@ -1367,12 +1427,11 @@ class DAC7678(SSS2):
             slope = 4095/(self.high-self.low)
             dac_raw_setting = int(slope*(x - self.low))
         commandString = "{},{:d}".format(self.setting_num,dac_raw_setting)
-        return send_serial_command(commandString)
+        return self.tx_queue.put_nowait(commandString)
         
     
     def set_dac_mean_slider(self,event=None):
         entry_value = self.dac_mean_position_value.get()
-        #print(entry_value)
         self.dac_mean_position_value['foreground'] = "black"
         try:
             self.dac_mean_slider.set(float(entry_value)*100)
@@ -1383,8 +1442,9 @@ class DAC7678(SSS2):
 
 
 class pwm_out(SSS2):
-    def __init__(self, parent,sss2_settings, row = 2, col = 0):
+    def __init__(self, parent,tx_queue,sss2_settings, row = 2, col = 0):
         self.root = parent
+        self.tx_queue = tx_queue
         self.row=row
         self.col=col
         self.settings_dict = sss2_settings
@@ -1458,7 +1518,8 @@ class pwm_out(SSS2):
         slope = 1
         pwm_raw_setting = int(slope*(float(self.pwm_frequency_value.get())))
         commandString = "{},{}".format(self.setting_num+48,pwm_raw_setting)
-        return send_serial_command(commandString)
+        self.tx_queue.put_nowait(commandString)
+        return commandString
 
     def set_pwm_duty_cycle(self,event=None):
              
@@ -1468,11 +1529,11 @@ class pwm_out(SSS2):
         slope = 4096/100
         pwm_raw_setting = int(slope*(float(self.pwm_duty_cycle_value.get())))
         commandString = "{},{}".format(self.setting_num,pwm_raw_setting)
-        return send_serial_command(commandString)
+        self.tx_queue.put_nowait(commandString)
+        return commandString
 
     def set_pwm_frequency_slider(self,event=None):
         entry_value = self.pwm_frequency_value.get()
-        #print(entry_value)
         self.pwm_frequency_value['foreground'] = "black"
         try:
             self.pwm_frequency_slider.set(float(entry_value))
@@ -1483,7 +1544,6 @@ class pwm_out(SSS2):
     
     def set_pwm_duty_cycle_slider(self,event=None):
         entry_value = self.pwm_duty_cycle_value.get()
-        #print(entry_value)
         self.pwm_duty_cycle_value['foreground'] = "black"
         try:
             self.pwm_duty_cycle_slider.set(float(entry_value))
@@ -1520,19 +1580,6 @@ class ecu_application(SSS2):
         self.ecu_app.grid(row=1,column=0,columnspan=3,sticky=tk.E+tk.W)
 
         
-def send_serial_command(commandString):
-        command_bytes = bytes(commandString,'ascii') + b'\n'
-        print(command_bytes)
-        global ser
-        if ser:
-            try:
-                ser.write(command_bytes)
-                return command_bytes    
-            except Exception as e:
-                print(e)
-                return False            
-        else:
-            return False
 
         
 if __name__ == '__main__':
