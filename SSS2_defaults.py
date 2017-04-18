@@ -6,7 +6,7 @@ def get_default_settings():
     settings = {}
     settings["Original File SHA"]="Current Settings Not Saved."
     settings["SSS2 Product Code"]="UNIVERSAL"
-    settings["Component ID"] = "SYNER*SSS2-R03*0018*UNIVERSAL"
+    settings["Component ID"] = "SYNER*SSS2-R03*XXXX*UNIVERSAL"
     settings["Serial Number"]="SSS2-R03-XXXX"
     settings["Software ID"]="SSS2*Rev3*0.4*bb1672fcd2fb80092faaea9b7877db6d12e86da2"
     settings["SSS2 Source Address"] = 0xFA
@@ -58,6 +58,8 @@ def get_default_settings():
     u["SSS2 Wiper Setting"]=1
     u["SSS2 TCON Setting"]=51
     u["Resistance"]="10k"
+    u["ECM Fault Low Setting"]=0
+    u["ECM Fault High Setting"]=255
     
     u=pair["Pots"]["U2"]
     u["Term. A Connect"]=True
@@ -664,48 +666,37 @@ def get_default_settings():
     
     
 
-    settings["CAN"]={"Preprogrammed":{},"Custom":{}}
+    settings["CAN"]={"Preprogrammed":[],"Custom":[]}
     t=settings["CAN"]["Preprogrammed"]
-    t["08FF0001"]={"Setting":1,"State":True,"Channel":2,"Period":100,"Label":"1","PGN Name":"Proprietary B","Source Address":"Engine #2 (MCM)","Data":[0,0,0,0,0,0,0,0]} 
-    t["08FF0003"]={"Setting":2,"State":True,"Channel":2,"Period":100,"Label":"2","PGN Name":"Proprietary B","Source Address":"Engine #2 (MCM)","Data":[0,0,0,0,0,0,0,0]} 
-    t["08FF0103"]={"Setting":3,"State":True,"Channel":2,"Period":100,"Label":"3","PGN Name":"Proprietary B","Source Address":"Engine #2 (MCM)","Data":[0,0,0,0,0,0,0,0]} 
-    t["08FF0203"]={"Setting":4,"State":True,"Channel":2,"Period":100,"Label":"4","PGN Name":"Proprietary B","Source Address":"Engine #2 (MCM)","Data":[0,0,0,0,0,0,0,0]} 
-    t["08FF0303"]={"Setting":5,"State":True,"Channel":2,"Period":100,"Label":"5","PGN Name":"Proprietary B","Source Address":"Engine #2 (MCM)","Data":[0,0,0,0,0,0,0,0]} 
-    t["08FF0603"]={"Setting":6,"State":True,"Channel":2,"Period":100,"Label":"6","PGN Name":"Proprietary B","Source Address":"Engine #2 (MCM)","Data":[0,0,0,0,0,0,0,0]} 
-    t["08FF0703"]={"Setting":7,"State":True,"Channel":2,"Period":100,"Label":"7","PGN Name":"Proprietary B","Source Address":"Engine #2 (MCM)","Data":[0,0,0,0,0,0,0,0]} 
-    t["0CFF0703"]={"Setting":8,"State":True,"Channel":2,"Period":100,"Label":"8","PGN Name":"Proprietary B","Source Address":"Engine #2 (MCM)","Data":[0,0,0,0,0,0,0,0]} 
-    t["0CFE6E0B"]={"Setting":9,"State":True,"Channel":2,"Period":100,"Label":"9","PGN Name":"Proprietary B","Source Address":"Engine #2 (MCM)","Data":[0,0,0,0,0,0,0,0]} 
-    t["10FF0903"]={"Setting":10,"State":True,"Channel":2,"Period":100,"Label":"10","PGN Name":"Proprietary B","Source Address":"Engine #2 (MCM)","Data":[0,0,0,0,0,0,0,0]} 
-    t["18F00131"]={"Setting":11,"State":True,"Channel":2,"Period":100,"Label":"11","PGN Name":"Proprietary B","Source Address":"Engine #2 (MCM)","Data":[0,0,0,0,0,0,0,0]} 
-    t["18F0010B"]={"Setting":12,"State":True,"Channel":2,"Period":100,"Label":"12","PGN Name":"Proprietary B","Source Address":"Engine #2 (MCM)","Data":[0,0,0,0,0,0,0,0]} 
-    t["18FEF117"]={"Setting":13,"State":True,"Channel":2,"Period":100,"Label":"13","PGN Name":"Proprietary B","Source Address":"Engine #2 (MCM)","Data":[0,0,0,0,0,0,0,0]} 
-    t["18FEF128"]={"Setting":14,"State":True,"Channel":2,"Period":100,"Label":"14","PGN Name":"Proprietary B","Source Address":"Engine #2 (MCM)","Data":[0,0,0,0,0,0,0,0]} 
-    t["18FEF121"]={"Setting":15,"State":True,"Channel":2,"Period":100,"Label":"15","PGN Name":"Proprietary B","Source Address":"Engine #2 (MCM)","Data":[0,0,0,0,0,0,0,0]} 
-    t["18FEF131"]={"Setting":16,"State":True,"Channel":2,"Period":100,"Label":"16","PGN Name":"Proprietary B","Source Address":"Engine #2 (MCM)","Data":[0,0,0,0,0,0,0,0]} 
-    t["18E00017"]={"Setting":17,"State":True,"Channel":2,"Period":100,"Label":"17","PGN Name":"Proprietary B","Source Address":"Engine #2 (MCM)","Data":[0,0,0,0,0,0,0,0]} 
-    t["18E00019"]={"Setting":18,"State":True,"Channel":2,"Period":100,"Label":"18","PGN Name":"Proprietary B","Source Address":"Engine #2 (MCM)","Data":[0,0,0,0,0,0,0,0]} 
-    t["18E00021"]={"Setting":19,"State":True,"Channel":2,"Period":100,"Label":"19","PGN Name":"Proprietary B","Source Address":"Engine #2 (MCM)","Data":[0,0,0,0,0,0,0,0]} 
-    t["18E00028"]={"Setting":20,"State":True,"Channel":2,"Period":100,"Label":"20","PGN Name":"Proprietary B","Source Address":"Engine #2 (MCM)","Data":[0,0,0,0,0,0,0,0]} 
-    t["18E00031"]={"Setting":21,"State":True,"Channel":2,"Period":100,"Label":"21","PGN Name":"Proprietary B","Source Address":"Engine #2 (MCM)","Data":[0,0,0,0,0,0,0,0]} 
-    t["10ECFF3D"]={"Setting":22,"State":True,"Channel":2,"Period":100,"Label":"22","PGN Name":"Proprietary B","Source Address":"Engine #2 (MCM)","Data":[0,0,0,0,0,0,0,0]} 
-    t["10ECFF01"]={"Setting":23,"State":True,"Channel":2,"Period":100,"Label":"23","PGN Name":"Proprietary B","Source Address":"Engine #2 (MCM)","Data":[0,0,0,0,0,0,0,0]} 
-    t["18FEF803"]={"Setting":24,"State":True,"Channel":2,"Period":100,"Label":"24","PGN Name":"Proprietary B","Source Address":"Engine #2 (MCM)","Data":[0,0,0,0,0,0,0,0]} 
-    t["18FEF521"]={"Setting":25,"State":True,"Channel":2,"Period":100,"Label":"25","PGN Name":"Proprietary B","Source Address":"Engine #2 (MCM)","Data":[0,0,0,0,0,0,0,0]} 
-    t["18FEF017"]={"Setting":26,"State":True,"Channel":2,"Period":100,"Label":"26","PGN Name":"Proprietary B","Source Address":"Engine #2 (MCM)","Data":[0,0,0,0,0,0,0,0]} 
-    t["18FEF021"]={"Setting":27,"State":True,"Channel":2,"Period":100,"Label":"27","PGN Name":"Proprietary B","Source Address":"Engine #2 (MCM)","Data":[0,0,0,0,0,0,0,0]} 
-    t["18FEF028"]={"Setting":28,"State":True,"Channel":2,"Period":100,"Label":"28","PGN Name":"Proprietary B","Source Address":"Engine #2 (MCM)","Data":[0,0,0,0,0,0,0,0]} 
-    t["18DF00F9"]={"Setting":29,"State":True,"Channel":2,"Period":100,"Label":"29","PGN Name":"Proprietary B","Source Address":"Engine #2 (MCM)","Data":[0,0,0,0,0,0,0,0]} 
-    t["18DFFFF9"]={"Setting":30,"State":True,"Channel":2,"Period":100,"Label":"30","PGN Name":"Proprietary B","Source Address":"Engine #2 (MCM)","Data":[0,0,0,0,0,0,0,0]} 
-    t["0CF00203"]={"Setting":31,"State":True,"Channel":2,"Period":100,"Label":"31","PGN Name":"Proprietary B","Source Address":"Engine #2 (MCM)","Data":[0,0,0,0,0,0,0,0]} 
-    t["18F00503"]={"Setting":32,"State":True,"Channel":2,"Period":100,"Label":"32","PGN Name":"Proprietary B","Source Address":"Engine #2 (MCM)","Data":[0,0,0,0,0,0,0,0]} 
+    t.append("DDEC MCM 01,2,1,0,1,  10,   0,0,1, 8FF0001,8, 0, 0, 0, 0, 0, 0, 0, 0" )
+    t.append("DDEC TCM 01,1,1,0,1,  10,   0,0,1, CF00203,8, 0, 0, 0, 0, 0, 0, 0, 0" )
+    t.append("DDEC TCM 02,3,1,0,1,  10,   0,0,1, 8FF0303,8, 0, 0, 0, 0, 0, 0, 0, 0" )
+    t.append("DDEC TCM 03,4,1,0,1, 100,   0,0,1,18F00503,8, 0, 0, 0, 0, 0, 0, 0, 0") 
+    t.append("HRW from Brake Controller,5,1,0,0,  20,   0,0,1, CFE6E0B,8, 0, 0, 0, 0, 0, 0, 0, 0" )
+    t.append("EBC1 from Cab Controller, 6,1,0,0, 100,   0,0,1,18F00131,8, 0, 0, 0, 0, 0, 0, 0, 0" )
+    t.append("EBC1 from Brake Controller, 7,1,0,0, 100,   0,0,1,18F0010B,8, 0, 0, 0, 0, 0, 0, 0, 0" )
+    t.append("CCVS1 from Instrument Cluster, 8,1,0,0, 100,   0,0,1,18FEF117,8, 0, 0, 0, 0, 0, 0, 0, 0" )
+    t.append("CCVS1 from Cab Display 1, 9,1,0,0, 100,   0,0,1,18FEF128,8, 0, 0, 0, 0, 0, 0, 0, 0" )
+    t.append("CCVS1 from Body Controller, 10,1,0,0, 100,   0,0,1,18FEF121,8, 0, 0, 0, 0, 0, 0, 0, 0" )
+    t.append("CCVS1 from Cab Controller,11,1,0,0, 100,   0,0,1,18FEF131,8, 0, 0, 0, 0, 0, 0, 0, 0" )
+    t.append("CM1 from Instrument Cluster,12,1,0,0, 100,   0,0,1,18E00017,8, 0, 0, 0, 0, 0, 0, 0, 0")
+    t.append("CM1 from Climate Control 1,13,1,0,0, 100,   0,0,1,18E00019,8, 0, 0, 0, 0, 0, 0, 0, 0" )
+    t.append("CM1 from Body Controller,14,1,0,0, 100,   0,0,1,18E00021,8, 0, 0, 0, 0, 0, 0, 0, 0" )
+    t.append("CM1 from Cab Display,15,1,0,0, 100,   0,0,1,18E00028,8, 0, 0, 0, 0, 0, 0, 0, 0")
+    t.append("CM1 from Cab Controller,16,1,0,0, 100,   0,0,1,18E00031,8, 0, 0, 0, 0, 0, 0, 0, 0")
+    t.append("PTO from Instrument Cluster,17,1,0,0, 100,   0,0,1,18FEF017,8, 0, 0, 0, 0, 0, 0, 0, 0" )
+    t.append("PTO from Body Controller,18,1,0,0, 100,   0,0,1,18FEF021,8, 0, 0, 0, 0, 0, 0, 0, 0" )
+    t.append("PTO from Cab Display,19,1,0,0, 100,   0,0,1,18FEF028,8, 0, 0, 0, 0, 0, 0, 0, 0")
+    t.append("PTO from Cab Controller,20,1,0,0, 100,   0,0,1,18FEF031,8, 0, 0, 0, 0, 0, 0, 0, 0")
+    t.append("DDEC Fault Codes from MCM,21,2,0,1,   5,1000,0,1,10ECFF01,8,20,0E,00,01,FF,CA,FE,00") 
+    t.append("DDEC Fault Codes from MCM,21,2,1,1,   5,1000,0,1,10EBFF01,8,01, 0, 0, 0, 0, 0, 0, 0" )
+    t.append("DDEC Fault Codes from ACM,22,2,0,1,   5,1000,0,1,10ECFF3D,8,20,0E,00,01,FF,CA,FE,00") 
+    t.append("DDEC Fault Codes from ACM,22,2,1,1,   5,1000,0,1,10EBFF3D,8,01, 0, 0, 0, 0, 0, 0, 0" )
+    t.append("AMB from Body Controller,23,1,0,0,1000,   0,0,1,18FEF521,8, 0, 0, 0, 0, 0, 0, 0, 0" )
+
+    settings["CAN"]["Load Preprogrammed"] = True               
     
-    c=settings["CAN"]["Custom"]={}
-    c["Example"]={"Major Period":1000,"Minor Period":5,"State":True,"Messages":[]}
-    m=c["Example"]["Messages"]
-    m.append({"ID":"18FEF125","DLC":8,"Data":[0xD,0xE,0xA,0xD,0xB,0xE,0xE,0xF]})
-    m.append({"ID":"18FEF125","DLC":8,"Data":[0xF,0xE,0xA,0xD,0xB,0xE,0xE,0xF]})
                   
-    #print(settings)
     return settings
 
 if __name__ == '__main__':

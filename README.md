@@ -19,4 +19,4 @@ https://www.dropbox.com/s/1xc5nckzy8wxag3/SSS2-GUI-Interface.zip?dl=0
 5. Package the Python sources using ```py -3.4 -m py2exe SSS2-Interface.py```
 6. Copy all graphics files into the newly created dist and build directories
 7. Zip the dist directory for distribution. You can double click the SSS2-Interface.exe program in the dist directory to run.
-8. TODO: use Inno windows installer to create an installer.
+8. TODO: use Inno windows installer to create an installer. http://www.jrsoftware.org/isdl.php#qsp
