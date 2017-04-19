@@ -712,6 +712,7 @@ class SSS2(ttk.Frame):
     def send_transmit_can(self):
         commandString = "STARTCAN,"
         for tree_item in self.get_all_children(self.can_tree):
+            print(tree_item)
             self.can_tree.set(tree_item,"Send","Yes")
             
         self.tx_queue.put_nowait(commandString)
@@ -720,6 +721,7 @@ class SSS2(ttk.Frame):
         commandString = "STOPCAN,"
         for tree_item in self.get_all_children(self.can_tree):
             self.can_tree.set(tree_item,"Send","No")
+            self.can_tree.selection_set(tree_item)
         self.tx_queue.put_nowait(commandString)         
 
     def send_clear_can(self):
@@ -783,10 +785,10 @@ class SSS2(ttk.Frame):
 
         tk.Label(self.can_edit_frame,text="Sequence Count:").grid(row=1,column=2,sticky="E")
         self.can_count_value=tk.StringVar(value="1")
-        self.can_count = ttk.Entry(self.can_edit_frame,textvariable=self.can_count_value,width=10)
+        self.can_count = ttk.Label(self.can_edit_frame,textvariable=self.can_count_value,width=10)
         self.can_count.grid(row=1,column=3,sticky="W",pady=5,columnspan=1)
 
-        tk.Label(self.can_edit_frame,text="Seqence Index:").grid(row=1,column=4,sticky="E")
+        tk.Label(self.can_edit_frame,text="Sequence Index:").grid(row=1,column=4,sticky="E")
         self.can_sub_value=tk.StringVar(value = "0")
         self.can_sub = ttk.Entry(self.can_edit_frame,textvariable=self.can_sub_value,width=10)
         self.can_sub.grid(row=1,column=5,sticky="W",pady=5,columnspan=1)
@@ -819,7 +821,10 @@ class SSS2(ttk.Frame):
         self.can_channel_0.grid(row=0,column=1,sticky="W")
         
         self.can_send_state = tk.IntVar(value=1)
-        self.can_send = ttk.Checkbutton(self.can_edit_frame,text="Enable Transmission (Send)",variable=self.can_send_state)
+        self.can_send = ttk.Checkbutton(self.can_edit_frame,
+                                        text="Enable Transmission (Send)",
+                                        variable=self.can_send_state,
+                                        command=self.send_single_frame)
         self.can_send.grid(row=3,column=4,sticky="W",padx=10,columnspan=3)
         
         tk.Label(self.can_edit_frame,text="Period (msec):").grid(row=4,column=0,sticky="E")
@@ -843,8 +848,10 @@ class SSS2(ttk.Frame):
         for byteLabel in range(8):
             tk.Label(self.can_data_frame,text=" B{}:".format(byteLabel+1)).grid(row=0,column=2*byteLabel)
             self.can_byte_value.append(tk.StringVar(value="00"))
-            self.can_byte.append(ttk.Entry(self.can_data_frame,textvariable=self.can_byte_value[byteLabel],width=2))
+            self.can_byte.append(ttk.Entry(self.can_data_frame,textvariable=self.can_byte_value[byteLabel],width=3))
             self.can_byte[byteLabel].grid(row=0,column=2*byteLabel+1,pady=5)
+            self.can_byte[-1].bind('<Return>',self.modify_can_message)
+            self.can_byte[-1].bind('<Tab>',self.modify_can_message)
         self.can_data_frame.grid(row=5,column=1,columnspan=6,sticky="W")
         tk.Label(self.can_edit_frame,text="Data Bytes (Hex):").grid(row=5,column=0,sticky="W")
 
@@ -860,17 +867,33 @@ class SSS2(ttk.Frame):
                                                                      sticky="E",
                                                                      pady=5,padx=5)
 
+        self.send_can_button = ttk.Button(self.can_edit_frame, width = 35,
+                                    text="Send Selected Message",
+                                    command=self.send_single_frame)
+        self.send_can_button.grid(row=7,columnspan=3,column=0,sticky="W",pady=5,padx=5)
+
+        self.delete_can_button = ttk.Button(self.can_edit_frame, width = 35,
+                                    text="Delete Selected Message",
+                                    command=self.delete_can_message)
+        self.delete_can_button.grid(row=7,columnspan=3,column=3,sticky="E",pady=5,padx=5)
+
+        self.add_sequence_button = ttk.Button(self.can_edit_frame, width = 35,
+                                    text="Add Sequential Message",
+                                    command=self.add_sequential_message)
+        self.add_sequence_button.grid(row=8,columnspan=3,column=0,sticky="W",pady=5,padx=5)
+
+    
         self.can0_frame = tk.LabelFrame(self.truck_networks_tab, name="can0 Messages",text="CAN Messages to Transmit")
         ttk.Sizegrip(self.can0_frame)
                                                   
         self.can0_frame.grid(row=0,column=0,sticky="NW",columnspan=1,rowspan=7)
 
-        colWidths = [55,55,55,55,55,55,55,55,30,75,30,24,24,24,24,24,24,24,24]
+        colWidths = [55,55,55,55,55,55,55,55,30,75,24,24,24,24,24,24,24,24,24]
         self.colNames = ["Thread","Count","Index","Send","Channel","Period","Restart","Total","Ext","CAN HEX ID","DLC","B1","B2","B3","B4","B5","B6","B7","B8"]
         colPos = ['center','center','center','center','center',tk.E,tk.E,tk.E,'center',tk.E,'center','center','center','center',
                   'center','center','center','center','center','center']
         self.display_cols = ["Send","Channel","Period","Restart","Total","Ext","CAN HEX ID","DLC","B1","B2","B3","B4","B5","B6","B7","B8"]
-        self.can_tree = ttk.Treeview(self.can0_frame, selectmode = "browse",displaycolumns=self.display_cols,columns = self.colNames,height=40)
+        self.can_tree = ttk.Treeview(self.can0_frame, selectmode = "browse",displaycolumns="#all",columns = self.colNames,height=40)
         
         self.can_tree.grid(row=0,column=0)
 
@@ -880,7 +903,9 @@ class SSS2(ttk.Frame):
             self.can_tree.heading(c, anchor = p, text = c)
         self.item_identifier={}
         self.msg_index = 0
-        self.current_iid = -1
+        self.current_iid = ('I-1',)
+        self.new_message = True
+        
         if self.settings_dict["CAN"]["Load Preprogrammed"]:
             #self.tx_msg_ids=[]
             msg_list = self.settings_dict["CAN"]["Preprogrammed"]
@@ -914,30 +939,167 @@ class SSS2(ttk.Frame):
                             self.settings_dict["Switches"],"CAN2",row=5,col=0)
         self.j1708_switch = config_radio_switches(self.message_config_frame,self.tx_queue,
                             self.settings_dict["Switches"],"CAN1 or J1708",rowA=7,colA=0,rowB=8,colB=0)
-    def modify_can_message(self):
-        print(self.current_iid)
+
+    def modify_can_message(self,event=None):
+        self.new_message=False
+        can_thread = self.can_thread_value.get()
+        selection = self.can_tree.selection()
+        self.common_can_message(can_thread)
+        self.sync_tables()
         
+    def delete_can_message(self):
+        selection = self.can_tree.selection()
+        while self.can_tree.parent(selection) is not "":
+            selection = self.can_tree.parent(selection)
+        
+        can_msg = self.can_tree.item(selection)
+        commandString = "GO,{},0".format(self.can_thread_value.get()) 
+        self.tx_queue.put_nowait(commandString)
+        for tree_item in self.can_tree.get_children(selection):
+            self.can_tree.delete(tree_item)
+        self.can_tree.delete(selection)
+
+    def add_sequential_message(self):
+        self.new_message = True
+        selection = self.can_tree.selection()
+        if self.can_tree.parent(selection) is not "":
+            while self.can_tree.next(selection) is not "":
+                selection = self.can_tree.next(selection)
+        self.can_tree.selection_set(selection)
+        self.can_count_value.set("{}".format( self.get_max_count(selection) + 1 ))
+        self.can_sub_value.set("{}".format( self.get_max_count(selection) ))
+        can_thread = int(self.can_thread_value.get())
+        self.common_can_message(str(can_thread))
+        self.sync_tables()
+        
+    def sync_tables(self):
+        selection = self.can_tree.selection()
+        while self.can_tree.parent(selection) is not "":
+            selection = self.can_tree.parent(selection)
+        tree_item = selection
+        
+        self.can_tree.set(tree_item,"Count",str(self.can_count_value.get()))
+        if self.can_send_state.get() == 1:
+            state = "Yes"
+        else:
+            state = "No"
+        self.can_tree.set(tree_item,"Send",state)
+        if self.can_channel_value.get() == "0":
+            chan = "J1939"
+        elif self.can_channel_value.get() == "1":
+            chan = "CAN2"
+        self.can_tree.set(tree_item,"Channel",chan)
+        self.can_tree.set(tree_item,"Period",self.can_period_value.get())
+        self.can_tree.set(tree_item,"Restart",self.can_restart_value.get())
+        self.can_tree.set(tree_item,"Total",self.can_total_value.get())
+        for tree_item in self.can_tree.get_children(selection):
+            self.can_tree.set(tree_item,"Count",str(self.can_count_value.get()))
+            if self.can_send_state.get() == 1:
+                state = "Yes"
+            else:
+                state = "No"
+            self.can_tree.set(tree_item,"Send",state)
+            if self.can_channel_value.get() == "0":
+                chan = "J1939"
+            elif self.can_channel_value.get() == "1":
+                chan = "CAN2"
+            self.can_tree.set(tree_item,"Channel",chan)
+            self.can_tree.set(tree_item,"Period",self.can_period_value.get())
+            self.can_tree.set(tree_item,"Restart",self.can_restart_value.get())
+            self.can_tree.set(tree_item,"Total",self.can_total_value.get())
+            
+                     
     def create_new_message(self):
+        self.new_message = True
+        selection = self.can_tree.selection()
+        can_thread_list=[]
+        for selection in self.can_tree.get_children(""):
+            can_msg = self.can_tree.item(selection)
+            vals = can_msg['values']
+            can_thread_list.append(vals[0])
+        can_thread = self.get_max_threads() + 1
+        self.can_sub_value.set("0")
+        self.can_count_value.set("1")
+        if can_thread < 1024:
+            #self.create_can_message = False
+            self.common_can_message(str(can_thread))
+        else:
+            print("Too many CAN threads for SSS2. Please redo the CAN messages.")
+
+    def get_max_threads(self):
+        can_thread_list=[]
+        for selection in self.get_all_children(self.can_tree):
+            can_msg = self.can_tree.item(selection)
+            vals = can_msg['values']
+            can_thread_list.append(vals[0])
+        return  max(can_thread_list)
+
+    def get_max_count(self,item):
+        can_thread_list=[]
+        can_msg = self.can_tree.item(item)
+        vals = can_msg['values']
+        can_thread_list.append(vals[1])
+        for selection in self.can_tree.get_children(item):
+            can_msg = self.can_tree.item(selection)
+            vals = can_msg['values']
+            can_thread_list.append(vals[1])
+        return max(can_thread_list)
+        
+    def common_can_message(self,can_thread):
         #new_thread = from serial len(self.settings_dict["CAN"]["Load Preprogrammed"])
         m = ""
         m += self.can_name_value.get()
         m += ","
-        m += self.can_thread_value.get()
+        m += can_thread 
         m += ","
         m += self.can_count_value.get()
         m += ","
         m += self.can_sub_value.get()
         m += ","
-        if self.can_sub_value.get():
+        m += self.can_channel_value.get()
+        m += ","
+        m += self.can_period_value.get()
+        m += ","
+        m += self.can_restart_value.get()
+        m += ","
+        m += self.can_total_value.get()
+        m += ","
+        m += str(self.can_ext_id_state.get())
+        m += ","
+        m += self.can_id_value.get()
+        m += ","
+        m += self.can_dlc_value.get()
+        for i in range(8):
+            m += ","
+            m += self.can_byte_value[i].get()
+        m += ","
+        if self.can_send_state.get() == 1:
             m += "Yes"
-        print(m)
+        else:
+            m += "No"
+        
+        self.load_can_frame(m,self.msg_index)
+        
+        #self.can_thread_value.set(self.thread_from_sss2)
+        
+        #print(m)
         self.settings_dict["CAN"]["Custom"].append(m)
         self.msg_index+=1
-
+        
+        
+    def send_single_frame(self,event=None):
+        commandString = "GO,{},{}".format(self.can_thread_value.get(),self.can_send_state.get()) 
+        self.tx_queue.put_nowait(commandString)
+        selection = self.can_tree.selection()
+        if self.can_send_state.get():
+             self.can_tree.set(selection,"Send","Yes")
+        else:
+              self.can_tree.set(selection,"Send","No")
+        self.sync_tables()
+            
     def fill_can_box(self,event=None):
         selection = self.can_tree.selection()
         can_msg = self.can_tree.item(selection)
-        self.current_iid = selection
         vals = can_msg['values']
         if len(vals)==19:
             self.can_thread_value.set(vals[0])
@@ -951,7 +1113,10 @@ class SSS2(ttk.Frame):
                 self.can_send_state.set(1)
             else:
                 self.can_send_state.set(0)
-            self.can_channel_value.set(vals[4])
+            if vals[4] == "J1939":
+                self.can_channel_value.set("0")
+            else:
+                self.can_channel_value.set("1")
             self.can_period_value.set(vals[5])
             self.can_restart_value.set(vals[6])
             self.can_total_value.set(vals[7])
@@ -960,6 +1125,7 @@ class SSS2(ttk.Frame):
             self.modify_can_button.configure(state=tk.NORMAL)
         else:
             self.modify_can_button.configure(state=tk.DISABLED)
+
     def load_can_frame(self,message_string,msg_iid):
         
         msg = message_string.split(',')
@@ -968,7 +1134,7 @@ class SSS2(ttk.Frame):
         
         num = msg[2].strip()
         sub = msg[3].strip()
-        send="Yes"
+        
         if msg[4] == "0":
             channel = "J1939"
         elif msg[4] == "1":
@@ -985,34 +1151,65 @@ class SSS2(ttk.Frame):
         
         for b in msg[11:19]:
             B.append ("{:02X}".format(int(b,16)))
-        print(sub)
-        value_list = [index,num,"0",send,channel,period, restart,total,extID,IDhex,dlc]+B
-        if num == "1":
-            self.item_identifier[msg_iid] = self.can_tree.insert("",tk.END,iid=msg_iid,text=msgKey,open=True,
-                                                values=[index,num,"0",send,channel,period, restart,total,extID,IDhex,dlc]+B)    
-                
-        else:
+        send = msg[19].strip()
+
+        if self.new_message:
             if sub == "0":
-                self.trunk = self.can_tree.insert("",index,text=msgKey,open=True)
-                
-            #num=str(int(sub)+1)
-            self.item_identifier[msg_iid] = self.can_tree.insert(self.trunk,tk.END,iid=msg_iid,text=sub+" "+msgKey,open=True,
-                                            values=[index,num,sub,send,channel,period, restart,total,extID,IDhex,dlc]+B)
-                                                              #try:
-##                childs = self.can_tree.get_children(self.item_identifier[msgKey]["0"])
-##            except KeyError:
-##                pass
-##            self.item_identifier[msgKey]["0"] = self.can_tree.insert("",index,text=msgKey,open=True,
-##                                                values=[index,num,"0",send,channel,period, restart,total,extID,IDhex,dlc]+B)
-                
-                
-           
-                        
-        commandString = "SM,"+msgKey+","+message_string
+                selection = self.can_tree.insert("",int(index),iid=msg_iid,text=msgKey,open=True,
+                                                    values=[index,num,"0",send,channel,period, restart,total,extID,IDhex,dlc]+B)    
+                  
+            else:
+                self.trunk = self.can_tree.selection()
+                while self.can_tree.parent(self.trunk) is not "":
+                    self.trunk = self.can_tree.parent(self.trunk)
+                selection = self.can_tree.insert(self.trunk,int(sub),iid=msg_iid,text=msgKey,open=True,
+                                                values=[index,num,sub,send,channel,period, restart,total,extID,IDhex,dlc]+B)
+        else:
+            selection = self.can_tree.selection()
+            self.item_identifier[msg_iid] = selection
+            if self.can_tree.item(selection) is not "":
+                self.can_tree.set(selection,"Send",send)
+                self.can_tree.set(selection,"Channel",channel)
+                self.can_tree.set(selection,"Period",period)
+                self.can_tree.set(selection,"Restart",restart)
+                self.can_tree.set(selection,"Total",total)
+                self.can_tree.set(selection,"Ext",extID)
+                self.can_tree.set(selection,"CAN HEX ID",IDhex)
+                self.can_tree.set(selection,"DLC",dlc)
+                for i in range(8):
+                    self.can_tree.set(selection,"B{}".format(i+1),B[i])
+          
+
+        self.can_tree.selection_set(selection)
+        #self.can_tree.selection_toggle(self.item_identifier[msg_iid])
+        
+        commandString = "SM,"+message_string
         self.tx_queue.put_nowait(commandString)    
 
-        commandString = "GO,{},1".format(msg[0])
-        self.tx_queue.put_nowait(commandString)    
+        self.can_thread_value.set(index)
+        if send == "Yes":
+            self.can_send_state.set(1)
+        else:
+            self.can_send_state.set(0)
+
+        self.send_single_frame()
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+        
         
     def voltage_out_settings(self):
        
