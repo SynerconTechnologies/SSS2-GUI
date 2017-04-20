@@ -1,761 +1,757 @@
 {
-    "ECU Make": "Caterpillar",
-    "CAN": {
-        "Preprogrammed": [
-            "DDEC MCM 01,2,1,0,1,  10,   0,0,1, 8FF0001,8, 0, 0, 0, 0, 0, 0, 0, 0,No",
-            "DDEC TCM 01,1,1,0,1,  10,   0,0,1, CF00203,8, 0, 0, 0, 0, 0, 0, 0, 0,No",
-            "DDEC TCM 02,3,1,0,1,  10,   0,0,1, 8FF0303,8, 0, 0, 0, 0, 0, 0, 0, 0,No",
-            "DDEC TCM 03,4,1,0,1, 100,   0,0,1,18F00503,8, 0, 0, 0, 0, 0, 0, 0, 0,No",
-            "HRW from Brake Controller,5,1,0,0,  20,   0,0,1, CFE6E0B,8, 0, 0, 0, 0, 0, 0, 0, 0,No",
-            "EBC1 from Cab Controller, 6,1,0,0, 100,   0,0,1,18F00131,8, 0, 0, 0, 0, 0, 0, 0, 0,Yes",
-            "EBC1 from Brake Controller, 7,1,0,0, 100,   0,0,1,18F0010B,8, 0, 0, 0, 0, 0, 0, 0, 0,Yes",
-            "CCVS1 from Instrument Cluster, 8,1,0,0, 100,   0,0,1,18FEF117,8, 0, 0, 0, 0, 0, 0, 0, 0,Yes",
-            "CCVS1 from Cab Display 1, 9,1,0,0, 100,   0,0,1,18FEF128,8, 0, 0, 0, 0, 0, 0, 0, 0,Yes",
-            "CCVS1 from Body Controller, 10,1,0,0, 100,   0,0,1,18FEF121,8, 0, 0, 0, 0, 0, 0, 0, 0,Yes",
-            "CCVS1 from Cab Controller,11,1,0,0, 100,   0,0,1,18FEF131,8, 0, 0, 0, 0, 0, 0, 0, 0,Yes",
-            "CM1 from Instrument Cluster,12,1,0,0, 100,   0,0,1,18E00017,8, 0, 0, 0, 0, 0, 0, 0, 0,Yes",
-            "CM1 from Climate Control 1,13,1,0,0, 100,   0,0,1,18E00019,8, 0, 0, 0, 0, 0, 0, 0, 0,Yes",
-            "CM1 from Body Controller,14,1,0,0, 100,   0,0,1,18E00021,8, 0, 0, 0, 0, 0, 0, 0, 0,Yes",
-            "CM1 from Cab Display,15,1,0,0, 100,   0,0,1,18E00028,8, 0, 0, 0, 0, 0, 0, 0, 0,Yes",
-            "CM1 from Cab Controller,16,1,0,0, 100,   0,0,1,18E00031,8, 0, 0, 0, 0, 0, 0, 0, 0,Yes",
-            "PTO from Instrument Cluster,17,1,0,0, 100,   0,0,1,18FEF017,8, 0, 0, 0, 0, 0, 0, 0, 0,Yes",
-            "PTO from Body Controller,18,1,0,0, 100,   0,0,1,18FEF021,8, 0, 0, 0, 0, 0, 0, 0, 0,Yes",
-            "PTO from Cab Display,19,1,0,0, 100,   0,0,1,18FEF028,8, 0, 0, 0, 0, 0, 0, 0, 0,Yes",
-            "PTO from Cab Controller,20,1,0,0, 100,   0,0,1,18FEF031,8, 0, 0, 0, 0, 0, 0, 0, 0,Yes",
-            "DDEC Fault Codes from MCM,21,2,0,1,   5,1000,0,1,10ECFF01,8,20,0E,00,01,FF,CA,FE,00,Yes",
-            "DDEC Fault Codes from MCM,21,2,1,1,   5,1000,0,1,10EBFF01,8,01, 0, 0, 0, 0, 0, 0, 0,Yes",
-            "DDEC Fault Codes from ACM,22,2,0,1,   5,1000,0,1,10ECFF3D,8,20,0E,00,01,FF,CA,FE,00,Yes",
-            "DDEC Fault Codes from ACM,22,2,1,1,   5,1000,0,1,10EBFF3D,8,01, 0, 0, 0, 0, 0, 0, 0,Yes",
-            "AMB from Body Controller,23,1,0,0,1000,   0,0,1,18FEF521,8, 0, 0, 0, 0, 0, 0, 0, 0,Yes"
-        ],
-        "Load Preprogrammed": true,
-        "Custom": []
-    },
-    "Saved Date": "4/5/17",
-    "Programmed By": "Synercon Technologies, LLC",
-    "Original Creation Date": "4/5/17",
-    "Vehicle Model": "379",
-    "ECU Model": "ADEM III",
     "ECU Year": 2007,
-    "Vehicle Make": "Peterbilt",
     "Vehicle VIN": "ENTER VIN HERE",
-    "Original File SHA": "Current Settings Not Saved.",
-    "ECU Component ID": "ADEM III",
-    "HVAdjOut": {
-        "Application": "Application Description",
-        "Frequency": 0,
-        "SSS2 setting": 49,
-        "Lowest Voltage": 4,
-        "ECU Pins": "ECU Pins",
-        "Average Voltage": 8.5,
-        "Port": " ",
-        "Alt. Pin": null,
-        "Pin": "J24:19",
-        "Highest Voltage": 11.5,
-        "Alt. Pin Connect": false,
-        "Show Frequency": false,
-        "Shape": "Constant",
-        "Show Amplitude": false,
-        "Name": "High Current Regulator",
-        "Amplitude": 0
-    },
-    "ECU Software Version": "",
-    "SSS2 Product Code": "UNIVERSAL",
-    "Engine Configuration": " ",
-    "Engine Serial Number": "BSX1234",
-    "Serial Number": "SSS2-R03-XXXX",
-    "Engine Model": "3126",
-    "Software ID": "SSS2*Rev3*0.4*bb1672fcd2fb80092faaea9b7877db6d12e86da2",
     "Switches": {
-        "LIN to Port 16": {
-            "State": false,
-            "SSS2 setting": 72,
-            "Label": "Connect LIN to Port 16 (J24:16)"
-        },
-        "PWM4 or Ground": {
-            "Label B": "Connect PWM4 Output to J18:1",
-            "State": false,
-            "Label A": "Connect J18:1 to Ground",
-            "SSS2 setting": 47
-        },
-        "Port 10 or 19": {
-            "Label B": "Connect Potentiometer 10 to J24:10",
-            "State": false,
-            "Label A": "Connect Vout B to J24:10",
-            "SSS2 setting": 37
+        "PWM2 Connect": {
+            "SSS2 setting": 68,
+            "Label": "Connect PWM2 Output to J24:14",
+            "State": true
         },
         "12V Out 1": {
-            "State": false,
             "SSS2 setting": 45,
-            "Label": "Connect +12V to Port 27 (J18:10)"
-        },
-        "CAN0": {
-            "State": true,
-            "SSS2 setting": 41,
-            "Label": "Connect CAN0 (FlexCAN0) Termination Resistor (J1939)"
-        },
-        "LIN to SHLD": {
-            "State": false,
-            "SSS2 setting": 71,
-            "Label": "Connect LIN to Round Pin E (J10:5)"
-        },
-        "12V Out 2": {
-            "State": false,
-            "SSS2 setting": 46,
-            "Label": "Connect +12V to Port 11 (J24:11)"
-        },
-        "PWMs or CAN2": {
-            "Label B": "Connect PWM1 to J18:15 and PWM2 to J18:16",
-            "State": true,
-            "Label A": "Connect CAN2 to J18:15 and J18:16",
-            "SSS2 setting": 40
-        },
-        "Port 15 or 18": {
-            "Label B": "Connect Potentiometer 15 to J24:15",
-            "State": false,
-            "Label A": "Connect Vout A to J24:15",
-            "SSS2 setting": 38
-        },
-        "PWM1 Connect": {
-            "State": true,
-            "SSS2 setting": 67,
-            "Label": "Connect PWM1 Output to J24:13"
-        },
-        "CAN2": {
-            "State": true,
-            "SSS2 setting": 43,
-            "Label": "Connect CAN2 (FlexCAN1) Termination Resistor (E-CAN)"
-        },
-        "CAN1 or J1708": {
-            "Label B": "Connect CAN1 (MCP-CAN) to J24:17 and J24:18",
-            "State": true,
-            "Label A": "Connect J1708 to J24:17 and J24:18",
-            "SSS2 setting": 39
-        },
-        "Ground Out 1": {
-            "State": false,
-            "SSS2 setting": 47,
-            "Label": "Connect Ground to Port 17 (J18:1)"
+            "Label": "Connect +12V to Port 27 (J18:10)",
+            "State": false
         },
         "CAN1": {
-            "State": true,
             "SSS2 setting": 42,
-            "Label": "Connect CAN1 (MCP-CAN) Termination Resistor"
+            "Label": "Connect CAN1 (MCP-CAN) Termination Resistor",
+            "State": true
         },
-        "LIN Master Pullup Resistor": {
-            "State": true,
-            "SSS2 setting": 44,
-            "Label": "Connect LIN Master Pullup Resistor"
+        "CAN1 or J1708": {
+            "SSS2 setting": 39,
+            "Label A": "Connect J1708 to J24:17 and J24:18",
+            "Label B": "Connect CAN1 (MCP-CAN) to J24:17 and J24:18",
+            "State": true
         },
-        "PWM3 or 12V": {
-            "Label B": "Connect PWM3 Output to J18:10",
-            "State": false,
-            "Label A": "Connect J18:10 to +12VDC",
-            "SSS2 setting": 45
+        "PWMs or CAN2": {
+            "SSS2 setting": 40,
+            "Label A": "Connect CAN2 to J18:15 and J18:16",
+            "Label B": "Connect PWM1 to J18:15 and PWM2 to J18:16",
+            "State": true
+        },
+        "Ground Out 1": {
+            "SSS2 setting": 47,
+            "Label": "Connect Ground to Port 17 (J18:1)",
+            "State": false
         },
         "Ground Out 2": {
-            "State": false,
             "SSS2 setting": 48,
-            "Label": "Connect Ground to Port 12 (J24:12)"
+            "Label": "Connect Ground to Port 12 (J24:12)",
+            "State": false
         },
-        "PWM2 Connect": {
-            "State": true,
-            "SSS2 setting": 68,
-            "Label": "Connect PWM2 Output to J24:14"
+        "Port 10 or 19": {
+            "SSS2 setting": 37,
+            "Label A": "Connect Vout B to J24:10",
+            "Label B": "Connect Potentiometer 10 to J24:10",
+            "State": false
+        },
+        "12V Out 2": {
+            "SSS2 setting": 46,
+            "Label": "Connect +12V to Port 11 (J24:11)",
+            "State": false
+        },
+        "LIN Master Pullup Resistor": {
+            "SSS2 setting": 44,
+            "Label": "Connect LIN Master Pullup Resistor",
+            "State": true
+        },
+        "Port 15 or 18": {
+            "SSS2 setting": 38,
+            "Label A": "Connect Vout A to J24:15",
+            "Label B": "Connect Potentiometer 15 to J24:15",
+            "State": false
+        },
+        "LIN to Port 16": {
+            "SSS2 setting": 72,
+            "Label": "Connect LIN to Port 16 (J24:16)",
+            "State": false
+        },
+        "CAN2": {
+            "SSS2 setting": 43,
+            "Label": "Connect CAN2 (FlexCAN1) Termination Resistor (E-CAN)",
+            "State": true
+        },
+        "CAN0": {
+            "SSS2 setting": 41,
+            "Label": "Connect CAN0 (FlexCAN0) Termination Resistor (J1939)",
+            "State": true
+        },
+        "PWM3 or 12V": {
+            "SSS2 setting": 45,
+            "Label A": "Connect J18:10 to +12VDC",
+            "Label B": "Connect PWM3 Output to J18:10",
+            "State": false
+        },
+        "PWM1 Connect": {
+            "SSS2 setting": 67,
+            "Label": "Connect PWM1 Output to J24:13",
+            "State": true
+        },
+        "PWM4 or Ground": {
+            "SSS2 setting": 47,
+            "Label A": "Connect J18:1 to Ground",
+            "Label B": "Connect PWM4 Output to J18:1",
+            "State": false
+        },
+        "LIN to SHLD": {
+            "SSS2 setting": 71,
+            "Label": "Connect LIN to Round Pin E (J10:5)",
+            "State": false
         }
     },
-    "Potentiometers": {
-        "Group A": {
-            "Terminal A Connection": true,
-            "Label": "Potentiometers 1 though 8",
-            "SSS2 Setting": 73,
-            "Pairs": {
-                "U1U2": {
-                    "SSS Setting": 25,
-                    "Name": "Terminal A Voltage for U1 and U2",
-                    "Terminal A Voltage": "+5V",
-                    "Pots": {
-                        "U2": {
-                            "Application": "Application Description",
-                            "Term. A Connect": true,
-                            "ECU Pins": "ECU Pins",
-                            "SSS2 Wiper Setting": 2,
-                            "Term. B Connect": true,
-                            "SSS2 TCON Setting": 52,
-                            "Wiper Connect": true,
-                            "Port": "2",
-                            "Wiper Position": 200,
-                            "Pin": "J24:2",
-                            "Name": "Potentiometer 2",
-                            "Resistance": "10k"
-                        },
-                        "U1": {
-                            "Application": "Application Description",
-                            "Term. A Connect": true,
-                            "ECM Fault Low Setting": 0,
-                            "ECU Pins": "ECU Pins",
-                            "ECM Fault High Setting": 255,
-                            "SSS2 Wiper Setting": 1,
-                            "Term. B Connect": true,
-                            "SSS2 TCON Setting": 51,
-                            "Wiper Connect": true,
-                            "Port": "1",
-                            "Wiper Position": 210,
-                            "Pin": "J24:1",
-                            "Name": "Potentiometer 1",
-                            "Resistance": "10k"
-                        }
-                    }
-                },
-                "U3U4": {
-                    "SSS Setting": 26,
-                    "Name": "Terminal A Voltage for U3 and U4",
-                    "Terminal A Voltage": "+12V",
-                    "Pots": {
-                        "U3": {
-                            "Application": "Application Description",
-                            "Term. A Connect": true,
-                            "ECU Pins": "ECU Pins",
-                            "SSS2 Wiper Setting": 3,
-                            "Term. B Connect": true,
-                            "SSS2 TCON Setting": 53,
-                            "Wiper Connect": true,
-                            "Port": "3",
-                            "Wiper Position": 190,
-                            "Pin": "J24:3",
-                            "Name": "Potentiometer 3",
-                            "Resistance": "10k"
-                        },
-                        "U4": {
-                            "Application": "Application Description",
-                            "Term. A Connect": true,
-                            "ECU Pins": "ECU Pins",
-                            "SSS2 Wiper Setting": 4,
-                            "Term. B Connect": false,
-                            "SSS2 TCON Setting": 54,
-                            "Wiper Connect": true,
-                            "Port": "4",
-                            "Wiper Position": 180,
-                            "Pin": "J24:4",
-                            "Name": "Potentiometer 4",
-                            "Resistance": "10k"
-                        }
-                    }
-                },
-                "U5U6": {
-                    "SSS Setting": 27,
-                    "Name": "Terminal A Voltage for U5 and U6",
-                    "Terminal A Voltage": "+12V",
-                    "Pots": {
-                        "U6": {
-                            "Application": "Application Description",
-                            "Term. A Connect": true,
-                            "ECU Pins": "ECU Pins",
-                            "SSS2 Wiper Setting": 6,
-                            "Term. B Connect": true,
-                            "SSS2 TCON Setting": 56,
-                            "Wiper Connect": true,
-                            "Port": "6",
-                            "Wiper Position": 160,
-                            "Pin": "J24:6",
-                            "Name": "Potentiometer 6",
-                            "Resistance": "100k"
-                        },
-                        "U5": {
-                            "Application": "Application Description",
-                            "Term. A Connect": true,
-                            "ECU Pins": "ECU Pins",
-                            "SSS2 Wiper Setting": 5,
-                            "Term. B Connect": true,
-                            "SSS2 TCON Setting": 55,
-                            "Wiper Connect": true,
-                            "Port": "5",
-                            "Wiper Position": 170,
-                            "Pin": "J24:5",
-                            "Name": "Potentiometer 5",
-                            "Resistance": "10k"
-                        }
-                    }
-                },
-                "U7U8": {
-                    "SSS Setting": 28,
-                    "Name": "Terminal A Voltage for U7 and U8",
-                    "Terminal A Voltage": "+12V",
-                    "Pots": {
-                        "U7": {
-                            "Application": "Application Description",
-                            "Term. A Connect": true,
-                            "ECU Pins": "ECU Pins",
-                            "SSS2 Wiper Setting": 7,
-                            "Term. B Connect": true,
-                            "SSS2 TCON Setting": 57,
-                            "Wiper Connect": true,
-                            "Port": "7",
-                            "Wiper Position": 150,
-                            "Pin": "J24:7",
-                            "Name": "Potentiometer 7",
-                            "Resistance": "100k"
-                        },
-                        "U8": {
-                            "Application": "Application Description",
-                            "Term. A Connect": true,
-                            "ECU Pins": "ECU Pins",
-                            "SSS2 Wiper Setting": 8,
-                            "Term. B Connect": true,
-                            "SSS2 TCON Setting": 58,
-                            "Wiper Connect": true,
-                            "Port": "8",
-                            "Wiper Position": 140,
-                            "Pin": "J24:8",
-                            "Name": "Potentiometer 8",
-                            "Resistance": "100k"
-                        }
-                    }
-                }
-            }
+    "Vehicle Model": "379",
+    "Programmed By": "Synercon Technologies, LLC",
+    "HVAdjOut": {
+        "Show Amplitude": false,
+        "Name": "High Current Regulator",
+        "Highest Voltage": 11.5,
+        "ECU Pins": "ECU Pins",
+        "Pin": "J24:19",
+        "Amplitude": 0,
+        "Alt. Pin": null,
+        "Average Voltage": 8.5,
+        "Application": "Application Description",
+        "SSS2 setting": 49,
+        "Show Frequency": false,
+        "Shape": "Constant",
+        "Port": " ",
+        "Frequency": 0,
+        "Lowest Voltage": 4,
+        "Alt. Pin Connect": false
+    },
+    "Serial Number": "SSS2-R03-XXXX",
+    "SSS2 Product Code": "UNIVERSAL",
+    "DACs": {
+        "Vout8": {
+            "Show Amplitude": false,
+            "SSS2 setting": 24,
+            "Highest Voltage": 5,
+            "ECU Pins": "ECU Pins",
+            "Pin": "J18:9",
+            "Amplitude": 0,
+            "Name": "Vout H",
+            "Average Voltage": 2.5,
+            "Application": "Application Description",
+            "Show Frequency": false,
+            "Shape": "Constant",
+            "Port": "25",
+            "Frequency": 0,
+            "Alt. Pin Connect": false,
+            "Lowest Voltage": 0,
+            "Alt. Pin": null
         },
-        "Group B": {
-            "Terminal A Connection": true,
-            "Label": "Potentiometers 9 though 19",
-            "SSS2 Setting": 74,
-            "Pairs": {
-                "U13U14": {
-                    "SSS Setting": 31,
-                    "Name": "Terminal A Voltage for U13 and U14",
-                    "Terminal A Voltage": "+12V",
-                    "Pots": {
-                        "U14": {
-                            "Application": "Application Description",
-                            "Term. A Connect": true,
-                            "ECU Pins": "ECU Pins",
-                            "SSS2 Wiper Setting": 14,
-                            "Term. B Connect": true,
-                            "SSS2 TCON Setting": 64,
-                            "Wiper Connect": true,
-                            "Port": "14",
-                            "Wiper Position": 80,
-                            "Pin": "J24:14",
-                            "Name": "Potentiometer 14",
-                            "Resistance": "100k"
-                        },
-                        "U13": {
-                            "Application": "Application Description",
-                            "Term. A Connect": true,
-                            "ECU Pins": "ECU Pins",
-                            "SSS2 Wiper Setting": 13,
-                            "Term. B Connect": true,
-                            "SSS2 TCON Setting": 63,
-                            "Wiper Connect": true,
-                            "Port": "13",
-                            "Wiper Position": 90,
-                            "Pin": "J24:13",
-                            "Name": "Potentiometer 13",
-                            "Resistance": "10k"
-                        }
-                    }
-                },
-                "U11U12": {
-                    "SSS Setting": 30,
-                    "Name": "Terminal A Voltage for U11 and U12",
-                    "Terminal A Voltage": "+12V",
-                    "Pots": {
-                        "U12": {
-                            "Application": "Application Description",
-                            "Term. A Connect": true,
-                            "ECU Pins": "ECU Pins",
-                            "SSS2 Wiper Setting": 12,
-                            "Term. B Connect": true,
-                            "SSS2 TCON Setting": 62,
-                            "Wiper Connect": true,
-                            "Port": "12",
-                            "Wiper Position": 100,
-                            "Pin": "J24:12",
-                            "Name": "Potentiometer 12",
-                            "Resistance": "100k"
-                        },
-                        "U11": {
-                            "Application": "Application Description",
-                            "Term. A Connect": true,
-                            "ECU Pins": "ECU Pins",
-                            "SSS2 Wiper Setting": 11,
-                            "Term. B Connect": true,
-                            "SSS2 TCON Setting": 61,
-                            "Wiper Connect": true,
-                            "Port": "11",
-                            "Wiper Position": 110,
-                            "Pin": "J24:11",
-                            "Name": "Potentiometer 11",
-                            "Resistance": "10k"
-                        }
-                    }
-                },
-                "U09U10": {
-                    "SSS Setting": 29,
-                    "Name": "Terminal A Voltage for U9 and U10",
-                    "Terminal A Voltage": "+12V",
-                    "Pots": {
-                        "U10": {
-                            "Application": "Application Description",
-                            "Term. A Connect": true,
-                            "ECU Pins": "ECU Pins",
-                            "SSS2 Wiper Setting": 10,
-                            "Term. B Connect": true,
-                            "SSS2 TCON Setting": 60,
-                            "Wiper Connect": true,
-                            "Port": "10",
-                            "Wiper Position": 120,
-                            "Pin": "J24:10",
-                            "Name": "Potentiometer 10",
-                            "Resistance": "100k"
-                        },
-                        "U09": {
-                            "Application": "Application Description",
-                            "Term. A Connect": true,
-                            "ECU Pins": "ECU Pins",
-                            "SSS2 Wiper Setting": 9,
-                            "Term. B Connect": true,
-                            "SSS2 TCON Setting": 59,
-                            "Wiper Connect": true,
-                            "Port": "9",
-                            "Wiper Position": 130,
-                            "Pin": "J24:9",
-                            "Name": "Potentiometer  9",
-                            "Resistance": "10k"
-                        }
-                    }
-                },
-                "U15U16": {
-                    "SSS Setting": 32,
-                    "Name": "Terminal A Voltage for U15 and U16",
-                    "Terminal A Voltage": "+12V",
-                    "Pots": {
-                        "U16": {
-                            "Application": "Application Description",
-                            "Term. A Connect": true,
-                            "ECU Pins": "ECU Pins",
-                            "SSS2 Wiper Setting": 16,
-                            "Term. B Connect": true,
-                            "SSS2 TCON Setting": 66,
-                            "Wiper Connect": true,
-                            "Port": "16",
-                            "Wiper Position": 60,
-                            "Pin": "J24:16",
-                            "Name": "Potentiometer 16",
-                            "Resistance": "100k"
-                        },
-                        "U15": {
-                            "Application": "Application Description",
-                            "Term. A Connect": true,
-                            "ECU Pins": "ECU Pins",
-                            "SSS2 Wiper Setting": 15,
-                            "Term. B Connect": true,
-                            "SSS2 TCON Setting": 65,
-                            "Wiper Connect": true,
-                            "Port": "15",
-                            "Wiper Position": 70,
-                            "Pin": "J24:15",
-                            "Name": "Potentiometer 15",
-                            "Resistance": "10k"
-                        }
-                    }
-                }
-            }
+        "Vout1": {
+            "Show Amplitude": false,
+            "SSS2 setting": 17,
+            "Highest Voltage": 5,
+            "ECU Pins": "ECU Pins",
+            "Pin": "J18:2",
+            "Amplitude": 0,
+            "Name": "Vout A",
+            "Average Voltage": 2.5,
+            "Application": "Application Description",
+            "Show Frequency": false,
+            "Shape": "Constant",
+            "Port": "18",
+            "Frequency": 0,
+            "Alt. Pin Connect": false,
+            "Lowest Voltage": 0,
+            "Alt. Pin": "J24:15"
         },
-        "Others": {
-            "Terminal A Connection": false,
-            "Label": "Potentiometers 17 though 19",
-            "SSS2 Setting": null,
-            "Pairs": {
-                "I2CPots": {
-                    "SSS Setting": null,
-                    "Name": "Terminal A Voltage is Fixed at +5V",
-                    "Terminal A Voltage": false,
-                    "Pots": {
-                        "U34": {
-                            "Application": "Application Description",
-                            "Term. A Connect": true,
-                            "ECU Pins": "ECU Pins",
-                            "SSS2 Wiper Setting": 75,
-                            "Term. B Connect": true,
-                            "SSS2 TCON Setting": 78,
-                            "Wiper Connect": true,
-                            "Port": "28",
-                            "Wiper Position": 20,
-                            "Pin": "J18:12",
-                            "Name": "Port 28 Potentiometer",
-                            "Resistance": "100k"
-                        },
-                        "U36": {
-                            "Application": "Application Description",
-                            "Term. A Connect": true,
-                            "ECU Pins": "ECU Pins",
-                            "SSS2 Wiper Setting": 76,
-                            "Term. B Connect": true,
-                            "SSS2 TCON Setting": 79,
-                            "Wiper Connect": true,
-                            "Port": "29",
-                            "Wiper Position": 50,
-                            "Pin": "J18:13",
-                            "Name": "Port 29 Potentiometer",
-                            "Resistance": "10k"
-                        },
-                        "U37": {
-                            "Application": "Application Description",
-                            "Term. A Connect": true,
-                            "ECU Pins": "ECU Pins",
-                            "SSS2 Wiper Setting": 77,
-                            "Term. B Connect": true,
-                            "SSS2 TCON Setting": 80,
-                            "Wiper Connect": true,
-                            "Port": "30",
-                            "Wiper Position": 50,
-                            "Pin": "J18:14",
-                            "Name": "Port 30 Potentiometer",
-                            "Resistance": "100k"
-                        }
-                    }
-                }
-            }
+        "Vout4": {
+            "Show Amplitude": false,
+            "SSS2 setting": 20,
+            "Highest Voltage": 5,
+            "ECU Pins": "ECU Pins",
+            "Pin": "J18:5",
+            "Amplitude": 0,
+            "Name": "Vout D",
+            "Average Voltage": 2.5,
+            "Application": "Application Description",
+            "Show Frequency": false,
+            "Shape": "Constant",
+            "Port": "21",
+            "Frequency": 0,
+            "Alt. Pin Connect": false,
+            "Lowest Voltage": 0,
+            "Alt. Pin": null
+        },
+        "Vout3": {
+            "Show Amplitude": false,
+            "SSS2 setting": 19,
+            "Highest Voltage": 5,
+            "ECU Pins": "ECU Pins",
+            "Pin": "J18:4",
+            "Amplitude": 0,
+            "Name": "Vout C",
+            "Average Voltage": 2.5,
+            "Application": "Application Description",
+            "Show Frequency": false,
+            "Shape": "Constant",
+            "Port": "20",
+            "Frequency": 0,
+            "Alt. Pin Connect": false,
+            "Lowest Voltage": 0,
+            "Alt. Pin": null
+        },
+        "Vout6": {
+            "Show Amplitude": false,
+            "SSS2 setting": 22,
+            "Highest Voltage": 5,
+            "ECU Pins": "ECU Pins",
+            "Pin": "J18:7",
+            "Amplitude": 0,
+            "Name": "Vout F",
+            "Average Voltage": 2.5,
+            "Application": "Application Description",
+            "Show Frequency": false,
+            "Shape": "Constant",
+            "Port": "23",
+            "Frequency": 0,
+            "Alt. Pin Connect": false,
+            "Lowest Voltage": 0,
+            "Alt. Pin": null
+        },
+        "Vout5": {
+            "Show Amplitude": false,
+            "SSS2 setting": 21,
+            "Highest Voltage": 5,
+            "ECU Pins": "ECU Pins",
+            "Pin": "J18:6",
+            "Amplitude": 0,
+            "Name": "Vout E",
+            "Average Voltage": 2.5,
+            "Application": "Application Description",
+            "Show Frequency": false,
+            "Shape": "Constant",
+            "Port": "22",
+            "Frequency": 0,
+            "Alt. Pin Connect": false,
+            "Lowest Voltage": 0,
+            "Alt. Pin": null
+        },
+        "Vout7": {
+            "Show Amplitude": false,
+            "SSS2 setting": 23,
+            "Highest Voltage": 5,
+            "ECU Pins": "ECU Pins",
+            "Pin": "J18:8",
+            "Amplitude": 0,
+            "Name": "Vout G",
+            "Average Voltage": 2.5,
+            "Application": "Application Description",
+            "Show Frequency": false,
+            "Shape": "Constant",
+            "Port": "24",
+            "Frequency": 0,
+            "Alt. Pin Connect": false,
+            "Lowest Voltage": 0,
+            "Alt. Pin": null
+        },
+        "Vout2": {
+            "Show Amplitude": false,
+            "SSS2 setting": 18,
+            "Highest Voltage": 5,
+            "ECU Pins": "ECU Pins",
+            "Pin": "J18:3",
+            "Amplitude": 0,
+            "Name": "Vout B",
+            "Average Voltage": 2.5,
+            "Application": "Application Description",
+            "Show Frequency": false,
+            "Shape": "Constant",
+            "Port": "19",
+            "Frequency": 0,
+            "Alt. Pin Connect": false,
+            "Lowest Voltage": 0,
+            "Alt. Pin": "J24:10"
         }
     },
     "SSS2 Source Address": 250,
-    "Vehicle Year": 2007,
-    "DACs": {
-        "Vout6": {
-            "Name": "Vout F",
-            "Application": "Application Description",
-            "Frequency": 0,
-            "Lowest Voltage": 0,
-            "Amplitude": 0,
-            "Average Voltage": 2.5,
-            "ECU Pins": "ECU Pins",
-            "Highest Voltage": 5,
-            "Pin": "J18:7",
-            "Alt. Pin": null,
-            "Alt. Pin Connect": false,
-            "Show Frequency": false,
-            "Port": "23",
-            "Show Amplitude": false,
-            "Shape": "Constant",
-            "SSS2 setting": 22
-        },
-        "Vout4": {
-            "Name": "Vout D",
-            "Application": "Application Description",
-            "Frequency": 0,
-            "Lowest Voltage": 0,
-            "Amplitude": 0,
-            "Average Voltage": 2.5,
-            "ECU Pins": "ECU Pins",
-            "Highest Voltage": 5,
-            "Pin": "J18:5",
-            "Alt. Pin": null,
-            "Alt. Pin Connect": false,
-            "Show Frequency": false,
-            "Port": "21",
-            "Show Amplitude": false,
-            "Shape": "Constant",
-            "SSS2 setting": 20
-        },
-        "Vout7": {
-            "Name": "Vout G",
-            "Application": "Application Description",
-            "Frequency": 0,
-            "Lowest Voltage": 0,
-            "Amplitude": 0,
-            "Average Voltage": 2.5,
-            "ECU Pins": "ECU Pins",
-            "Highest Voltage": 5,
-            "Pin": "J18:8",
-            "Alt. Pin": null,
-            "Alt. Pin Connect": false,
-            "Show Frequency": false,
-            "Port": "24",
-            "Show Amplitude": false,
-            "Shape": "Constant",
-            "SSS2 setting": 23
-        },
-        "Vout8": {
-            "Name": "Vout H",
-            "Application": "Application Description",
-            "Frequency": 0,
-            "Lowest Voltage": 0,
-            "Amplitude": 0,
-            "Average Voltage": 2.5,
-            "ECU Pins": "ECU Pins",
-            "Highest Voltage": 5,
-            "Pin": "J18:9",
-            "Alt. Pin": null,
-            "Alt. Pin Connect": false,
-            "Show Frequency": false,
-            "Port": "25",
-            "Show Amplitude": false,
-            "Shape": "Constant",
-            "SSS2 setting": 24
-        },
-        "Vout1": {
-            "Name": "Vout A",
-            "Application": "Application Description",
-            "Frequency": 0,
-            "Lowest Voltage": 0,
-            "SSS2 setting": 17,
-            "Average Voltage": 2.5,
-            "ECU Pins": "ECU Pins",
-            "Highest Voltage": 5,
-            "Pin": "J18:2",
-            "Alt. Pin": "J24:15",
-            "Alt. Pin Connect": false,
-            "Show Frequency": false,
-            "Port": "18",
-            "Show Amplitude": false,
-            "Shape": "Constant",
-            "Amplitude": 0
-        },
-        "Vout3": {
-            "Name": "Vout C",
-            "Application": "Application Description",
-            "Frequency": 0,
-            "Lowest Voltage": 0,
-            "SSS2 setting": 19,
-            "Average Voltage": 2.5,
-            "ECU Pins": "ECU Pins",
-            "Highest Voltage": 5,
-            "Pin": "J18:4",
-            "Alt. Pin": null,
-            "Alt. Pin Connect": false,
-            "Show Frequency": false,
-            "Port": "20",
-            "Show Amplitude": false,
-            "Shape": "Constant",
-            "Amplitude": 0
-        },
-        "Vout5": {
-            "Name": "Vout E",
-            "Application": "Application Description",
-            "Frequency": 0,
-            "Lowest Voltage": 0,
-            "Amplitude": 0,
-            "Average Voltage": 2.5,
-            "ECU Pins": "ECU Pins",
-            "Highest Voltage": 5,
-            "Pin": "J18:6",
-            "Alt. Pin": null,
-            "Alt. Pin Connect": false,
-            "Show Frequency": false,
-            "Port": "22",
-            "Show Amplitude": false,
-            "Shape": "Constant",
-            "SSS2 setting": 21
-        },
-        "Vout2": {
-            "Name": "Vout B",
-            "Application": "Application Description",
-            "Frequency": 0,
-            "Lowest Voltage": 0,
-            "Amplitude": 0,
-            "Average Voltage": 2.5,
-            "ECU Pins": "ECU Pins",
-            "Highest Voltage": 5,
-            "Pin": "J18:3",
-            "Alt. Pin": "J24:10",
-            "Alt. Pin Connect": false,
-            "Show Frequency": false,
-            "Port": "19",
-            "Show Amplitude": false,
-            "Shape": "Constant",
-            "SSS2 setting": 18
-        }
-    },
+    "ECU Model": "ADEM III",
+    "ECU Software Version": "",
+    "Engine Serial Number": "BSX1234",
     "Component ID": "SYNER*SSS2-R03*XXXX*UNIVERSAL",
     "PWMs": {
-        "PWM1": {
-            "SSS2 alt setting": 40,
-            "Application": "Application Description",
-            "Frequency": 200,
-            "Lowest Voltage": 0,
-            "SSS2 freq setting": 81,
-            "ECU Pins": "ECU Pins",
-            "Show Frequency": true,
-            "Pin": "J24:13",
-            "Highest Voltage": 5,
-            "Duty Cycle": 1,
-            "Alt. Pin Connect": true,
-            "Lowest Frequency": 0,
-            "Port": "31",
-            "Alt. Pin": "J18:15",
-            "Name": "PWM1",
-            "SSS2 pin setting": 67,
-            "Highest Frequency": 5000,
-            "SSS2 setting": 33,
-            "Alt. Port": "13",
-            "Pin Connect": true
-        },
-        "PWM4": {
-            "SSS2 alt setting": null,
-            "Application": "Application Description",
-            "Frequency": 200,
-            "Lowest Voltage": 0,
-            "SSS2 freq setting": 84,
-            "ECU Pins": "ECU Pins",
-            "Show Frequency": true,
-            "Pin": "J18:1",
-            "Highest Voltage": 5,
-            "Duty Cycle": 4,
-            "Alt. Pin Connect": null,
-            "Lowest Frequency": 0,
-            "Port": "17",
-            "Alt. Pin": "",
-            "Name": "PWM4",
-            "SSS2 pin setting": 70,
-            "Highest Frequency": 5000,
-            "SSS2 setting": 36,
-            "Alt. Port": null,
-            "Pin Connect": true
-        },
-        "PWM3": {
-            "SSS2 alt setting": null,
-            "Application": "Application Description",
-            "Frequency": 200,
-            "Lowest Voltage": 0,
-            "SSS2 freq setting": 83,
-            "ECU Pins": "ECU Pins",
-            "Show Frequency": true,
-            "Pin": "J18:10",
-            "Highest Voltage": 5,
-            "Duty Cycle": 3,
-            "Alt. Pin Connect": null,
-            "Lowest Frequency": 0,
-            "Port": "27",
-            "Alt. Pin": "",
-            "Name": "PWM3",
-            "SSS2 pin setting": 69,
-            "Highest Frequency": 5000,
-            "SSS2 setting": 35,
-            "Alt. Port": null,
-            "Pin Connect": true
-        },
         "PWM2": {
-            "SSS2 alt setting": 40,
-            "Application": "Application Description",
-            "Frequency": 200,
-            "Lowest Voltage": 0,
-            "SSS2 freq setting": 82,
-            "ECU Pins": "ECU Pins",
-            "Show Frequency": true,
-            "Pin": "J24:14",
+            "Name": "PWM2",
+            "SSS2 setting": 34,
             "Highest Voltage": 5,
+            "ECU Pins": "ECU Pins",
+            "Pin": "J24:14",
+            "Pin Connect": true,
+            "Highest Frequency": 5000,
+            "SSS2 freq setting": 82,
+            "Application": "Application Description",
             "Duty Cycle": 2,
-            "Alt. Pin Connect": true,
+            "SSS2 alt setting": 40,
+            "SSS2 pin setting": 68,
+            "Alt. Port": "14",
+            "Show Frequency": true,
+            "Alt. Pin": "J18:16",
             "Lowest Frequency": 0,
             "Port": "32",
-            "Alt. Pin": "J18:16",
-            "Name": "PWM2",
-            "SSS2 pin setting": 68,
+            "Frequency": 200,
+            "Lowest Voltage": 0,
+            "Alt. Pin Connect": true
+        },
+        "PWM4": {
+            "Name": "PWM4",
+            "SSS2 setting": 36,
+            "Highest Voltage": 5,
+            "ECU Pins": "ECU Pins",
+            "Pin": "J18:1",
+            "Pin Connect": true,
             "Highest Frequency": 5000,
-            "SSS2 setting": 34,
-            "Alt. Port": "14",
-            "Pin Connect": true
+            "SSS2 freq setting": 84,
+            "Application": "Application Description",
+            "Duty Cycle": 4,
+            "SSS2 alt setting": null,
+            "SSS2 pin setting": 70,
+            "Alt. Port": null,
+            "Show Frequency": true,
+            "Alt. Pin": "",
+            "Lowest Frequency": 0,
+            "Port": "17",
+            "Frequency": 200,
+            "Lowest Voltage": 0,
+            "Alt. Pin Connect": null
+        },
+        "PWM1": {
+            "Name": "PWM1",
+            "SSS2 setting": 33,
+            "Highest Voltage": 5,
+            "ECU Pins": "ECU Pins",
+            "Pin": "J24:13",
+            "Pin Connect": true,
+            "Highest Frequency": 5000,
+            "SSS2 freq setting": 81,
+            "Application": "Application Description",
+            "Duty Cycle": 1,
+            "SSS2 alt setting": 40,
+            "SSS2 pin setting": 67,
+            "Alt. Port": "13",
+            "Show Frequency": true,
+            "Alt. Pin": "J18:15",
+            "Lowest Frequency": 0,
+            "Port": "31",
+            "Frequency": 200,
+            "Lowest Voltage": 0,
+            "Alt. Pin Connect": true
+        },
+        "PWM3": {
+            "Name": "PWM3",
+            "SSS2 setting": 35,
+            "Highest Voltage": 5,
+            "ECU Pins": "ECU Pins",
+            "Pin": "J18:10",
+            "Pin Connect": true,
+            "Highest Frequency": 5000,
+            "SSS2 freq setting": 83,
+            "Application": "Application Description",
+            "Duty Cycle": 3,
+            "SSS2 alt setting": null,
+            "SSS2 pin setting": 69,
+            "Alt. Port": null,
+            "Show Frequency": true,
+            "Alt. Pin": "",
+            "Lowest Frequency": 0,
+            "Port": "27",
+            "Frequency": 200,
+            "Lowest Voltage": 0,
+            "Alt. Pin Connect": null
         }
     },
-    "Notes": "Enter Notes Here."
+    "Saved Date": "4/5/17",
+    "Engine Model": "3126",
+    "Original Creation Date": "4/5/17",
+    "Original File SHA": "Current Settings Not Saved.",
+    "Notes": "Enter Notes Here.",
+    "ECU Make": "Caterpillar",
+    "Potentiometers": {
+        "Others": {
+            "Terminal A Connection": false,
+            "SSS2 Setting": null,
+            "Pairs": {
+                "I2CPots": {
+                    "Name": "Terminal A Voltage is Fixed at +5V",
+                    "Pots": {
+                        "U37": {
+                            "Name": "Port 30 Potentiometer",
+                            "Wiper Connect": true,
+                            "ECU Pins": "ECU Pins",
+                            "Pin": "J18:14",
+                            "Resistance": "100k",
+                            "Application": "Application Description",
+                            "Term. B Connect": true,
+                            "SSS2 TCON Setting": 80,
+                            "Port": "30",
+                            "Term. A Connect": true,
+                            "SSS2 Wiper Setting": 77,
+                            "Wiper Position": 50
+                        },
+                        "U36": {
+                            "Name": "Port 29 Potentiometer",
+                            "Wiper Connect": true,
+                            "ECU Pins": "ECU Pins",
+                            "Pin": "J18:13",
+                            "Resistance": "10k",
+                            "Application": "Application Description",
+                            "Term. B Connect": true,
+                            "SSS2 TCON Setting": 79,
+                            "Port": "29",
+                            "Term. A Connect": true,
+                            "SSS2 Wiper Setting": 76,
+                            "Wiper Position": 50
+                        },
+                        "U34": {
+                            "Name": "Port 28 Potentiometer",
+                            "Wiper Connect": true,
+                            "ECU Pins": "ECU Pins",
+                            "Pin": "J18:12",
+                            "Resistance": "100k",
+                            "Application": "Application Description",
+                            "Term. B Connect": true,
+                            "SSS2 TCON Setting": 78,
+                            "Port": "28",
+                            "Term. A Connect": true,
+                            "SSS2 Wiper Setting": 75,
+                            "Wiper Position": 20
+                        }
+                    },
+                    "Terminal A Voltage": false,
+                    "SSS Setting": null
+                }
+            },
+            "Label": "Potentiometers 17 though 19"
+        },
+        "Group B": {
+            "Terminal A Connection": true,
+            "SSS2 Setting": 74,
+            "Pairs": {
+                "U15U16": {
+                    "Name": "Terminal A Voltage for U15 and U16",
+                    "Pots": {
+                        "U15": {
+                            "Name": "Potentiometer 15",
+                            "Wiper Connect": true,
+                            "ECU Pins": "ECU Pins",
+                            "Pin": "J24:15",
+                            "Resistance": "10k",
+                            "Application": "Application Description",
+                            "Term. B Connect": true,
+                            "SSS2 TCON Setting": 65,
+                            "Port": "15",
+                            "Term. A Connect": true,
+                            "SSS2 Wiper Setting": 15,
+                            "Wiper Position": 70
+                        },
+                        "U16": {
+                            "Name": "Potentiometer 16",
+                            "Wiper Connect": true,
+                            "ECU Pins": "ECU Pins",
+                            "Pin": "J24:16",
+                            "Resistance": "100k",
+                            "Application": "Application Description",
+                            "Term. B Connect": true,
+                            "SSS2 TCON Setting": 66,
+                            "Port": "16",
+                            "Term. A Connect": true,
+                            "SSS2 Wiper Setting": 16,
+                            "Wiper Position": 60
+                        }
+                    },
+                    "Terminal A Voltage": "+12V",
+                    "SSS Setting": 32
+                },
+                "U11U12": {
+                    "Name": "Terminal A Voltage for U11 and U12",
+                    "Pots": {
+                        "U12": {
+                            "Name": "Potentiometer 12",
+                            "Wiper Connect": true,
+                            "ECU Pins": "ECU Pins",
+                            "Pin": "J24:12",
+                            "Resistance": "100k",
+                            "Application": "Application Description",
+                            "Term. B Connect": true,
+                            "SSS2 TCON Setting": 62,
+                            "Port": "12",
+                            "Term. A Connect": true,
+                            "SSS2 Wiper Setting": 12,
+                            "Wiper Position": 100
+                        },
+                        "U11": {
+                            "Name": "Potentiometer 11",
+                            "Wiper Connect": true,
+                            "ECU Pins": "ECU Pins",
+                            "Pin": "J24:11",
+                            "Resistance": "10k",
+                            "Application": "Application Description",
+                            "Term. B Connect": true,
+                            "SSS2 TCON Setting": 61,
+                            "Port": "11",
+                            "Term. A Connect": true,
+                            "SSS2 Wiper Setting": 11,
+                            "Wiper Position": 110
+                        }
+                    },
+                    "Terminal A Voltage": "+12V",
+                    "SSS Setting": 30
+                },
+                "U13U14": {
+                    "Name": "Terminal A Voltage for U13 and U14",
+                    "Pots": {
+                        "U13": {
+                            "Name": "Potentiometer 13",
+                            "Wiper Connect": true,
+                            "ECU Pins": "ECU Pins",
+                            "Pin": "J24:13",
+                            "Resistance": "10k",
+                            "Application": "Application Description",
+                            "Term. B Connect": true,
+                            "SSS2 TCON Setting": 63,
+                            "Port": "13",
+                            "Term. A Connect": true,
+                            "SSS2 Wiper Setting": 13,
+                            "Wiper Position": 90
+                        },
+                        "U14": {
+                            "Name": "Potentiometer 14",
+                            "Wiper Connect": true,
+                            "ECU Pins": "ECU Pins",
+                            "Pin": "J24:14",
+                            "Resistance": "100k",
+                            "Application": "Application Description",
+                            "Term. B Connect": true,
+                            "SSS2 TCON Setting": 64,
+                            "Port": "14",
+                            "Term. A Connect": true,
+                            "SSS2 Wiper Setting": 14,
+                            "Wiper Position": 80
+                        }
+                    },
+                    "Terminal A Voltage": "+12V",
+                    "SSS Setting": 31
+                },
+                "U09U10": {
+                    "Name": "Terminal A Voltage for U9 and U10",
+                    "Pots": {
+                        "U09": {
+                            "Name": "Potentiometer  9",
+                            "Wiper Connect": true,
+                            "ECU Pins": "ECU Pins",
+                            "Pin": "J24:9",
+                            "Resistance": "10k",
+                            "Application": "Application Description",
+                            "Term. B Connect": true,
+                            "SSS2 TCON Setting": 59,
+                            "Port": "9",
+                            "Term. A Connect": true,
+                            "SSS2 Wiper Setting": 9,
+                            "Wiper Position": 130
+                        },
+                        "U10": {
+                            "Name": "Potentiometer 10",
+                            "Wiper Connect": true,
+                            "ECU Pins": "ECU Pins",
+                            "Pin": "J24:10",
+                            "Resistance": "100k",
+                            "Application": "Application Description",
+                            "Term. B Connect": true,
+                            "SSS2 TCON Setting": 60,
+                            "Port": "10",
+                            "Term. A Connect": true,
+                            "SSS2 Wiper Setting": 10,
+                            "Wiper Position": 120
+                        }
+                    },
+                    "SSS Setting": 29,
+                    "Terminal A Voltage": "+12V"
+                }
+            },
+            "Label": "Potentiometers 9 though 19"
+        },
+        "Group A": {
+            "Terminal A Connection": true,
+            "SSS2 Setting": 73,
+            "Pairs": {
+                "U1U2": {
+                    "Name": "Terminal A Voltage for U1 and U2",
+                    "Pots": {
+                        "U1": {
+                            "Name": "Potentiometer 1",
+                            "Wiper Connect": true,
+                            "ECU Pins": "ECU Pins",
+                            "Pin": "J24:1",
+                            "Resistance": "10k",
+                            "Application": "Application Description",
+                            "Term. B Connect": true,
+                            "ECM Fault Low Setting": 0,
+                            "SSS2 TCON Setting": 51,
+                            "Port": "1",
+                            "Term. A Connect": true,
+                            "SSS2 Wiper Setting": 1,
+                            "ECM Fault High Setting": 255,
+                            "Wiper Position": 210
+                        },
+                        "U2": {
+                            "Name": "Potentiometer 2",
+                            "Wiper Connect": true,
+                            "ECU Pins": "ECU Pins",
+                            "Pin": "J24:2",
+                            "Resistance": "10k",
+                            "Application": "Application Description",
+                            "Term. B Connect": true,
+                            "SSS2 TCON Setting": 52,
+                            "Port": "2",
+                            "Term. A Connect": true,
+                            "SSS2 Wiper Setting": 2,
+                            "Wiper Position": 200
+                        }
+                    },
+                    "Terminal A Voltage": "+5V",
+                    "SSS Setting": 25
+                },
+                "U3U4": {
+                    "Name": "Terminal A Voltage for U3 and U4",
+                    "Pots": {
+                        "U4": {
+                            "Name": "Potentiometer 4",
+                            "Wiper Connect": true,
+                            "ECU Pins": "ECU Pins",
+                            "Pin": "J24:4",
+                            "Resistance": "10k",
+                            "Application": "Application Description",
+                            "Term. B Connect": false,
+                            "SSS2 TCON Setting": 54,
+                            "Port": "4",
+                            "Term. A Connect": true,
+                            "SSS2 Wiper Setting": 4,
+                            "Wiper Position": 180
+                        },
+                        "U3": {
+                            "Name": "Potentiometer 3",
+                            "Wiper Connect": true,
+                            "ECU Pins": "ECU Pins",
+                            "Pin": "J24:3",
+                            "Resistance": "10k",
+                            "Application": "Application Description",
+                            "Term. B Connect": true,
+                            "SSS2 TCON Setting": 53,
+                            "Port": "3",
+                            "Term. A Connect": true,
+                            "SSS2 Wiper Setting": 3,
+                            "Wiper Position": 190
+                        }
+                    },
+                    "Terminal A Voltage": "+12V",
+                    "SSS Setting": 26
+                },
+                "U5U6": {
+                    "Name": "Terminal A Voltage for U5 and U6",
+                    "Pots": {
+                        "U6": {
+                            "Name": "Potentiometer 6",
+                            "Wiper Connect": true,
+                            "ECU Pins": "ECU Pins",
+                            "Pin": "J24:6",
+                            "Resistance": "100k",
+                            "Application": "Application Description",
+                            "Term. B Connect": true,
+                            "SSS2 TCON Setting": 56,
+                            "Port": "6",
+                            "Term. A Connect": true,
+                            "SSS2 Wiper Setting": 6,
+                            "Wiper Position": 160
+                        },
+                        "U5": {
+                            "Name": "Potentiometer 5",
+                            "Wiper Connect": true,
+                            "ECU Pins": "ECU Pins",
+                            "Pin": "J24:5",
+                            "Resistance": "10k",
+                            "Application": "Application Description",
+                            "Term. B Connect": true,
+                            "SSS2 TCON Setting": 55,
+                            "Port": "5",
+                            "Term. A Connect": true,
+                            "SSS2 Wiper Setting": 5,
+                            "Wiper Position": 170
+                        }
+                    },
+                    "Terminal A Voltage": "+12V",
+                    "SSS Setting": 27
+                },
+                "U7U8": {
+                    "Name": "Terminal A Voltage for U7 and U8",
+                    "Pots": {
+                        "U8": {
+                            "Name": "Potentiometer 8",
+                            "Wiper Connect": true,
+                            "ECU Pins": "ECU Pins",
+                            "Pin": "J24:8",
+                            "Resistance": "100k",
+                            "Application": "Application Description",
+                            "Term. B Connect": true,
+                            "SSS2 TCON Setting": 58,
+                            "Port": "8",
+                            "Term. A Connect": true,
+                            "SSS2 Wiper Setting": 8,
+                            "Wiper Position": 140
+                        },
+                        "U7": {
+                            "Name": "Potentiometer 7",
+                            "Wiper Connect": true,
+                            "ECU Pins": "ECU Pins",
+                            "Pin": "J24:7",
+                            "Resistance": "100k",
+                            "Application": "Application Description",
+                            "Term. B Connect": true,
+                            "SSS2 TCON Setting": 57,
+                            "Port": "7",
+                            "Term. A Connect": true,
+                            "SSS2 Wiper Setting": 7,
+                            "Wiper Position": 150
+                        }
+                    },
+                    "Terminal A Voltage": "+12V",
+                    "SSS Setting": 28
+                }
+            },
+            "Label": "Potentiometers 1 though 8"
+        }
+    },
+    "ECU Component ID": "ADEM III",
+    "Vehicle Year": 2007,
+    "Engine Configuration": " ",
+    "Software ID": "SSS2*Rev3*0.4*bb1672fcd2fb80092faaea9b7877db6d12e86da2",
+    "CAN": {
+        " 10": "CCVS1 from Body Controller, 10,1,0,0,100,0,0,1,18FEF121,8, 0, 0, 0, 0, 0, 0, 0, 0,Yes",
+        "  7": "EBC1 from Brake Controller, 7,1,0,0, 100,0,0,1,18F0010B,8, 0, 0, 0, 0, 0, 0, 0, 0,Yes",
+        "  5": "HRW from Brake Controller,5,1,0,0,20,0,0,1, CFE6E0B,8, 0, 0, 0, 0, 0, 0, 0, 0,No",
+        "  1": "DDEC MCM 01,2,1,0,1,10,   0,0,1, 8FF0001,8, 0, 0, 0, 0, 0, 0, 0, 0,No",
+        " 23": "DDEC Fault Codes from ACM,22,2,0,1,   5,1000,0,1,10ECFF3D,8,20,0E,00,01,FF,CA,FE,00,Yes",
+        " 22": "DDEC Fault Codes from MCM,21,2,1,1,   5,1000,0,1,10EBFF01,8,01, 0, 0, 0, 0, 0, 0, 0,Yes",
+        "  6": "EBC1 from Cab Controller, 6,1,0,0, 100,0,0,1,18F00131,8, 0, 0, 0, 0, 0, 0, 0, 0,Yes",
+        " 15": "CM1 from Cab Display,15,1,0,0,100,   0,0,1,18E00028,8, 0, 0, 0, 0, 0, 0, 0, 0,Yes",
+        "  2": "DDEC TCM 01,1,1,0,1,10,   0,0,1, CF00203,8, 0, 0, 0, 0, 0, 0, 0, 0,No",
+        " 20": "PTO from Cab Controller,20,1,0,0, 100,   0,0,1,18FEF031,8, 0, 0, 0, 0, 0, 0, 0, 0,Yes",
+        " 25": "AMB from Body Controller,23,1,0,0,1000,   0,0,1,18FEF521,8, 0, 0, 0, 0, 0, 0, 0, 0,Yes",
+        " 24": "DDEC Fault Codes from ACM,22,2,1,1,   5,1000,0,1,10EBFF3D,8,01, 0, 0, 0, 0, 0, 0, 0,Yes",
+        " 19": "PTO from Cab Display,19,1,0,0, 100,   0,0,1,18FEF028,8, 0, 0, 0, 0, 0, 0, 0, 0,Yes",
+        " 17": "PTO from Instrument Cluster,17,1,0,0, 100,   0,0,1,18FEF017,8, 0, 0, 0, 0, 0, 0, 0, 0,Yes",
+        " 12": "CM1 from Instrument Cluster,12,1,0,0,100,   0,0,1,18E00017,8, 0, 0, 0, 0, 0, 0, 0, 0,Yes",
+        " 21": "DDEC Fault Codes from MCM,21,2,0,1,   5,1000,0,1,10ECFF01,8,20,0E,00,01,FF,CA,FE,00,Yes",
+        "  3": "DDEC TCM 02,3,1,0,1,10,   0,0,1, 8FF0303,8, 0, 0, 0, 0, 0, 0, 0, 0,No",
+        " 18": "PTO from Body Controller,18,1,0,0,100,   0,0,1,18FEF021,8, 0, 0, 0, 0, 0, 0, 0, 0,Yes",
+        "  8": "CCVS1 from Instrument Cluster, 8,1,0,0, 100,0,0,1,18FEF117,8, 0, 0, 0, 0, 0, 0, 0, 0,Yes",
+        " 14": "CM1 from Body Controller,14,1,0,0,100,   0,0,1,18E00021,8, 0, 0, 0, 0, 0, 0, 0, 0,Yes",
+        " 11": "CCVS1 from Cab Controller,11,1,0,0,100,0,0,1,18FEF131,8, 0, 0, 0, 0, 0, 0, 0, 0,Yes",
+        " 16": "CM1 from Cab Controller,16,1,0,0,100,   0,0,1,18E00031,8, 0, 0, 0, 0, 0, 0, 0, 0,Yes",
+        " 13": "CM1 from Climate Control 1,13,1,0,0,100,   0,0,1,18E00019,8, 0, 0, 0, 0, 0, 0, 0, 0,Yes",
+        "  4": "DDEC TCM 03,4,1,0,1,100,   0,0,1,18F00503,8, 0, 0, 0, 0, 0, 0, 0, 0,No",
+        "  9": "CCVS1 from Cab Display 1, 9,1,0,0,100,0,0,1,18FEF128,8, 0, 0, 0, 0, 0, 0, 0, 0,Yes"
+    },
+    "Vehicle Make": "Peterbilt"
 }

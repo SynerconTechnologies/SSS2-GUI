@@ -322,11 +322,10 @@ class SSS2(ttk.Frame):
          
     def display_file_shas(self):
         self.file_box = tk.Frame(self)
-        self.file_box.grid(row=2,column=1,rowspan=3)
+        self.file_box.grid(row=2,column=0,rowspan=1,sticky=tk.W)
 
         tk.Label(self.file_box,text="Settings File:").grid(row=0,column=0,sticky=tk.E)
-        self.file_status_string = tk.StringVar(name='file_status_string')
-        self.file_status_string.set("Default Settings Loaded")
+        self.file_status_string = tk.StringVar(value="Default Settings Loaded")
         self.file_status_label = tk.Label(self.file_box, textvariable=self.file_status_string,name="file_status_label")
         self.file_status_label.grid(row=0,column=1,sticky=tk.W)
 
@@ -358,26 +357,26 @@ class SSS2(ttk.Frame):
                                                      defaultextension=".SSS2")
         with open(self.filename,'r') as infile:
             self.settings_dict=json.load(infile)
-
-        self.file_status_string.set("Opened "+self.filename)
-        print("Opened "+self.filename)
-
         
 
         digest_from_file=self.settings_dict["SHA256 Digest"]
         print("digest_from_file: ",end='')
         print(digest_from_file)
+        
+        newhash=self.get_settings_hash()
 
+        print("newhash:          ",end='')
+        print(newhash)
+        
         self.load_settings_file()
         ok_to_open = False
         
-        newhash=self.get_settings_hash()
-        print("newhash:          ",end='')
-        print(newhash)
         if newhash==digest_from_file:
             print("Hash digests match.")
             sss2_id = self.settings_dict["SSS2 Product Code"]
-            if not sss2_id == "UNIVERSAL":
+            if  sss2_id == "UNIVERSAL":
+                ok_to_open = True
+            else:
                 try:
                     if self.serial.isOpen():
                         
@@ -415,8 +414,13 @@ class SSS2(ttk.Frame):
             self.file_status_string.set("Error Opening "+self.filename)
         if ok_to_open:
             self.load_settings_file()
+            self.file_status_string.set(self.filename)
+            print("Opened "+self.filename)
+
         else:
             self.settings_dict = get_default_settings()    
+
+        
         self.init_tabs()
         
         
@@ -453,15 +457,14 @@ class SSS2(ttk.Frame):
         if ok_to_save:
             self.update_dict()
             self.settings_dict["SHA256 Digest"]=self.get_settings_hash()
+            self.settings_dict["Original File SHA"]=self.settings_dict["SHA256 Digest"]
             
 
-            ###Take out this Conditional for production
-            if sss2_id == "UNIVERSAL":
-                self.settings_dict["Original File SHA"]=self.settings_dict["SHA256 Digest"]
-            
+             
             with open(self.filename,'w') as outfile:
-                json.dump(self.settings_dict,outfile,indent=4)
-            self.file_status_string.set("Saved "+self.filename)
+                json.dump(self.settings_dict,outfile,indent=4,sort_keys=True)
+            self.file_status_string.set("")
+            self.file_status_string.set(self.filename)
             print("Saved "+self.filename) 
         else:
             self.file_status_string.set("File not saved.")
@@ -478,7 +481,6 @@ class SSS2(ttk.Frame):
                 log_file.write(byte_entry.decode('ascii',"ignore"))
                                
     def get_settings_hash(self):
-        
         digest_from_file=self.settings_dict["Original File SHA"]
         self.settings_dict.pop("SHA256 Digest",None)
         self.settings_dict.pop("Original File SHA",None)
@@ -712,7 +714,6 @@ class SSS2(ttk.Frame):
     def send_transmit_can(self):
         commandString = "STARTCAN,"
         for tree_item in self.get_all_children(self.can_tree):
-            print(tree_item)
             self.can_tree.set(tree_item,"Send","Yes")
             
         self.tx_queue.put_nowait(commandString)
@@ -727,37 +728,75 @@ class SSS2(ttk.Frame):
     def send_clear_can(self):
         for tree_item in self.can_tree.get_children():
             self.can_tree.delete(tree_item)   
-        self.tx_queue.put_nowait("CLEARCAN,")         
+        #self.tx_queue.put_nowait("CLEARCAN,")
 
     def send_reload_can(self):
         msg_index=0
-        for message_string in self.settings_dict["CAN"]["Preprogrammed"]:
-            self.load_can_frame(message_string,msgKey)
+        for msgKey in self.settings_dict["CAN"]:
+            self.load_can_frame(self.settings_dict["CAN"][msgKey],msgKey)
             time.sleep(0.002)
             msg_index+=1
-        self.tx_queue.put_nowait("RELOAD,") 
+        self.tx_queue.put_nowait("RELOAD,")
+
+    def send_j1939_baud(self):
+        commandString = "B0,{}".format(self.j1939_baud_value.get())
+        self.tx_queue.put_nowait(commandString)
+        
+    def send_can2_baud(self):
+        self.tx_queue.put_nowait("B1,{}".format(self.can2_baud_value.get()))
         
     def vehicle_networks_settings(self):
 
         self.truck_networks_tab.grid_rowconfigure(5,weight=2) #Expands blank space under radio buttons.
+        self.truck_networks_tab.grid_columnconfigure(3,weight=1) #Expands blank space 
+        self.truck_networks_tab.grid_columnconfigure(4,weight=2) #Expands blank space 
 
 
         ttk.Button(self.truck_networks_tab,
                                     text="Transmit all CAN messages", width = 35,
                                     command=self.send_transmit_can).grid(row=1,
                                                                          column=1,
-                                                                         sticky="W",
+                                                                         sticky="W",columnspan=3,
                                                                          pady=5,padx=5)
         
         ttk.Button(self.truck_networks_tab, width = 35,
                                     text="Stop Sending all CAN messages",
                                     command=self.send_stop_can).grid(row=2,
                                                                      column=1,
-                                                                     sticky="W",
+                                                                     sticky="W",columnspan=3,
                                                                      pady=5,padx=5)
+        
+        tk.Label(self.truck_networks_tab,text="J1939 Bit Rate:").grid(row=3,column=1,sticky="E")
+        self.j1939_baud_value=tk.StringVar(value="250000")
+        baudrates = ["125000","250000","500000","666000","1000000"]
+        self.j1939_baud = ttk.Combobox(self.truck_networks_tab,
+                                   textvariable=self.j1939_baud_value,
+                                   width=8,
+                                   values=baudrates)
+        self.j1939_baud.grid(row=3,column=2,sticky="W",pady=5,columnspan=1)
+        ttk.Button(self.truck_networks_tab, width = 9,
+                                    text="Set",command=self.send_j1939_baud).grid(row=3,
+                                                                     column=3,
+                                                                     sticky="W",columnspan=1,
+                                                                     pady=5,padx=5)
+        
+
+        tk.Label(self.truck_networks_tab,text="CAN2 Bit Rate:").grid(row=4,column=1,sticky="E")
+        self.can2_baud_value=tk.StringVar(value="250000")
+        self.can2_baud = ttk.Combobox(self.truck_networks_tab,
+                                   textvariable=self.can2_baud_value,
+                                   width=8,
+                                   values=baudrates)
+        self.can2_baud.grid(row=4,column=2,sticky="W",pady=5,columnspan=1)
+        ttk.Button(self.truck_networks_tab, width = 9,
+                                    text="Set",command=self.send_can2_baud).grid(row=4,
+                                                                     column=3,
+                                                                     sticky="W",columnspan=1,
+                                                                     pady=5,padx=5)
+
 ##        ttk.Button(self.truck_networks_tab, width = 35,
 ##                                    text="Clear all CAN messages",
-##                                    command=self.send_clear_can).grid(row=3,
+##                                    command=self.send_clear_can).grid(row=5,
 ##                                                                     column=1,
 ##                                                                     sticky="W",
 ##                                                                     pady=5,padx=5)
@@ -770,9 +809,8 @@ class SSS2(ttk.Frame):
         
 
         self.can_edit_frame = tk.LabelFrame(self.truck_networks_tab, name="edit_can",text="CAN Message Editor")
-        self.can_edit_frame.grid(row=5,column=1,sticky="WE",columnspan=1,rowspan=1)
-        self.truck_networks_tab.grid_columnconfigure(6,weight=2) #Expands blank space 
-
+        self.can_edit_frame.grid(row=5,column=1,sticky="EW",columnspan=4,rowspan=1)
+        
         tk.Label(self.can_edit_frame,text="Description:").grid(row=0,column=0,sticky="E")
         self.can_name_value = tk.StringVar()
         self.can_name = ttk.Entry(self.can_edit_frame,textvariable=self.can_name_value,width=65)
@@ -801,8 +839,8 @@ class SSS2(ttk.Frame):
 
         tk.Label(self.can_edit_frame,text="DLC:").grid(row=2,column=2,sticky="E")
         self.can_dlc_value=tk.StringVar(value="8")
-        combobox_values = ["1","2","3","4","5","6","7","8"]
-        self.can_dlc = ttk.Combobox(self.can_edit_frame,textvariable=self.can_dlc_value,width=1,values=combobox_values)
+        spinbox_values = ("1","2","3","4","5","6","7","8")
+        self.can_dlc = tk.Spinbox(self.can_edit_frame,textvariable=self.can_dlc_value,width=2,values=spinbox_values)
         self.can_dlc.grid(row=2,column=3,sticky="W",pady=5,columnspan=1)
 
         
@@ -902,28 +940,21 @@ class SSS2(ttk.Frame):
             self.can_tree.column(c, anchor = p, stretch = False, width = w)
             self.can_tree.heading(c, anchor = p, text = c)
         self.item_identifier={}
-        self.msg_index = 0
-        self.current_iid = ('I-1',)
+
+        self.send_clear_can()
         self.new_message = True
-        
-        if self.settings_dict["CAN"]["Load Preprogrammed"]:
-            #self.tx_msg_ids=[]
-            msg_list = self.settings_dict["CAN"]["Preprogrammed"]
+        for msg_index in sorted(self.settings_dict["CAN"].keys()):
+            self.load_can_frame(self.settings_dict["CAN"][msg_index])
+            time.sleep(0.002)
+
             
-            for message_string in msg_list:
-                self.load_can_frame(message_string,self.msg_index)
-                time.sleep(0.002)
-                self.msg_index+=1
-                
-        else:
-            self.send_clear_can()
         
         self.can_tree.bind('<<TreeviewSelect>>',self.fill_can_box)
 
             
         self.message_config_frame = tk.LabelFrame(self.truck_networks_tab, name="network Configurations",
                                                   text="Network Configurations")
-        self.message_config_frame.grid(row=6,column=1,sticky="NW",columnspan=1)
+        self.message_config_frame.grid(row=6,column=1,sticky="NW",columnspan=3)
 
         self.lin_to_shield_switch = config_switches(self.message_config_frame,self.tx_queue,
                             self.settings_dict["Switches"],"LIN to SHLD",row=1,col=0)
@@ -949,15 +980,17 @@ class SSS2(ttk.Frame):
         
     def delete_can_message(self):
         selection = self.can_tree.selection()
-        while self.can_tree.parent(selection) is not "":
-            selection = self.can_tree.parent(selection)
+        #while self.can_tree.parent(selection) is not "":
+        #    selection = self.can_tree.parent(selection)
         
         can_msg = self.can_tree.item(selection)
         commandString = "GO,{},0".format(self.can_thread_value.get()) 
         self.tx_queue.put_nowait(commandString)
         for tree_item in self.can_tree.get_children(selection):
             self.can_tree.delete(tree_item)
+        prev_selection = self.can_tree.prev(selection)
         self.can_tree.delete(selection)
+        self.can_tree.selection_set(prev_selection)
 
     def add_sequential_message(self):
         self.new_message = True
@@ -992,6 +1025,7 @@ class SSS2(ttk.Frame):
         self.can_tree.set(tree_item,"Period",self.can_period_value.get())
         self.can_tree.set(tree_item,"Restart",self.can_restart_value.get())
         self.can_tree.set(tree_item,"Total",self.can_total_value.get())
+        self.can_tree.set(tree_item,"DLC",self.can_dlc_value.get())
         for tree_item in self.can_tree.get_children(selection):
             self.can_tree.set(tree_item,"Count",str(self.can_count_value.get()))
             if self.can_send_state.get() == 1:
@@ -1007,6 +1041,7 @@ class SSS2(ttk.Frame):
             self.can_tree.set(tree_item,"Period",self.can_period_value.get())
             self.can_tree.set(tree_item,"Restart",self.can_restart_value.get())
             self.can_tree.set(tree_item,"Total",self.can_total_value.get())
+            self.can_tree.set(tree_item,"DLC",self.can_dlc_value.get())
             
                      
     def create_new_message(self):
@@ -1023,6 +1058,8 @@ class SSS2(ttk.Frame):
         if can_thread < 1024:
             #self.create_can_message = False
             self.common_can_message(str(can_thread))
+            
+       
         else:
             print("Too many CAN threads for SSS2. Please redo the CAN messages.")
 
@@ -1078,13 +1115,9 @@ class SSS2(ttk.Frame):
         else:
             m += "No"
         
-        self.load_can_frame(m,self.msg_index)
-        
         #self.can_thread_value.set(self.thread_from_sss2)
-        
-        #print(m)
-        self.settings_dict["CAN"]["Custom"].append(m)
-        self.msg_index+=1
+        self.load_can_frame(m)
+    
         
         
     def send_single_frame(self,event=None):
@@ -1095,7 +1128,7 @@ class SSS2(ttk.Frame):
              self.can_tree.set(selection,"Send","Yes")
         else:
               self.can_tree.set(selection,"Send","No")
-        self.sync_tables()
+        #self.sync_tables()
             
     def fill_can_box(self,event=None):
         selection = self.can_tree.selection()
@@ -1126,7 +1159,7 @@ class SSS2(ttk.Frame):
         else:
             self.modify_can_button.configure(state=tk.DISABLED)
 
-    def load_can_frame(self,message_string,msg_iid):
+    def load_can_frame(self,message_string):
         
         msg = message_string.split(',')
         msgKey = msg[0].strip()
@@ -1154,6 +1187,8 @@ class SSS2(ttk.Frame):
         send = msg[19].strip()
 
         if self.new_message:
+            msg_iid = self.find_next_iid()
+            #print(msg_iid)
             if sub == "0":
                 selection = self.can_tree.insert("",int(index),iid=msg_iid,text=msgKey,open=True,
                                                     values=[index,num,"0",send,channel,period, restart,total,extID,IDhex,dlc]+B)    
@@ -1165,8 +1200,9 @@ class SSS2(ttk.Frame):
                 selection = self.can_tree.insert(self.trunk,int(sub),iid=msg_iid,text=msgKey,open=True,
                                                 values=[index,num,sub,send,channel,period, restart,total,extID,IDhex,dlc]+B)
         else:
+                
             selection = self.can_tree.selection()
-            self.item_identifier[msg_iid] = selection
+            #self.item_identifier[msg_iid] = selection
             if self.can_tree.item(selection) is not "":
                 self.can_tree.set(selection,"Send",send)
                 self.can_tree.set(selection,"Channel",channel)
@@ -1181,8 +1217,7 @@ class SSS2(ttk.Frame):
           
 
         self.can_tree.selection_set(selection)
-        #self.can_tree.selection_toggle(self.item_identifier[msg_iid])
-        
+         
         commandString = "SM,"+message_string
         self.tx_queue.put_nowait(commandString)    
 
@@ -1194,10 +1229,20 @@ class SSS2(ttk.Frame):
 
         self.send_single_frame()
 
-
-
-
-
+                    
+        self.settings_dict["CAN"]["{:>3}".format(selection)] = message_string 
+        #print(self.settings_dict["CAN"])
+        
+    def find_next_iid(self):
+        iid_list=[0]
+        for tree_item in self.get_all_children(self.can_tree):
+            #print(tree_item)
+            try:
+                iid_list.append(int(tree_item))
+            except:
+                iid_list.append(0)
+        
+        return max(iid_list) + 1
 
 
 
@@ -1268,7 +1313,7 @@ class SSS2(ttk.Frame):
                                           text="SSS2 Data Display")
         self.serial_frame.grid(row=0,column=0,sticky='NSEW')
         self.text = tkst.ScrolledText(self.serial_frame, font="Courier 10" ,
-                                      height=50,width=140,padx=4,pady=4)
+                                      height=45,width=150,padx=4,pady=4)
         self.text.grid(row=0,column=1,rowspan=9,columnspan=3,sticky=tk.W+tk.E+tk.N+tk.S )
     
         self.serial_RX_count = ttk.Entry(self.serial_frame,width=12)
@@ -1519,51 +1564,51 @@ class SSS2(ttk.Frame):
         self.serialclose()
         quit()
 
-class preprogrammed_message(SSS2):
-    def __init__(self, parent,tx_queue,msg_dict,msg_id, row = 0, col = 0):
-        self.root=parent
-        self.tx_queue = tx_queue
-        self.msg_dict = msg_dict
-        self.msg_id = msg_id
-        self.col=col
-        self.row=row
-        self.setup_messages()
-    def setup_messages(self):
-        label = " "
-        for dat in self.msg_dict[self.msg_id]["Data"]:
-            label += " {:02X}".format(dat)
-        label+=", Period: {}ms, PGN: {}, SA: {}, Note:{}".format(self.msg_dict[self.msg_id]["Period"],
-                                                            self.msg_dict[self.msg_id]["PGN Name"],
-                                                            self.msg_dict[self.msg_id]["Source Address"],
-                                                            self.msg_dict[self.msg_id]["Label"])
-        
-        self.box =  ttk.Checkbutton(self.root,
-                                    text=self.msg_id,
-                                    command=self.toggle_preprogrammed_can)
-        self.box.grid(row=self.row,column=self.col,sticky="NW")
-        self.box.state(['!alternate']) #Clears Check Box
-        if self.msg_dict[self.msg_id]["State"]:
-            self.box.state(['selected'])
-        self.toggle_preprogrammed_can()
-
-        datalabel = " "
-        for dat in self.msg_dict[self.msg_id]["Data"]:
-            datalabel += " {:02X}".format(dat)
-        datalabel+=" "
-        tk.Label(self.root,text=datalabel).grid(row=self.row,column=self.col+1,sticky=tk.W)
-        tk.Label(self.root,text="{}ms ".format(self.msg_dict[self.msg_id]["Period"])).grid(row=self.row,column=self.col+2,sticky=tk.W)
-        tk.Label(self.root,text="{} ".format(self.msg_dict[self.msg_id]["PGN Name"])).grid(row=self.row,column=self.col+3,sticky=tk.W)
-        tk.Label(self.root,text="{} ".format(self.msg_dict[self.msg_id]["Source Address"])).grid(row=self.row,column=self.col+4,sticky=tk.W)
-        tk.Label(self.root,text=self.msg_dict[self.msg_id]["Label"]).grid(row=self.row,column=self.col+5,sticky=tk.W)
-        
-    def toggle_preprogrammed_can(self):
-        state = self.box.instate(['selected'])
-        setting = self.msg_dict[self.msg_id]["Setting"]
-        if state:
-            commandString = "CN,{},1".format(setting)
-        else:
-            commandString = "CN,{},0".format(setting)
-        self.tx_queue.put_nowait(commandString)
+##class preprogrammed_message(SSS2):
+##    def __init__(self, parent,tx_queue,msg_dict,msg_id, row = 0, col = 0):
+##        self.root=parent
+##        self.tx_queue = tx_queue
+##        self.msg_dict = msg_dict
+##        self.msg_id = msg_id
+##        self.col=col
+##        self.row=row
+##        self.setup_messages()
+##    def setup_messages(self):
+##        label = " "
+##        for dat in self.msg_dict[self.msg_id]["Data"]:
+##            label += " {:02X}".format(dat)
+##        label+=", Period: {}ms, PGN: {}, SA: {}, Note:{}".format(self.msg_dict[self.msg_id]["Period"],
+##                                                            self.msg_dict[self.msg_id]["PGN Name"],
+##                                                            self.msg_dict[self.msg_id]["Source Address"],
+##                                                            self.msg_dict[self.msg_id]["Label"])
+##        
+##        self.box =  ttk.Checkbutton(self.root,
+##                                    text=self.msg_id,
+##                                    command=self.toggle_preprogrammed_can)
+##        self.box.grid(row=self.row,column=self.col,sticky="NW")
+##        self.box.state(['!alternate']) #Clears Check Box
+##        if self.msg_dict[self.msg_id]["State"]:
+##            self.box.state(['selected'])
+##        self.toggle_preprogrammed_can()
+##
+##        datalabel = " "
+##        for dat in self.msg_dict[self.msg_id]["Data"]:
+##            datalabel += " {:02X}".format(dat)
+##        datalabel+=" "
+##        tk.Label(self.root,text=datalabel).grid(row=self.row,column=self.col+1,sticky=tk.W)
+##        tk.Label(self.root,text="{}ms ".format(self.msg_dict[self.msg_id]["Period"])).grid(row=self.row,column=self.col+2,sticky=tk.W)
+##        tk.Label(self.root,text="{} ".format(self.msg_dict[self.msg_id]["PGN Name"])).grid(row=self.row,column=self.col+3,sticky=tk.W)
+##        tk.Label(self.root,text="{} ".format(self.msg_dict[self.msg_id]["Source Address"])).grid(row=self.row,column=self.col+4,sticky=tk.W)
+##        tk.Label(self.root,text=self.msg_dict[self.msg_id]["Label"]).grid(row=self.row,column=self.col+5,sticky=tk.W)
+##        
+##    def toggle_preprogrammed_can(self):
+##        state = self.box.instate(['selected'])
+##        setting = self.msg_dict[self.msg_id]["Setting"]
+##        if state:
+##            commandString = "CN,{},1".format(setting)
+##        else:
+##            commandString = "CN,{},0".format(setting)
+##        self.tx_queue.put_nowait(commandString)
     
 class pot_bank(SSS2):
     def __init__(self, parent,tx_queue,pot_dict,key, row = 0, col = 0,colspan=3):
