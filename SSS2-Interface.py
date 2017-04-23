@@ -107,7 +107,7 @@ class setup_serial_connections(tk.Toplevel):
     def find_serial_ports(self):
         comPorts = []
         comPorts.append("Not Available")
-        for possibleCOMPort in serial.tools.list_ports.comports():
+        for possibleCOMPort in sorted(serial.tools.list_ports.comports()):
             comPortstr =  str(possibleCOMPort).split()  
                 
             if ('Teensy' in str(possibleCOMPort)):
@@ -195,10 +195,14 @@ class SSS2(ttk.Frame):
         self.grid( column=0, row=0, sticky='NSEW') #needed to display
         self.root.rowconfigure(0, weight=1)
         self.root.columnconfigure(0, weight=1)
-        self.filename=os.path.expanduser('~')+'\\SSS2settings.SSS2'
+        self.filename = os.path.expanduser('~')
+        self.lasthash = None
         self.file_authenticated = False
         self.file_OK_received = tk.BooleanVar(name='file_OK_received')
         self.file_OK_received.set(False)
+        self.autosave_job = None
+        self.update_job = None
+        self.unique_ID = None
         self.init_gui()
         
  
@@ -224,9 +228,16 @@ class SSS2(ttk.Frame):
         self.tabs = ttk.Notebook(self, name='tabs')
         self.tabs.grid(row=1,column=0,columnspan=3,sticky=tk.W)
 
+        self.file_status_string = tk.StringVar(value="Default Settings Loaded")
+        tk.Label(self, textvariable=self.file_status_string, name="file_status_label").grid(row=2,column=0,sticky=tk.W)
+
         self.connection_status_string = tk.StringVar(name='status_string',value="Not Connected.")
-        self.connection_label = tk.Label(self, textvariable=self.connection_status_string,name="connection_label")
-        self.connection_label.grid(row=2,column=2,sticky="E")
+        tk.Label(self, textvariable=self.connection_status_string,name="connection_label").grid(row=2,column=2,sticky="E")
+
+        self.modified_entry_string = tk.StringVar(name='modified_string',value="")
+        self.modified_entry = tk.Entry(self, textvariable=self.modified_entry_string)
+        self.modified_entry.grid(row=2,column=1)
+        self.modified_entry['justify']=tk.CENTER
         
 
         
@@ -265,6 +276,7 @@ class SSS2(ttk.Frame):
         self.menu_file.add_command(label='Save', command=self.save_settings_file, accelerator="Ctrl+S")
         self.menu_file.add_command(label='Save As...', command=self.saveas_settings_file, accelerator="Ctrl+A")
         self.menu_file.add_command(label='Save Serial Log', command=self.save_log_file, accelerator="Ctrl+L")
+        self.menu_file.add_command(label='Print as Text', command=self.print_settings_file, accelerator="Ctrl+P")
         self.menu_file.add_separator()
         self.menu_file.add_command(label='Refresh', command=self.init_tabs, accelerator="Ctrl+R")
         self.menu_file.add_separator()
@@ -282,6 +294,7 @@ class SSS2(ttk.Frame):
         self.bind_all("<Control-q>",self.on_quit)
         self.bind_all("<Control-k>",self.send_ignition_key_command)
         self.bind_all("<Control-l>",self.save_log_file)
+        self.bind_all("<Control-p>",self.print_settings_file)
         
         self.root.config(menu=self.menubar)
 
@@ -295,9 +308,22 @@ class SSS2(ttk.Frame):
         self.serial_interface()
         self.connect_to_serial()
         self.process_serial()
+        self.tx_queue.put_nowait("Time,{:d}".format( int( time.time() - time.timezone + time.daylight*3600 )))
         self.init_tabs()
         
     def init_tabs(self,event=None):
+        print("autosave job: ",end='')
+        print(self.autosave_job)
+        if self.autosave_job is not None:
+            self.after_cancel(self.autosave_job)
+            self.autosave_job = None
+        if self.update_job is not None:
+            self.after_cancel(self.update_job)
+            self.update_job = None
+
+        print("autosave job: ",end='')
+        print(self.autosave_job)
+        
         for child in self.settings_tab.winfo_children():
             child.destroy()        
         for child in self.voltage_out_tab.winfo_children():
@@ -308,7 +334,9 @@ class SSS2(ttk.Frame):
         self.send_stream_A21()
         self.send_stream_can0()
         self.send_stream_can1()
+        self.send_stream_j1708()
 
+        
         self.potentiometer_settings() #put this after the serial connections
 
         self.voltage_out_settings()
@@ -317,41 +345,42 @@ class SSS2(ttk.Frame):
 
         self.profile_settings()
 
-        self.display_file_shas()
-
-        #self.update_sha()
-
         self.tabs.select(self.connections)
         self.tabs.select(self.truck_networks_tab)
         self.tabs.select(self.voltage_out_tab)
         self.tabs.select(self.settings_tab)
         self.tabs.select(self.profile_tab)
-        
+
+        self.clear_j1939_buffer()
+        self.clear_can2_buffer()
+        self.clear_j1708_buffer()
+
         self.get_sss2_component_id()
         self.get_sss2_unique_id()
         self.get_sss2_software_id()
-        
-         
-    def display_file_shas(self):
-        self.file_box = tk.Frame(self)
-        self.file_box.grid(row=2,column=0,rowspan=1,sticky=tk.W)
 
-        tk.Label(self.file_box,text="Settings File:").grid(row=0,column=0,sticky=tk.E)
-        self.file_status_string = tk.StringVar(value="Default Settings Loaded")
-        self.file_status_label = tk.Label(self.file_box, textvariable=self.file_status_string,name="file_status_label")
-        self.file_status_label.grid(row=0,column=1,sticky=tk.W)
-
-##        tk.Label(self.file_box,text="Current SHA-256 Digest:").grid(row=1,column=0,sticky=tk.E)
-##        self.settings_sha_string = tk.StringVar(name='settings-SHA')
-##        self.settings_sha_string.set(self.get_settings_hash())
-##        self.settings_sha_label = tk.Label(self.file_box, textvariable=self.settings_sha_string,name="settings_sha_label")
-##        self.settings_sha_label.grid(row=1,column=1,sticky=tk.W,columnspan=3)
-##
-##        
-
+        time.sleep(3)
+        self.update_sha()
+        self.autosave()
         
-        
-        
+           
+    def print_settings_file(self,event=None):
+        try:
+            original_file = self.filename
+            self.filename += ".txt"
+            self.save_settings_file()
+            os.startfile(self.filename, "print")
+            print("Saved and printed "+self.filename)
+            os.remove(self.filename)
+            self.filename = original_file
+            self.save_settings_file()
+            
+        except Exception as e:
+            print(e)
+            messagebox.showerror("Print File Error",
+                           "There is not a default application to print text (.txt) files. Please configure your system environment to print text files.")
+                        
+            
     def open_settings_file(self,event=None):
           
         types = [('Smart Sensor Simulator 2 Settings Files', '*.SSS2'),('All Files', '*')]
@@ -363,9 +392,18 @@ class SSS2(ttk.Frame):
                                                      initialfile=ifile,
                                                      title=title,
                                                      defaultextension=".SSS2")
-        with open(self.filename,'r') as infile:
-            self.settings_dict=json.load(infile)
+
         
+        
+        try:
+            with open(self.filename,'r') as infile:
+                self.settings_dict=json.load(infile)
+        except Exception as e:
+            print(e)
+            messagebox.showerror("Loading File Error",
+                           "The file selected is not the appropriate type for this program. This file may have been corrupted. The file must be a correctly formatted JSON file. Please select a different file.")
+                        
+            return
 
         digest_from_file=self.settings_dict["SHA256 Digest"]
         print("digest_from_file: ",end='')
@@ -376,7 +414,7 @@ class SSS2(ttk.Frame):
         print("newhash:          ",end='')
         print(newhash)
         
-        self.load_settings_file()
+        #self.load_settings_file()
         ok_to_open = False
         
         if newhash==digest_from_file:
@@ -391,7 +429,6 @@ class SSS2(ttk.Frame):
                         command_string = "OK,{}".format(sss2_id)
                         self.tx_queue.put_nowait(command_string)
                         self.wait_variable(self.file_OK_received)       
-                        print("self.file_OK_received: ",end='')
                         self.file_OK_received.set(False)
                         if not self.file_authenticated:
                             self.settings_dict = get_default_settings()
@@ -422,9 +459,10 @@ class SSS2(ttk.Frame):
                     "The hash value from the file\n {}\n does not match the new calculated hash.\n The file may have been altered. \nReloading defaults.".format(self.filename) )
             self.file_status_string.set("Error Opening "+self.filename)
         if ok_to_open:
-            self.load_settings_file()
-            self.file_status_string.set(self.filename)
+            self.file_status_string.set("Opened "+self.filename)
+            self.settings_file_status_string.set(self.filename)
             print("Opened "+self.filename)
+            self.settings_dict["SHA256 Digest"]=self.get_settings_hash()
 
         else:
             self.settings_dict = get_default_settings()    
@@ -447,6 +485,11 @@ class SSS2(ttk.Frame):
         self.save_settings_file()
 
     def save_settings_file(self,event=None):
+
+        if self.filename is os.path.expanduser('~') or self.filename is '':
+            self.filename = ''
+            self.saveas_settings_file()
+            
         ok_to_save = False
         sss2_id = self.sss2_product_code_text.get()
         ###Take out this Conditional for production
@@ -464,8 +507,10 @@ class SSS2(ttk.Frame):
             ok_to_save = True
 
         if ok_to_save:
-            self.file_status_string.set("")
-            self.file_status_string.set(self.filename)
+
+            self.file_status_string.set("Saved "+self.filename)
+            self.settings_file_status_string.set(self.filename)
+            
             print("Saved "+self.filename)
             self.sss2_product_code['bg']='white'
 
@@ -478,9 +523,12 @@ class SSS2(ttk.Frame):
              
             with open(self.filename,'w') as outfile:
                 json.dump(self.settings_dict,outfile,indent=4,sort_keys=True)
+
             
+        
 
         else:
+            self.file_status_string.set("")
             self.file_status_string.set("File not saved.")
             print("File not saved.") 
             messagebox.showerror("Incompatible SSS2 for Saving",
@@ -498,24 +546,63 @@ class SSS2(ttk.Frame):
         digest_from_file=self.settings_dict["Original File SHA"]
         load_date = self.settings_dict["Original Creation Date"]
         save_date = self.settings_dict["Saved Date"]
+
+        
         self.settings_dict.pop("SHA256 Digest",None)
         self.settings_dict.pop("Original File SHA",None)
         self.settings_dict.pop("Original Creation Date",None)
         self.settings_dict.pop("Saved Date",None)
+        
         temp_settings_dict = pformat(self.settings_dict)
         new_hash = str(hashlib.sha256(bytes(temp_settings_dict,'utf-8')).hexdigest())
+        
         self.settings_dict["SHA256 Digest"] = new_hash
         self.settings_dict["Original File SHA"] = digest_from_file
         self.settings_dict["Original Creation Date"] = load_date
         self.settings_dict["Saved Date"]=save_date
+
+        if self.settings_dict["Original File SHA"] ==  "Current Settings Not Saved.":
+            self.modified_entry_string.set("Default Settings")
+            self.modified_entry['bg']='yellow'
+        else:
+            if digest_from_file == new_hash:
+                self.modified_entry_string.set("Settings Unchanged")
+                self.modified_entry['bg']='light green'
+            else:
+                self.modified_entry_string.set("Settings Altered")
+                self.modified_entry['bg']='red'
+        
         return new_hash
-    
+
+    def autosave(self):
+        if self.lasthash != self.current_hash:
+            original_file = self.filename
+            try:
+                if self.filename[-14:] == "_AUTOSAVE.SSS2":
+                    original_file = self.filename[:-14]
+                else:
+                    self.filename += "_AUTOSAVE.SSS2"
+            except Exception as e:
+                print(e)
+                self.filename += "_AUTOSAVE.SSS2"
+            with open(self.filename,'w') as outfile:
+                json.dump(self.settings_dict,outfile,indent=4,sort_keys=True)
+            self.filename = original_file
+            print('Autosaving')
+            
+        self.lasthash = self.current_hash 
+
+        
+        self.autosave_job = self.after(5000,self.autosave)
+
     def update_sha(self):
         self.update_dict()
         self.file_sha_string.set(self.settings_dict["Original File SHA"])
-        self.settings_sha_string.set(self.get_settings_hash())
-        self.after(500,self.update_sha)
+        self.current_hash = self.get_settings_hash()
+        self.settings_sha_string.set(self.current_hash)
 
+        self.update_job = self.after(500,self.update_sha)
+        
     def enable_can_component_id(self):
         commandString = "CANCOMP,{}".format(self.can_component_id_text.get())
         self.tx_queue.put_nowait(commandString)
@@ -569,7 +656,7 @@ class SSS2(ttk.Frame):
 
         tk.Label(self.ecu_frame,text="Vehicle ID (VIN):").grid(row=4,column=0,sticky=tk.W,columnspan=2)
         self.vehicle_vin_text = tk.StringVar(value = self.settings_dict["Vehicle VIN"])
-        self.vehicle_vin = tk.Entry(self.ecu_frame, textvariable= self.engine_serial_text, width=64)
+        self.vehicle_vin = tk.Entry(self.ecu_frame, textvariable= self.vehicle_vin_text, width=64)
         self.vehicle_vin.grid(row=4,column=2,sticky=tk.W,padx=5,pady=5,columnspan=6)
 
         tk.Label(self.ecu_frame,text="ECU Component ID:").grid(row=5,column=0,sticky=tk.W,columnspan=2)
@@ -666,9 +753,8 @@ class SSS2(ttk.Frame):
         self.file_frame.grid(row=2,column=0,sticky=tk.N+tk.E+tk.W,columnspan=1)
 
         tk.Label(self.file_frame,text="Settings File:").grid(row=0,column=0,sticky=tk.E)
-        self.file_status_string = tk.StringVar(name='file_status_string')
-        self.file_status_string.set("Default Settings Loaded")
-        self.file_status_label = tk.Label(self.file_frame, textvariable=self.file_status_string,name="file_status_label")
+        self.settings_file_status_string = tk.StringVar(value="Default Settings Loaded")
+        self.file_status_label = tk.Label(self.file_frame, textvariable=self.settings_file_status_string,name="file_status_label")
         self.file_status_label.grid(row=0,column=1,sticky=tk.W)
         #tk.Button(self.file_frame,text="Save",command=self.save_settings_file).grid(row=0,column=7,sticky=tk.W,padx=5)
 
@@ -705,37 +791,39 @@ class SSS2(ttk.Frame):
         
         tk.Label(self.user_frame,text="Date Saved:").grid(row=1,column=0,sticky=tk.W,pady=5)
         self.saved_date_text = tk.StringVar(value = self.settings_dict["Saved Date"])
-        self.saved_date = tk.Label(self.user_frame, name="saved_date", textvariable = self.saved_date_text)
+        self.saved_date = tk.Label(self.user_frame, textvariable = self.saved_date_text)
         self.saved_date.grid(row=1,column=1,sticky=tk.W,padx=5,pady=5)
         
         tk.Label(self.user_frame,text="User Name:").grid(row=2,column=0,sticky=tk.W,pady=5)
-        self.user_name = tk.Entry(self.user_frame, name="user_name",width=68)
+        self.user_name_text = tk.StringVar(value = self.settings_dict["Programmed By"])
+        self.user_name = tk.Entry(self.user_frame, textvariable=self.user_name_text ,width=68)
         self.user_name.grid(row=2,column=1,sticky=tk.W,padx=5,pady=5)
-        self.user_name.insert(0,getpass.getuser())
-
+        
         tk.Label(self.user_frame,text="Company:").grid(row=3,column=0,sticky=tk.W,pady=5)
-        self.company_name = tk.Entry(self.user_frame, name="company",width=68)
+        self.company_name_text = tk.StringVar(value = self.settings_dict["Company"])
+        self.company_name = tk.Entry(self.user_frame, textvariable=self.company_name_text ,width=68)
         self.company_name.grid(row=3,column=1,sticky=tk.W,padx=5,pady=5)
-        self.company_name.insert(0,self.settings_dict["Company"])
 
         tk.Label(self.user_frame,text="Location:").grid(row=4,column=0,sticky=tk.W,pady=5)
-        self.location_name = tk.Entry(self.user_frame, name="location",width=68)
+        self.location_name_text = tk.StringVar(value = self.settings_dict["Location"])
+        self.location_name = tk.Entry(self.user_frame, textvariable=self.location_name_text ,width=68)
         self.location_name.grid(row=4,column=1,sticky=tk.W,padx=5,pady=5)
-        self.location_name.insert(0,self.settings_dict["Location"])
-       
+        
         tk.Label(self.user_frame,text="Case Number:").grid(row=5,column=0,sticky=tk.W,pady=5)
-        self.case_number = tk.Entry(self.user_frame, name="case_number",width=68)
+        self.case_number_text = tk.StringVar(value = self.settings_dict["Case Number"])
+        self.case_number = tk.Entry(self.user_frame, textvariable=self.case_number_text ,width=68)
         self.case_number.grid(row=5,column=1,sticky=tk.W,padx=5,pady=5)
-        self.case_number.insert(0,self.settings_dict["Case Number"])
-
+        
         tk.Label(self.user_frame,text="Date of Loss:").grid(row=6,column=0,sticky=tk.W,pady=5)
-        self.date_of_loss = tk.Entry(self.user_frame, name="date_of_loss",width=68)
+        self.date_of_loss_text = tk.StringVar(value = self.settings_dict["Date of Loss"])
+        self.date_of_loss = tk.Entry(self.user_frame, textvariable=self.date_of_loss_text ,width=68)
         self.date_of_loss.grid(row=6,column=1,sticky=tk.W,padx=5)
-        self.date_of_loss.insert(0,self.settings_dict["Date of Loss"])
-
+       
         tk.Label(self.user_frame,text="User Notes:").grid(row=7,column=0,sticky=tk.W)
         self.case_notes = tkst.ScrolledText(self.user_frame, height=15,width=60,padx=5,pady=4)
         self.case_notes.grid(row=8,column=0,sticky=tk.W,padx=5,pady=5,columnspan=2)
+        self.case_notes.focus_set()
+        self.case_notes.insert(1.0,self.settings_dict["User Notes"].strip())
         
         self.warning_frame = tk.LabelFrame(self.profile_tab, name="warning_frame",
                                                   text="Warnings and Cautions")
@@ -746,8 +834,7 @@ class SSS2(ttk.Frame):
         self.warning_text.configure(state='disabled')                              
         
     
-        self.update_sha()
-        #self.after(1000,profile_settings)
+        
 
     def get_ecu_software_id(self):
         pass
@@ -769,14 +856,14 @@ class SSS2(ttk.Frame):
         commandString = "CI,{}".format(self.sss2_serial_number.get())
         self.tx_queue.put_nowait(commandString)
        
-    def load_settings_file(self):
-        self.sss2_product_code.delete(0,tk.END)
-        self.sss2_product_code.insert(0,self.settings_dict["SSS2 Product Code"])
-        self.sss2_serial_number.delete(0,tk.END)
-        self.sss2_serial_number.insert(0,self.settings_dict["Serial Number"])
-        self.ecu_year.delete(0,tk.END)
-        self.ecu_year.insert(0,self.settings_dict["ECU Year"])
-     
+##    def load_settings_file(self):
+##        self.sss2_product_code.delete(0,tk.END)
+##        self.sss2_product_code.insert(0,self.settings_dict["SSS2 Product Code"])
+##        self.sss2_serial_number.delete(0,tk.END)
+##        self.sss2_serial_number.insert(0,self.settings_dict["Serial Number"])
+##        self.ecu_year.delete(0,tk.END)
+##        self.ecu_year.insert(0,self.settings_dict["ECU Year"])
+##     
     def update_dict(self):
         for bank_key in self.pot_bank.keys():
             group=self.settings_dict["Potentiometers"][bank_key]
@@ -802,7 +889,7 @@ class SSS2(ttk.Frame):
 
         for dac_key in self.dac_objects.keys():
             dac_dict=self.settings_dict["DACs"][dac_key]
-            dac_dict["Average Voltage"] = self.dac_objects[dac_key].dac_mean_slider.get()
+            dac_dict["Average Voltage"] = self.dac_objects[dac_key].dac_mean_slider.get()/100
             dac_dict["ECU Pins"] =        self.dac_objects[dac_key].ecu_app.ecu_pins.get()
             dac_dict["Application"] =     self.dac_objects[dac_key].ecu_app.ecu_app.get()
 
@@ -814,7 +901,7 @@ class SSS2(ttk.Frame):
             pwm_dict["Application"] =     self.pwm_objects[pwm_key].ecu_app.ecu_app.get()
 
         hv_dict=self.settings_dict["HVAdjOut"]
-        hv_dict["Average Voltage"] = self.hvadjout.dac_mean_slider.get()
+        hv_dict["Average Voltage"] = self.hvadjout.dac_mean_slider.get()/100
         hv_dict["ECU Pins"] =        self.hvadjout.ecu_app.ecu_pins.get()
         hv_dict["Application"] =     self.hvadjout.ecu_app.ecu_app.get()
 
@@ -853,18 +940,18 @@ class SSS2(ttk.Frame):
         self.settings_dict["Software ID"] = self.sss_software_id_text.get()
         self.settings_dict["SSS2 Cable"] = self.sss2_cable_text.get()
         self.settings_dict["Resistor Box Used"] = self.resisor_box_button_text.get()
-        self.settings_dict["File Name"] = self.file_status_string.get()
         self.settings_dict["Saved Date"] = self.saved_date_text.get()
-        self.settings_dict["Serial Number"] = self.sss2_serial_number.get()  
-        self.settings_dict["Vehicle VIN"] = self.vehicle_vin_text.get()
+        self.settings_dict["Serial Number"] = self.sss2_serial_number.get() 
+        self.settings_dict["Vehicle VIN"] = self.vehicle_vin_text.get().strip()
         self.settings_dict["ECU Component ID"] = self.ecu_component_id_text.get()
         self.settings_dict["Original Creation Date"]=self.current_date_text.get()
-        self.settings_dict["Programmed By"] = self.user_name.get()
-        self.settings_dict["Company"] = self.company_name.get()
-        self.settings_dict["Location"] = self.location_name.get()
-        self.settings_dict["Case Number"] = self.case_number.get()
-        self.settings_dict["Date of Loss"] = self.date_of_loss.get()
-        self.settings_dict["Notes"] = self.case_notes.get(1.0,tk.END)
+        self.settings_dict["Programmed By"] = self.user_name_text.get()
+        self.settings_dict["Company"] = self.company_name_text.get()
+        self.settings_dict["Location"] = self.location_name_text.get()
+        self.settings_dict["Case Number"] = self.case_number_text.get()
+        self.settings_dict["Date of Loss"] = self.date_of_loss_text.get()
+        self.settings_dict["User Notes"] = self.case_notes.get(1.0,tk.END).strip()
+        self.settings_dict["File Name"] = self.filename
         
         
     def get_all_children(self,tree, item=""):
@@ -1029,7 +1116,7 @@ class SSS2(ttk.Frame):
         self.can_send = ttk.Checkbutton(self.can_edit_frame,
                                         text="Enable Transmission (Send)",
                                         variable=self.can_send_state,
-                                        command=self.send_single_frame)
+                                        command=self.modify_can_message)
         self.can_send.grid(row=3,column=4,sticky="W",padx=10,columnspan=3)
         
         tk.Label(self.can_edit_frame,text="Period (msec):").grid(row=4,column=0,sticky="E")
@@ -1153,6 +1240,7 @@ class SSS2(ttk.Frame):
         selection = self.can_tree.selection()
         self.common_can_message(can_thread)
         self.sync_tables()
+        self.send_single_frame()
         
     def delete_can_message(self):
         selection = self.can_tree.selection()
@@ -1204,7 +1292,6 @@ class SSS2(ttk.Frame):
         self.can_tree.set(tree_item,"Period",self.can_period_value.get())
         self.can_tree.set(tree_item,"Restart",self.can_restart_value.get())
         self.can_tree.set(tree_item,"Total",self.can_total_value.get())
-        self.can_tree.set(tree_item,"DLC",self.can_dlc_value.get())
         for tree_item in self.can_tree.get_children(selection):
             self.can_tree.set(tree_item,"Count",str(self.can_count_value.get()))
             if self.can_send_state.get() == 1:
@@ -1352,12 +1439,12 @@ class SSS2(ttk.Frame):
     def send_single_frame(self,event=None):
         commandString = "GO,{},{}".format(self.can_thread_value.get(),self.can_send_state.get()) 
         self.tx_queue.put_nowait(commandString)
-        selection = self.can_tree.selection()
-        if self.can_send_state.get():
-             self.can_tree.set(selection,"Send","Yes")
-        else:
-              self.can_tree.set(selection,"Send","No")
-        #self.sync_tables()
+##        selection = self.can_tree.selection()
+##        if self.can_send_state.get():
+##             self.can_tree.set(selection,"Send","Yes")
+##        else:
+##              self.can_tree.set(selection,"Send","No")
+##        
             
     def fill_can_box(self,event=None):
         selection = self.can_tree.selection()
@@ -1475,18 +1562,6 @@ class SSS2(ttk.Frame):
                 iid_list.append(0)
         
         return max(iid_list) + 1
-
-
-
-
-
-
-
-
-
-
-
-        
         
     def voltage_out_settings(self):
        
@@ -1559,7 +1634,7 @@ class SSS2(ttk.Frame):
         self.stream_can0_box =  ttk.Checkbutton(self.j1939_frame,
                                     text="Stream CAN0 (J1939)",
                                     command=self.send_stream_can0)
-        self.stream_can0_box.grid(row=0,column=0,sticky="SW")
+        self.stream_can0_box.grid(row=0,column=0,sticky="W")
         self.stream_can0_box.state(['!alternate']) #Clears Check Box
 
         tk.Button(self.j1939_frame,text="Clear Buffer", command=self.clear_j1939_buffer).grid(row=0,column=1,pady=5)
@@ -1588,9 +1663,9 @@ class SSS2(ttk.Frame):
 
         self.stream_can1_box =  ttk.Checkbutton(self.can2_frame,
                                     name="stream CAN2 (E-CAN)",
-                                    text="Stream CAN2 (E-CAN)",
+                                    text="Stream CAN1 (CAN2)",
                                     command=self.send_stream_can1)
-        self.stream_can1_box.grid(row=0,column=0,sticky="NW")
+        self.stream_can1_box.grid(row=0,column=0,sticky="W")
         self.stream_can1_box.state(['!alternate']) #Clears Check Box
 
         tk.Button(self.can2_frame,text="Clear Buffer", command=self.clear_can2_buffer).grid(row=0,column=1,pady=5)
@@ -1644,9 +1719,7 @@ class SSS2(ttk.Frame):
         
         self.settings_scroll=ttk.Scrollbar(self.settings_frame,orient=VERTICAL,command = self.settings_tree.yview)
         self.settings_tree.configure(yscrollcommand=self.settings_scroll.set)      
-        #self.settings_tree.column("#0",width=800)
-        #self.settings_tree.heading("#0", anchor = 'center', text = "CAN ID")
-
+     
         self.settings_xscroll=ttk.Scrollbar(self.settings_frame,orient=HORIZONTAL,command = self.settings_tree.xview)
         self.settings_tree.configure(xscrollcommand=self.settings_xscroll.set)      
         
@@ -1658,29 +1731,12 @@ class SSS2(ttk.Frame):
         self.settings_tree.grid(row=1,column=0,sticky="NSEW")
         self.settings_scroll.grid(row=1,column=1,columnspan=1,sticky="NS")
         self.settings_xscroll.grid(row=2,column=0,columnspan=1,sticky="EW")
-        #self.settings_tree.pack
-        
-##        self.settings_tree.pack_propagate(0)
-##        self.settings_scroll.pack(side="right", fill="both", expand=True)
-##        self.settings_tree.pack(side="top", fill="both", expand=True)
-##        
-##        root.grid_rowconfigure(1, weight=1)
-##        root.grid_rowconfigure(2, weight=1)
-##        
-        
         
         self.list_items_button = tk.Button(self.settings_frame,name="list_items",
                                            text="List SSS2 Settings",
                                            command=self.send_list_settings)
         self.list_items_button.grid(row=0,column=0,sticky="W",padx=5,pady=5)
-        
-        
-
-        self.serial_window_lines = 300
-
-        
-
-
+     
         
     def send_stream_A21(self):
         if self.stream_A21_box.instate(['selected']):
@@ -1695,9 +1751,7 @@ class SSS2(ttk.Frame):
         else:
             commandString = "J1708,0"
         self.tx_queue.put_nowait(commandString)    
-      
-    
-
+  
     def connect_to_serial(self):
         connection_dialog = setup_serial_connections(self)
         self.serial = connection_dialog.result
@@ -1706,14 +1760,13 @@ class SSS2(ttk.Frame):
             if self.serial is not None:
                 if self.serial.isOpen():
                     print("SSS2 connected.")
-                    
                     self.thread = SerialThread(self,self.rx_queue,self.tx_queue,self.serial)
                     self.thread.start()
                     print("Started Serial Thread.")
                     return
            
         messagebox.showerror("SSS2 Serial Connection Error",
-                              "The SSS2 serial connection is not present. Please connect the SSS2. You may have to restart the program." )                
+                              "The SSS2 serial connection is not present. Please connect the SSS2. You may have to restart the program if the connectrion continues to fail." )                
 
             
         
@@ -1785,28 +1838,37 @@ class SSS2(ttk.Frame):
     def save_j1939_buffer(self):
         data_file_name=os.path.expanduser('~') + '\\' + "SSS2_J1939_Data_Log_{}.csv".format(time.strftime("%Y-%m-%d_%H%M%S", time.localtime()))
         with open(data_file_name,'w') as f:
+            f.write("Channel,Unix Timestamp,CAN ID (Hex),EXT,DLC,B1,B2,B3,B4,B5,B6,B7,B8\n")
             for line in self.received_can0_messages:
                 f.write(",".join(line)+"\n")
         print("Saved {}".format(data_file_name))
         self.clear_j1939_buffer()
         self.j1939_tree.tag_configure('dataRow',background='white')
+        self.file_status_string.set("")
+        self.file_status_string.set("Saved log file to "+data_file_name)
 
     def save_can2_buffer(self):
         data_file_name=os.path.expanduser('~') + '\\' + "SSS2_CAN2_Data_Log_{}.csv".format(time.strftime("%Y-%m-%d_%H%M%S", time.localtime()))
         with open(data_file_name,'w') as f:
+            f.write("Channel,Unix Timestamp,CAN ID (Hex),EXT,DLC,B1,B2,B3,B4,B5,B6,B7,B8\n")
             for line in self.received_can1_messages:
                 f.write(",".join(line)+"\n")
         print("Saved {}".format(data_file_name))
         self.clear_can2_buffer()
+        self.file_status_string.set("")
+        self.file_status_string.set("Saved log file to "+data_file_name)
 
     def save_j1708_buffer(self):
         data_file_name=os.path.expanduser('~') + '\\' + "SSS2_J1708_Data_Log_{}.csv".format(time.strftime("%Y-%m-%d_%H%M%S", time.localtime()))
         with open(data_file_name,'w') as f:
+            f.write("Channel,Unix Timestamp,MID,PID,Data,Checksum,OK (Checksum Valid)\n")
             for line in self.received_j1708_messages:
                 f.write(",".join(line)+"\n")
         print("Saved {}".format(data_file_name))
         self.clear_j1708_buffer()
-      
+        self.file_status_string.set("")
+        self.file_status_string.set("Saved log file to "+data_file_name)
+        
     def clear_j1939_buffer(self):
         self.received_can0_messages=[]
         self.j1939_prior_messages={}
@@ -1861,6 +1923,7 @@ class SSS2(ttk.Frame):
                         else: 
                             self.j1939_tree.insert("",tk.END,iid=CANdata[2],text = CANdata[2],values=[None,CANdata[4]]+CANdata[5:13]+[1],tags=('dataRow',))
                         self.j1939_tree.see(CANdata[2])
+                        self.j1939_tree.tag_configure('dataRow',background='white')
                     else:
                         #print("File buffer full")
                         self.j1939_tree.tag_configure('dataRow',background='orange')
@@ -1887,6 +1950,7 @@ class SSS2(ttk.Frame):
                         else: 
                             self.can2_tree.insert("",tk.END,iid=CANdata[2],text = CANdata[2],values=[None,CANdata[4]]+CANdata[5:13]+[1],tags=('dataRow',))
                         self.can2_tree.see(CANdata[2])
+                        self.can2_tree.tag_configure('dataRow',background='white')
                     else:
                         #print("File buffer full")
                         self.can2_tree.tag_configure('dataRow',background='orange')
@@ -1915,7 +1979,9 @@ class SSS2(ttk.Frame):
                     self.sss_software_id_text.set(temp_data[1].strip())
                 elif new_serial_line[0:4]==b'ID: ':
                     temp_data = str(new_serial_line[4:],'utf-8')
-                    self.sss2_product_code_text.set(temp_data)
+                    if self.sss2_product_code_text.get() is not "UNIVERSAL":
+                        self.sss2_product_code_text.set(temp_data)
+                    self.unique_ID = temp_data
                     self.sss2_product_code['bg']='white'
                 elif new_serial_line[0:8]==b'SET 50,1':
                     self.ignition_key_button.state(['selected'])
@@ -1975,7 +2041,7 @@ class SSS2(ttk.Frame):
     
     def on_quit(self,event=None):
         """Exits program."""
-        self.serialclose()
+        self.serial.close()
         quit()
 
 ##class preprogrammed_message(SSS2):
@@ -2287,6 +2353,7 @@ class potentiometer(SSS2):
             self.terminal_B_connect_button.state(['selected']) 
         
         self.set_terminals()
+        self.set_wiper_voltage()
 
         self.ecu_app = ecu_application(self.potentiometer_frame,self.pot_settings_dict,row=6,column=0,columnspan=4)
         
@@ -2362,7 +2429,8 @@ class DAC7678(SSS2):
         tk.Label(self.range_frame,text="Low: {} V".format(self.low)).grid(row=0,column=0, sticky="E",columnspan=1)
         tk.Label(self.range_frame,text="High: {} V".format(self.high)).grid(row=0,column=2,sticky="E",columnspan=1)
 
-
+        self.set_dac_voltage()
+        
         self.ecu_app = ecu_application(self.dac_frame,self.settings_dict,row=1,column=0,columnspan=3)
    
    
@@ -2377,7 +2445,7 @@ class DAC7678(SSS2):
             slope = 4095/(self.high-self.low)
             dac_raw_setting = int(slope*(x - self.low))
         commandString = "{},{:d}".format(self.setting_num,dac_raw_setting)
-        return self.tx_queue.put_nowait(commandString)
+        self.tx_queue.put_nowait(commandString)
         
     
     def set_dac_mean_slider(self,event=None):
@@ -2425,8 +2493,10 @@ class pwm_out(SSS2):
         self.pwm_duty_cycle_slider.set(self.settings_dict["Duty Cycle"])
         self.pwm_duty_cycle_value.insert(0,self.pwm_duty_cycle_slider.get())
         self.pwm_duty_cycle_value.bind('<Return>',self.set_pwm_duty_cycle_slider)
+        self.pwm_duty_cycle_value.icursor(tk.END)
+        self.pwm_duty_cycle_value.focus_set()
         self.set_pwm_duty_cycle_slider()
-
+        
         self.wiper_position_button = ttk.Button(self.pwm_frame,text="Set Duty Cycle",
                                                 width=15,
                                             command = self.set_pwm_duty_cycle_slider)
@@ -2452,12 +2522,15 @@ class pwm_out(SSS2):
         self.pwm_frequency_value.insert(0,self.pwm_frequency_slider.get())
         self.pwm_frequency_value.bind('<Return>',self.set_pwm_frequency_slider)
         self.set_pwm_frequency_slider()
+        
 
         self.frequency_button = ttk.Button(self.pwm_frame,text="Set Frequency",
                                                 width=15,
                                             command = self.set_pwm_frequency_slider)
         self.frequency_button.grid(row=1,column = 2,sticky="SW",columnspan=1)
-        
+
+        self.set_pwm_frequency()
+        self.set_pwm_duty_cycle()
 
         self.ecu_app = ecu_application(self.pwm_frame,self.settings_dict,row=2,column=0,columnspan=3)
    
@@ -2469,7 +2542,7 @@ class pwm_out(SSS2):
         pwm_raw_setting = int(slope*(float(self.pwm_frequency_value.get())))
         commandString = "{},{}".format(self.setting_num+48,pwm_raw_setting)
         self.tx_queue.put_nowait(commandString)
-        return commandString
+        
 
     def set_pwm_duty_cycle(self,event=None):
              
@@ -2480,7 +2553,7 @@ class pwm_out(SSS2):
         pwm_raw_setting = int(slope*(float(self.pwm_duty_cycle_value.get())))
         commandString = "{},{}".format(self.setting_num,pwm_raw_setting)
         self.tx_queue.put_nowait(commandString)
-        return commandString
+        
 
     def set_pwm_frequency_slider(self,event=None):
         entry_value = self.pwm_frequency_value.get()

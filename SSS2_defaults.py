@@ -7,7 +7,6 @@ def get_default_settings():
     settings["Original File SHA"]="Current Settings Not Saved."
     settings["SSS2 Product Code"]="UNIVERSAL"
     settings["Component ID"] = "SYNER*SSS2-R03*XXXX*UNIVERSAL"
-    #settings["Serial Number"]="SSS2-R03-XXXX"
     settings["Software ID"]="SOFTWARE ID"
     settings["SSS2 Source Address"] = 0xFA
     settings["ECU Year"] = "YEAR"
@@ -22,7 +21,7 @@ def get_default_settings():
     settings["Vehicle Model"] = "MODEL"
     settings["ECU Component ID"] = "COMPONENT IDENTIFICATION"
     settings["ECU Software Version"] = "SOFTWARE VERSION"
-    settings["Notes"]="USER ENTERED NOTES"
+    settings["User Notes"]="USER ENTERED NOTES"
     settings["Programmed By"]="USER NAME"
     settings["Company"]="COMPANY NAME"
     settings["Original Creation Date"]="21 April 2017"
