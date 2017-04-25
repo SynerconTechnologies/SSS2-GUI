@@ -1,13 +1,7 @@
 # A Graphical User Interface for the Smart Sensor Simulator 2
 A Python tkinter GUI for the SSS2 that sends and recieves serial commands to the SSS2 over USB
 
-## Window Executable
-A zip file with the Windows Executable is available here:
-
-https://www.dropbox.com/s/1xc5nckzy8wxag3/SSS2-GUI-Interface.zip?dl=0
-
-
-## Developer Requirements
+## Building a Windows Executable
 1. Install Python 3.4 ```https://www.python.org/downloads/release/python-343/```
    1. Open a command prompt by typing `cmd` in the Windows start menu.
    2. Upgrade pip: ```py -3.4 -m pip install --upgrade pip```
@@ -16,7 +10,11 @@ https://www.dropbox.com/s/1xc5nckzy8wxag3/SSS2-GUI-Interface.zip?dl=0
 2. Install the Teensy USB drivers from https://www.pjrc.com/teensy/serial_install.exe
 3. Download Github Desktop from https://desktop.github.com/
 4. Clone this repository in Github Desktop to work on it.
-5. Package the Python sources using ```py -3.4 -m py2exe SSS2-Interface.py```
-6. Copy all graphics files into the newly created dist and build directories
-7. Zip the dist directory for distribution. You can double click the SSS2-Interface.exe program in the dist directory to run.
-8. TODO: use Inno windows installer to create an installer. http://www.jrsoftware.org/isdl.php#qsp
+5. Change the Universal Save Flag to false.
+5. Package the Python sources into an executable using ```py -3.4 createExecutable.py py2exe```
+6. Copy all graphics files into the newly created dist and build directories.
+7. Use Inno windows installer to create a single executable file. http://www.jrsoftware.org/isdl.php#qsp
+   1. Open the `windows installer script for SSS2.iss` file.
+   2. Compile it.
+   3. Find the executable in Documents/SSS2
+   4. Rename the executable with the version number and post it to the web.
