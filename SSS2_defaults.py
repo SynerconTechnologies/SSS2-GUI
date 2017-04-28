@@ -36,6 +36,15 @@ def get_default_settings():
     settings["Send SSS2 Component ID"] = "1"
     settings["Resistor Box Used"] = "Yes"
     settings["File Name"] = ""
+
+    settings["Analog Calibration"] = [(.00000842,.0086833,.03378),
+                                      (.00000842,.0086833,.03378),
+                                      (.00000842,.0086833,.03378),
+                                      (.00000842,.0086833,.03378),
+                                      (.00000842,.0086833,.03378),
+                                      (.00000842,.0086833,.03378)]
+    
+    
     
     settings["Potentiometers"]={}
     p=settings["Potentiometers"]
@@ -334,13 +343,13 @@ def get_default_settings():
 
 
     g=p["Others"]
-    g["Terminal A Connection"]=False
+    g["Terminal A Connection"]=None
     g["Label"]="Potentiometers 17 though 19"
     g["SSS2 Setting"] = None
     g["Pairs"]={"I2CPots":{}}
     
     pair = g["Pairs"]["I2CPots"]
-    pair["Terminal A Voltage"] = False
+    pair["Terminal A Voltage"] = None
     pair["Name"] = "Terminal A Voltage is Fixed at +5V"
     pair["SSS Setting"] = None    
     pair["Pots"] = {"U34":{},"U36":{},"U37":{}}
@@ -657,7 +666,7 @@ def get_default_settings():
     s=settings["Switches"]
     s["Port 10 or 19"]={"SSS2 setting":37,"State":False,"Label A":"Connect Vout B to J24:10","Label B":"Connect Potentiometer 10 to J24:10"}
     s["Port 15 or 18"]={"SSS2 setting":38,"State":False,"Label A":"Connect Vout A to J24:15","Label B":"Connect Potentiometer 15 to J24:15"}
-    s["CAN1 or J1708"]={"SSS2 setting":39,"State":True,"Label A":"Connect J1708 to J24:17 and J24:18","Label B":"Connect CAN1 (MCP-CAN) to J24:17 and J24:18"}
+    s["CAN1 or J1708"]={"SSS2 setting":39,"State":True,"Label A":"Connect J1708 to J24:17 and J24:18","Label B":"Connect CAN2 to J24:17 and J24:18"}
     s["PWMs or CAN2"]={"SSS2 setting":40,"State":True,"Label A":"Connect CAN2 to J18:15 and J18:16","Label B":"Connect PWM1 to J18:15 and PWM2 to J18:16"}
     s["CAN0"]={"SSS2 setting":41,"State":True,"Label":"Connect CAN0 (FlexCAN0) Termination Resistor (J1939)"}
     s["CAN1"]={"SSS2 setting":42,"State":True,"Label":"Connect CAN1 (MCP-CAN) Termination Resistor"}
@@ -674,7 +683,7 @@ def get_default_settings():
     s["PWM3 or 12V"]={"SSS2 setting":45,"State":False,"Label A":"Connect J18:10 to +12VDC","Label B":"Connect PWM3 Output to J18:10"}
     s["PWM4 or Ground"]={"SSS2 setting":47,"State":False,"Label A":"Connect J18:1 to Ground","Label B":"Connect PWM4 Output to J18:1"}
     
-    
+    settings["CAN Config"]={"CAN0 Baudrate":"250000", "CAN1 Baudrate":"500000", "Buffer Size":1000000}
 
     settings["CAN"]={}
     t=settings["CAN"]
@@ -698,11 +707,7 @@ def get_default_settings():
     t[" 18.000"]="PTO from Body Controller,18,1,0,0,100,   0,0,1,18FEF021,8, 0, 0, 0, 0, 0, 0, 0, 0,Yes" 
     t[" 19.000"]="PTO from Cab Display,19,1,0,0, 100,   0,0,1,18FEF028,8, 0, 0, 0, 0, 0, 0, 0, 0,Yes"
     t[" 20.000"]="PTO from Cab Controller,20,1,0,0, 100,   0,0,1,18FEF031,8, 0, 0, 0, 0, 0, 0, 0, 0,Yes"
-    t[" 21.000"]="DDEC Fault Codes from MCM,21,2,0,1,   5,1000,0,1,10ECFF01,8,20,0E,00,01,FF,CA,FE,00,Yes" 
-    t[" 21.001"]="DDEC Fault Codes from MCM,21,2,1,1,   5,1000,0,1,10EBFF01,8,01, 0, 0, 0, 0, 0, 0, 0,Yes" 
-    t[" 22.000"]="DDEC Fault Codes from ACM,22,2,0,1,   5,1000,0,1,10ECFF3D,8,20,0E,00,01,FF,CA,FE,00,Yes" 
-    t[" 22.001"]="DDEC Fault Codes from ACM,22,2,1,1,   5,1000,0,1,10EBFF3D,8,01, 0, 0, 0, 0, 0, 0, 0,Yes" 
-    t[" 23.000"]="AMB from Body Controller,23,1,0,0,1000,   0,0,1,18FEF521,8, 0, 0, 0, 0, 0, 0, 0, 0,Yes" 
+    t[" 21.000"]="AMB from Body Controller,21,1,0,0,1000,   0,0,1,18FEF521,8, 0, 0, 0, 0, 0, 0, 0, 0,Yes" 
                 
     return settings
 
