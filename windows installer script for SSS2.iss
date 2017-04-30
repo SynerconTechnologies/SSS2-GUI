@@ -12,17 +12,19 @@ Compression=lzma2
 SolidCompression=yes
 OutputDir=userdocs:SSS2
 OutputBaseFilename=SetupSSS2Interface
+UninstallDisplayIcon={app}\SSS2-Interface
 
 [Files]
-Source: "dist\*"; DestDir: "{app}"
-Source: "dist\tcl\*"; DestDir: "{app}\tcl"
+Source: "dist\*"; DestDir: "{app}"; Flags: recursesubdirs
+;;Source: "dist\tcl\*"; DestDir: "{app}\tcl"
 Source: "*.ico"; DestDir: "{app}"
 Source: "*.gif"; DestDir: "{app}"
 Source: "*.SSS2"; DestDir: "{app}"
 Source: "serial_install.exe"; DestDir: "{app}"
 
 [Icons]
-Name: "{group}\SSS2"; Filename: "{app}\SSS2-Interface.exe" ; WorkingDir: "{app}"
+Name: "{group}\SSS2 Interface App"; Filename: "{app}\SSS2-Interface.exe" ; WorkingDir: "{app}"
+Name: "{group}\Uninstall SSS2 App"; Filename: "{uninstallexe}"
 
 [Tasks]
 Name: desktopicon; Description: "Create a &desktop icon"; 
