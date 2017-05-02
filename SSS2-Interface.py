@@ -565,8 +565,9 @@ class SSS2(ttk.Frame):
                     if self.file_authenticated: 
                         ok_to_save = True 
         else:
-            ok_to_save = False ###Change to False for production
-
+###########################            
+            ok_to_save = True ###Change to False for production
+###############################
         if ok_to_save:
 
             self.file_status_string.set("Saved "+self.filename)
@@ -614,12 +615,15 @@ class SSS2(ttk.Frame):
         digest_from_file=self.settings_dict["Original File SHA"]
         load_date = self.settings_dict["Original Creation Date"]
         save_date = self.settings_dict["Saved Date"]
-
+        
+         
         
         self.settings_dict.pop("SHA256 Digest",None)
         self.settings_dict.pop("Original File SHA",None)
         self.settings_dict.pop("Original Creation Date",None)
         self.settings_dict.pop("Saved Date",None)
+        sss_software_ID = self.settings_dict.pop("Software ID",None)
+        sss_component_ID = self.settings_dict.pop("Serial Number",None)
         
         temp_settings_dict = pformat(self.settings_dict)
         new_hash = str(hashlib.sha256(bytes(temp_settings_dict,'utf-8')).hexdigest())
@@ -628,6 +632,8 @@ class SSS2(ttk.Frame):
         self.settings_dict["Original File SHA"] = digest_from_file
         self.settings_dict["Original Creation Date"] = load_date
         self.settings_dict["Saved Date"]=save_date
+        self.settings_dict["Serial Number"] =sss_component_ID
+        self.settings_dict["Software ID"] = sss_software_ID
 
         if self.settings_dict["Original File SHA"] ==  "Current Settings Not Saved.":
             self.modified_entry_string.set("Default Settings")
