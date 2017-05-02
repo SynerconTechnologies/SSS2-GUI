@@ -15,6 +15,7 @@ from pprint import pformat
 import re
 import getpass
 import webbrowser
+from operator import itemgetter
 
 from tkinter.tix import *
 from tkinter.constants import *
@@ -184,15 +185,16 @@ class SSS2(ttk.Frame):
     def __init__(self, parent, *args, **kwargs):
         self.frame_top = ttk.Frame.__init__(self, parent, *args, **kwargs)
         self.root = parent
-        self.root.geometry('1527x887+0+0')
+        #self.root.geometry('1527x887+0+0')
         self.root.geometry('+0+0')
         self.root.resizable(width=False, height=False)
         self.root.iconbitmap('synerconlogo.ico')
         self.settings_dict = get_default_settings()
+        self.wiring_dict = get_default_wiring()
         self.root.title('Smart Sensor Simulator Interface')
         self.grid( column=0, row=0, sticky='NSEW') #needed to display
         self.root.lift()
-        self.root.rowconfigure(0, weight=1)
+        self.root.rowconfigure(1, weight=1)
         self.root.columnconfigure(0, weight=1)
         self.home_directory = os.path.expanduser('~')+os.sep+"Documents"+os.sep+"SSS2"+os.sep
         if not os.path.exists(self.home_directory):
@@ -208,6 +210,7 @@ class SSS2(ttk.Frame):
         self.unique_ID = None
         self.can2_baud_value=tk.StringVar(value="250000")
         self.j1939_baud_value=tk.StringVar(value="250000")
+        self.file_loaded = False
         self.init_gui()
         
  
@@ -280,7 +283,8 @@ class SSS2(ttk.Frame):
  
         self.menu_file = tk.Menu(self.menubar)
         self.menu_connection = tk.Menu(self.menubar)
-
+        self.menu_tools = tk.Menu(self.menubar)
+        
         self.menu_file.add_command(label='Open...', command=self.open_settings_file, accelerator="Ctrl+O")
         self.menu_file.add_command(label='Save', command=self.save_settings_file, accelerator="Ctrl+S")
         self.menu_file.add_command(label='Save As...', command=self.saveas_settings_file, accelerator="Ctrl+A")
@@ -295,9 +299,12 @@ class SSS2(ttk.Frame):
         self.menu_connection.add_separator()
         self.menu_connection.add_command(label='Get Unique ID',
                                          command=self.get_sss2_unique_id)
+        self.menu_tools.add_command(label='Export Wiring Table',
+                                         command=self.export_wiring)
         
         self.menubar.add_cascade(menu=self.menu_file, label='File')
         self.menubar.add_cascade(menu=self.menu_connection, label='Connection')
+        self.menubar.add_cascade(menu=self.menu_tools, label='Tools')
 
         self.bind_all("<Control-o>",self.open_settings_file)
         self.bind_all("<Control-s>",self.save_settings_file)
@@ -316,6 +323,7 @@ class SSS2(ttk.Frame):
         self.received_can1_messages=[]
         self.received_can2_messages=[]
         self.received_j1708_messages=[]
+        self.received_lin_messages=[]
 
         self.settings_monitor_setup()
         self.data_logger()
@@ -375,8 +383,43 @@ class SSS2(ttk.Frame):
         self.update_sha()
         #self.autosave()
 
+    def export_wiring(self):
+        for group_key in self.settings_dict["Potentiometers"]:
+            for pair_key in self.settings_dict["Potentiometers"][group_key]["Pairs"]:
+                for pot_key in self.settings_dict["Potentiometers"][group_key]["Pairs"][pair_key]["Pots"]:
+                    pot = self.settings_dict["Potentiometers"][group_key]["Pairs"][pair_key]["Pots"][pot_key]
+                    self.wiring_dict[pot["Pin"]]={"Wire Color":pot["Wire Color"],"Application":pot["Application"],"ECU Pins":pot["ECU Pins"]}
+        for dac_key in self.settings_dict["DACs"]:
+            dac = self.settings_dict["DACs"][dac_key]
+            self.wiring_dict[dac["Pin"]]={"Wire Color":dac["Wire Color"],"Application":dac["Application"],"ECU Pins":dac["ECU Pins"]}
+        for pwm_key in self.settings_dict["PWMs"]:
+            pwm = self.settings_dict["PWMs"][pwm_key]
+            self.wiring_dict[pwm["Pin"]]={"Wire Color":pwm["Wire Color"],"Application":pwm["Application"],"ECU Pins":pwm["ECU Pins"]}
+        pwm = self.settings_dict["HVAdjOut"]
+        self.wiring_dict[pwm["Pin"]]={"Wire Color":pwm["Wire Color"],"Application":pwm["Application"],"ECU Pins":pwm["ECU Pins"]}
         
-           
+        types = [('Tab delimited file', '*.txt')]
+        idir = self.home_directory
+        ifile = "SSS2 Wiring Table"
+        title='SSS2 Wiring Table'
+        wiring_filename = filedialog.asksaveasfilename( filetypes=types,
+                                           initialdir=idir,
+                                           initialfile=ifile,
+                                           title=title,
+                                           defaultextension=".txt")
+        w=self.wiring_dict
+        formatted_keys={}
+        for key in w:
+            cavity=key.split(":")
+            formatted_keys[key]="{}:{:02d}".format(cavity[0],int(cavity[1]))
+        sorted_keys = sorted(formatted_keys.items(), key=itemgetter(1))    
+        with open(wiring_filename,'w') as f:
+            f.write("Molex Pins\tColor\tApplication\tECU Pins\n")
+            for key,label in sorted_keys:
+                f.write("\t".join([formatted_keys[key],w[key]["Wire Color"],w[key]["Application"],w[key]["ECU Pins"]])+"\n")
+        print("Saved "+wiring_filename)
+        self.file_status_string.set("Saved "+wiring_filename)
+            
     def print_settings_file(self,event=None):
         try:
             original_file = self.filename
@@ -492,7 +535,7 @@ class SSS2(ttk.Frame):
         ifile = self.filename
         title='SSS2 Settings File'
         self.filename = filedialog.asksaveasfilename( filetypes=types,
-                                           initialdir=idir+"Documents",
+                                           initialdir=idir,
                                            initialfile=ifile,
                                            title=title,
                                            defaultextension=".SSS2")
@@ -522,7 +565,7 @@ class SSS2(ttk.Frame):
                     if self.file_authenticated: 
                         ok_to_save = True 
         else:
-            ok_to_save = True ###Change to False for production
+            ok_to_save = False ###Change to False for production
 
         if ok_to_save:
 
@@ -550,7 +593,7 @@ class SSS2(ttk.Frame):
             self.file_status_string.set("File not saved.")
             print("File not saved.") 
             messagebox.showerror("Incompatible SSS2 for Saving",
-                            "The unique ID entered for the SSS2 does not match the unit. Please press the Get ID button for the SSS2 Unique ID to populate the form.")
+                            "The unique ID entered for the SSS2 does not match the unit. Please select Get ID from the Connection menu to get the SSS2 Unique ID to populate the form.")
             self.tabs.select(self.profile_tab)
             self.sss2_product_code.focus()
             self.sss2_product_code['bg']='yellow'
@@ -904,12 +947,14 @@ class SSS2(ttk.Frame):
                     pot["Wiper Connect"]   =    pot_object.wiper_connect_button.instate(['selected']) 
                     pot["Wiper Position"] = int(pot_object.wiper_position_slider.get())
                     pot["ECU Pins"] =           pot_object.ecu_app.ecu_pins.get()
+                    pot["Wire Color"] =         pot_object.ecu_app.ecu_color.get()
                     pot["Application"] =        pot_object.ecu_app.ecu_app.get()
 
         for dac_key in self.dac_objects.keys():
             dac_dict=self.settings_dict["DACs"][dac_key]
             dac_dict["Average Voltage"] = self.dac_objects[dac_key].dac_mean_slider.get()/100
             dac_dict["ECU Pins"] =        self.dac_objects[dac_key].ecu_app.ecu_pins.get()
+            dac_dict["Wire Color"] =        self.dac_objects[dac_key].ecu_app.ecu_color.get()
             dac_dict["Application"] =     self.dac_objects[dac_key].ecu_app.ecu_app.get()
 
         for pwm_key in self.pwm_objects.keys():
@@ -917,11 +962,13 @@ class SSS2(ttk.Frame):
             pwm_dict["Duty Cycle"] = self.pwm_objects[pwm_key].pwm_duty_cycle_slider.get()
             pwm_dict["Frequency"] = self.pwm_objects[pwm_key].pwm_frequency_slider.get()
             pwm_dict["ECU Pins"] =        self.pwm_objects[pwm_key].ecu_app.ecu_pins.get()
+            pwm_dict["Wire Color"] =        self.pwm_objects[pwm_key].ecu_app.ecu_color.get()
             pwm_dict["Application"] =     self.pwm_objects[pwm_key].ecu_app.ecu_app.get()
 
         hv_dict=self.settings_dict["HVAdjOut"]
         hv_dict["Average Voltage"] = self.hvadjout.dac_mean_slider.get()/100
         hv_dict["ECU Pins"] =        self.hvadjout.ecu_app.ecu_pins.get()
+        hv_dict["Wire Color"] =        self.hvadjout.ecu_app.ecu_color.get()
         hv_dict["Application"] =     self.hvadjout.ecu_app.ecu_app.get()
 
         s=self.settings_dict["Switches"]        
@@ -1003,7 +1050,7 @@ class SSS2(ttk.Frame):
     def send_reload_can(self):
         msg_index=0
         for msgKey in self.settings_dict["CAN"]:
-            self.load_can_frame(self.settings_dict["CAN"][msgKey],msgKey)
+            self.load_can_frame(self.settings_dict["CAN"][msgKey])
             time.sleep(0.002)
             msg_index+=1
         self.tx_queue.put_nowait("RELOAD,")
@@ -1236,6 +1283,8 @@ class SSS2(ttk.Frame):
         self.item_identifier={}
 
         self.send_clear_can()
+        for i in self.can_tree.get_children():
+            self.can_tree.delete(i)
         self.new_message = True
         for msg_index in sorted(self.settings_dict["CAN"].keys()):
             self.load_can_frame(self.settings_dict["CAN"][msg_index])
@@ -1529,7 +1578,7 @@ class SSS2(ttk.Frame):
             if sub == "0":
                 selection = self.can_tree.insert("",int(index),iid=msg_iid,text=msgKey,open=True,
                                                     values=[index,num,"0",send,channel,period, restart,total,extID,IDhex,dlc]+B)    
-                  
+                
             else:
                 self.trunk = self.can_tree.selection()
                 while self.can_tree.parent(self.trunk) is not "":
@@ -1538,7 +1587,7 @@ class SSS2(ttk.Frame):
                                                 values=[index,num,sub,send,channel,period, restart,total,extID,IDhex,dlc]+B)
         else:
                 
-            selection = self.can_tree.selection()
+            selection = self.can_tree.selection()    
             if self.can_tree.item(selection) is not "":
                 self.can_tree.set(selection,"Send",send)
                 self.can_tree.set(selection,"Channel",channel)
@@ -1629,16 +1678,19 @@ class SSS2(ttk.Frame):
             col_index+=1
             
     def data_logger(self):
+        
         #self.data_logger_tab.grid_rowconfigure(5,weight=2) #Expands blank space under radio buttons.
         self.data_logger_tab.grid_columnconfigure(0,weight=1) #Expands blank space 
         self.data_logger_tab.grid_columnconfigure(1,weight=1) #Expands blank space 
         self.data_logger_tab.grid_columnconfigure(2,weight=1) #Expands blank space 
         self.data_logger_tab.grid_columnconfigure(3,weight=1) #Expands blank space 
-        
-        tk.Label(self.data_logger_tab,text="Buffer Size:").grid(row=0,column=0,sticky=tk.E)
+
+        buffer_size_frame = tk.Frame(self.data_logger_tab)
+        tk.Label(buffer_size_frame,text="Buffer Size:").grid(row=0,column=0,sticky=tk.E)
         self.j1939_size_value = tk.StringVar(value = 1000000)
-        self.j1939_size = tk.Entry(self.data_logger_tab,textvariable= self.j1939_size_value, width=10)
-        self.j1939_size.grid(row=0,column=1,sticky=tk.W,padx=5,pady=5)
+        self.j1939_size = tk.Entry(buffer_size_frame,textvariable= self.j1939_size_value, width=10)
+        self.j1939_size.grid(row=0,column=1,sticky=tk.W,padx=5,pady=2)
+        buffer_size_frame.grid(row=0,column=0,sticky=tk.W)
         
         self.j1939_frame = tk.LabelFrame(self.data_logger_tab, text="J1939 Messages")
         self.j1939_frame.grid(row=1,column=0,sticky='NSEW')
@@ -1665,9 +1717,9 @@ class SSS2(ttk.Frame):
         self.stream_can0_box.grid(row=0,column=0,sticky="W")
         self.stream_can0_box.state(['!alternate']) #Clears Check Box
 
-        tk.Button(self.j1939_frame,text="Clear Buffer", command=self.clear_j1939_buffer).grid(row=0,column=1,pady=5)
-        tk.Button(self.j1939_frame,text="Save Buffer", command=self.save_j1939_buffer).grid(row=0,column=2,pady=5)
-        tk.Button(self.j1939_frame,text="Save Buffer As...", command=self.save_j1939_buffer_as).grid(row=0,column=3,pady=5)
+        tk.Button(self.j1939_frame,text="Clear Buffer", command=self.clear_j1939_buffer).grid(row=0,column=1,pady=5,sticky=tk.N+tk.W)
+        tk.Button(self.j1939_frame,text="Save Buffer", command=self.save_j1939_buffer).grid(row=0,column=2,pady=5,sticky=tk.N+tk.W)
+        tk.Button(self.j1939_frame,text="Save Buffer As...", command=self.save_j1939_buffer_as).grid(row=0,column=3,pady=5,sticky=tk.N+tk.W)
     
         
         colWidths = [60,30,24,24,24,24,24,24,24,24,50]
@@ -1681,6 +1733,9 @@ class SSS2(ttk.Frame):
             self.j1939_tree.column(c, anchor = p, stretch = False, width = w)
             self.j1939_tree.heading(c, anchor = p, text = c)
         self.j1939_tree.grid(row=2,column=0,columnspan=4)
+        self.j1939_frame.columnconfigure(3, weight=1)
+        self.j1939_frame.rowconfigure(2, weight=1)
+        
         self.j1939_unique_messages = {}
         self.j1939_prior_messages = {}
 
@@ -1706,9 +1761,9 @@ class SSS2(ttk.Frame):
         self.stream_can1_box.grid(row=0,column=0,sticky="W")
         self.stream_can1_box.state(['!alternate']) #Clears Check Box
 
-        tk.Button(self.can2_frame,text="Clear Buffer", command=self.clear_can2_buffer).grid(row=0,column=1,pady=5)
-        tk.Button(self.can2_frame,text="Save Buffer", command=self.save_can2_buffer).grid(row=0,column=2,pady=5)
-        tk.Button(self.can2_frame,text="Save Buffer As...", command=self.save_can2_buffer_as).grid(row=0,column=3,pady=5)
+        tk.Button(self.can2_frame,text="Clear Buffer", command=self.clear_can2_buffer).grid(row=0,column=1,pady=5,sticky=tk.N+tk.W)
+        tk.Button(self.can2_frame,text="Save Buffer", command=self.save_can2_buffer).grid(row=0,column=2,pady=5,sticky=tk.N+tk.W)
+        tk.Button(self.can2_frame,text="Save Buffer As...", command=self.save_can2_buffer_as).grid(row=0,column=3,pady=5,sticky=tk.N+tk.W)
     
         self.can2_tree = ttk.Treeview(self.can2_frame, selectmode = "browse",columns=colNames, displaycolumns="#all", height=31)
         self.can2_tree.heading("#0", anchor = tk.E, text = "CAN ID")
@@ -1716,9 +1771,12 @@ class SSS2(ttk.Frame):
         for c,w,p in zip(colNames,colWidths,colPos):
             self.can2_tree.column(c, anchor = p, stretch = False, width = w)
             self.can2_tree.heading(c, anchor = p, text = c)
-        self.can2_tree.grid(row=2,column=0,columnspan=4)
+        self.can2_tree.grid(row=2,column=0,columnspan=4,sticky=tk.S+tk.W)
+        self.can2_frame.columnconfigure(3, weight=1)
+        self.can2_frame.rowconfigure(2, weight=1)
         self.can2_unique_messages = {}
         self.can2_prior_messages = {}
+        
 
         self.j1708_frame = tk.LabelFrame(self.data_logger_tab, text="J1708 Messages")
         self.j1708_frame.grid(row=1,column=2,sticky='NSEW')
@@ -1728,52 +1786,69 @@ class SSS2(ttk.Frame):
                                     name='stream_j1708',
                                     text="Stream J1708",
                                     command=self.send_stream_j1708)
-        self.stream_j1708_box.grid(row=0,column=0,padx=5,sticky=tk.W)
+        self.stream_j1708_box.grid(row=0,column=0,padx=5,sticky=tk.W,columnspan=2)
         self.stream_j1708_box.state(['!alternate']) #Clears Check Box
 
-        tk.Button(self.j1708_frame,text="Clear Buffer", command=self.clear_j1708_buffer).grid(row=0,column=1,padx=1,sticky=tk.W)
-        tk.Button(self.j1708_frame,text="Save Buffer ", command=self.save_j1708_buffer).grid(row=0,column=2,pady=5,padx=1,sticky=tk.W)
-        tk.Button(self.j1708_frame,text="Save Buffer As...", command=self.save_j1708_buffer_as).grid(row=0,column=3,pady=5,padx=1,sticky=tk.W)
+        tk.Button(self.j1708_frame,text="Clear Buffer", command=self.clear_j1708_buffer).grid(row=1,column=0,pady=5,padx=1,sticky=tk.N+tk.W)
+        tk.Button(self.j1708_frame,text="Save Buffer ", command=self.save_j1708_buffer).grid(row=1,column=1,pady=5,padx=1,sticky=tk.N+tk.W)
+        tk.Button(self.j1708_frame,text="Save Buffer As...", command=self.save_j1708_buffer_as).grid(row=1,column=2,pady=5,padx=1,sticky=tk.N+tk.W)
     
 
-        self.j1708_tree = ttk.Treeview(self.j1708_frame,  height=33)
-        self.j1708_tree.grid(row=4,column=0,sticky=tk.W,columnspan=4)
-
+        self.j1708_tree = ttk.Treeview(self.j1708_frame,  height=31)
+        self.j1708_tree.grid(row=3,column=0,sticky=tk.S+tk.W,columnspan=4)
+        self.j1708_frame.columnconfigure(3, weight=1)
+        self.j1708_frame.rowconfigure(2, weight=1)
+        
         self.j1708_tree.heading("#0", anchor = 'center', text = "J1708 Messages")
         self.j1708_tree.column("#0",width=350)
 
-        self.analog_frame = tk.LabelFrame(self.data_logger_tab, text="Analog Voltage Readings")
-        self.analog_frame.grid(row=1,column=3,sticky='NSEW')
         
+
+        self.lin_frame = tk.LabelFrame(self.data_logger_tab, text="LIN Messages")
+        self.lin_frame.grid(row=1,column=3,sticky='NSEW')
+
+
+        self.stream_lin_box =  ttk.Checkbutton(self.lin_frame,
+                                    text="Stream LIN",
+                                    command=self.send_stream_lin)
+        self.stream_lin_box.grid(row=0,column=0,padx=5,sticky=tk.W,columnspan=2)
+        self.stream_lin_box.state(['!alternate']) #Clears Check Box
+
+        self.suppress_lin_box =  ttk.Checkbutton(self.lin_frame,
+                                    text="Enable LIN on SSS2",
+                                    command=self.send_supress_lin)
+        self.suppress_lin_box.grid(row=2,column=0,padx=5,sticky=tk.W,columnspan=2)
+        self.suppress_lin_box.state(['!alternate']) #Clears Check Box
+        self.suppress_lin_box.state(['selected']) 
+
+        tk.Button(self.lin_frame,text="Clear Buffer", command=self.clear_lin_buffer).grid(row=1,column=0,pady=5,padx=1,sticky=tk.N+tk.W)
+        tk.Button(self.lin_frame,text="Save Buffer ", command=self.save_lin_buffer).grid(row=1,column=1,pady=5,padx=1,sticky=tk.N+tk.W)
+        tk.Button(self.lin_frame,text="Save As...", command=self.save_lin_buffer_as).grid(row=1,column=2,pady=5,padx=1,sticky=tk.N+tk.W)
+    
+
+        self.lin_tree = ttk.Treeview(self.lin_frame,  height=31)
+        self.lin_tree.grid(row=3,column=0,sticky=tk.S+tk.W,columnspan=4)
+        self.lin_frame.columnconfigure(3, weight=1)
+        self.lin_frame.rowconfigure(2, weight=1)
         
-        self.stream_A21_box =  ttk.Checkbutton(self.analog_frame,
-                                    name='stream_A21',
-                                    text="Stream Voltage Readings",
-                                    command=self.send_stream_A21)
-        self.stream_A21_box.grid(row=0,padx=5,column=0,sticky=tk.W,columnspan=3)
-        self.stream_A21_box.state(['!alternate']) #Clears Check Box
-        
-        
-        tk.Button(self.analog_frame,text="Clear Buffer", command=self.clear_analog_buffer).grid(row=1,column=0,padx=1,sticky=tk.W)
-        tk.Button(self.analog_frame,text="Save Buffer ", command=self.save_analog_buffer).grid(row=1,column=1,pady=5,padx=1,sticky=tk.W)
-        tk.Button(self.analog_frame,text="Save Buffer As...", command=self.save_analog_buffer_as).grid(row=1,column=2,pady=5,padx=1,sticky=tk.W)
+        self.lin_tree.heading("#0", anchor = 'center', text = "LIN Messages")
+        self.lin_tree.column("#0",width=250)
 
         
+    def send_stream_lin(self):
+        if self.stream_lin_box.instate(['selected']):
+            commandString = "LIN,1"
+        else:
+            commandString = "LIN,0"
+        self.tx_queue.put_nowait(commandString)  
+
+    def send_supress_lin(self):
+        if self.suppress_lin_box.instate(['selected']):
+            commandString = "SENDLIN,1"
+        else:
+            commandString = "SENDLIN,0"
+        self.tx_queue.put_nowait(commandString)  
         
-        colWidths = [45,45,45,45,45,45]
-        colNames = ["J24:10","J24:11","J24:12","J24:13","J24:14","J24:15"]
-        colPos = ['center','center','center','center','center','center']
-        self.analog_tree = ttk.Treeview(self.analog_frame, columns=colNames, displaycolumns="J24:10", height=30)
-        self.analog_tree.grid(row=4,column=0,sticky=tk.W,columnspan=3)
-
-        self.analog_tree.heading("#0", anchor = 'center', text = "Time")
-        self.analog_tree.column("#0",width=65)
-
-        for c,w,p in zip(colNames,colWidths,colPos):
-            self.analog_tree.column(c, anchor = p, stretch = False, width = w)
-            self.analog_tree.heading(c, anchor = p, text = c)
-
-        self.clear_analog_buffer()
         
     def send_stream_A21(self):
         if self.stream_A21_box.instate(['selected']):
@@ -1814,22 +1889,54 @@ class SSS2(ttk.Frame):
 
         tk.Button(self.settings_frame,text="List SSS2 Settings",
                     command=self.send_list_settings).grid(row=0,column=0,sticky="W",padx=5,pady=5)
-        tk.Button(self.settings_frame,text="List SSS2 Settings",
-                    command=self.save_transcript).grid(row=0,column=0,sticky="W",padx=5,pady=5)
+        #tk.Button(self.settings_frame,text="Save Transcript",
+        #            command=self.save_transcript).grid(row=0,column=1,sticky="W",padx=5,pady=5)
         
-        tk.Label(self.settings_frame,text="Command:").grid(row=0,column=1, sticky="E",pady=5)
+        tk.Label(self.settings_frame,text="Command:").grid(row=0,column=2, sticky="E",pady=5)
         self.serial_TX_message = ttk.Entry(self.settings_frame,width=60)
-        self.serial_TX_message.grid(row=0,column = 2,sticky="EW")
+        self.serial_TX_message.grid(row=0,column = 3,sticky="EW")
         self.serial_TX_message.bind('<Return>',self.send_arbitrary_serial_message)
         self.serial_TX_message.bind('<Up>',self.recall_command_up)
         self.serial_TX_message.bind('<Down>',self.recall_command_down)
         self.sent_serial_messages=[]
         self.sent_serial_messages_index=0
         
-        self.settings_text = tkst.ScrolledText(self.settings_frame,wrap=tk.NONE,width=180,height=45)
-        self.settings_text.grid(row=1,column=0,sticky="NSEW",columnspan=3)
+        self.settings_text = tkst.ScrolledText(self.settings_frame,wrap=tk.NONE,width=150,height=45)
+        self.settings_text.grid(row=1,column=0,sticky="NSEW",columnspan=4)
    
-        self.settings_frame.grid_columnconfigure(2, weight=1)
+        self.settings_frame.grid_columnconfigure(3, weight=1)
+
+        self.analog_frame = tk.LabelFrame(self.monitor_tab, text="Analog Voltage Readings")
+        self.analog_frame.grid(row=0,column=3,sticky='NSEW')
+        
+        self.stream_A21_box =  ttk.Checkbutton(self.analog_frame,
+                                    name='stream_A21',
+                                    text="Stream Voltage Readings",
+                                    command=self.send_stream_A21)
+        self.stream_A21_box.grid(row=0,padx=5,column=0,sticky=tk.W,columnspan=3)
+        self.stream_A21_box.state(['!alternate']) #Clears Check Box
+        
+        
+        tk.Button(self.analog_frame,text="Clear Buffer", command=self.clear_analog_buffer).grid(row=1,column=0,padx=1,sticky=tk.W)
+        tk.Button(self.analog_frame,text="Save Buffer ", command=self.save_analog_buffer).grid(row=1,column=1,pady=5,padx=1,sticky=tk.W)
+        tk.Button(self.analog_frame,text="Save Buffer As...", command=self.save_analog_buffer_as).grid(row=1,column=2,pady=5,padx=1,sticky=tk.W)
+
+        
+        
+        colWidths = [45,45,45,45,45,45]
+        colNames = ["J24:10","J24:11","J24:12","J24:13","J24:14","J24:15"]
+        colPos = ['center','center','center','center','center','center']
+        self.analog_tree = ttk.Treeview(self.analog_frame, columns=colNames, displaycolumns="J24:10", height=30)
+        self.analog_tree.grid(row=4,column=0,sticky=tk.W,columnspan=3)
+
+        self.analog_tree.heading("#0", anchor = 'center', text = "Time")
+        self.analog_tree.column("#0",width=65)
+
+        for c,w,p in zip(colNames,colWidths,colPos):
+            self.analog_tree.column(c, anchor = p, stretch = False, width = w)
+            self.analog_tree.heading(c, anchor = p, text = c)
+
+        self.clear_analog_buffer()
      
     def connect_to_serial(self):
         connection_dialog = setup_serial_connections(self)
@@ -1892,14 +1999,19 @@ class SSS2(ttk.Frame):
     def send_list_settings(self):
         commandString = "LS,"
         self.tx_queue.put_nowait(commandString)
-    def send_list_info(self):
-        commandString = "LI,"
-        self.tx_queue.put_nowait(commandString)
-  
+        
     def write_j1708_log_file(self,data_file_name):
         with open(data_file_name,'w') as f:
             f.write("Channel,Unix Timestamp,MID,PID,Data,Checksum,OK (Checksum Valid)\n")
             for line in self.received_j1708_messages:
+                f.write(",".join(line)+"\n")
+        print("Saved {}".format(data_file_name))
+        self.file_status_string.set("Saved log file to "+data_file_name)
+
+    def write_lin_log_file(self,data_file_name):
+        with open(data_file_name,'w') as f:
+            f.write("Timestamp,ID,B0,B1,B2,B3,Checksum,Checksum\n")
+            for line in self.received_lin_messages:
                 f.write(",".join(line)+"\n")
         print("Saved {}".format(data_file_name))
         self.file_status_string.set("Saved log file to "+data_file_name)
@@ -1960,6 +2072,20 @@ class SSS2(ttk.Frame):
         
         self.write_j1708_log_file(data_file_name)
         self.clear_j1708_buffer()
+
+    def save_lin_buffer_as(self):
+        types = [('Comma Separated Values', '*.csv')]
+        idir = self.home_directory
+        ifile = "SSS2_LIN_Data_Log_{}.csv".format(time.strftime("%Y-%m-%d_%H%M%S", time.localtime()))
+        title='Save LIN Log File'
+        data_file_name = filedialog.asksaveasfilename( filetypes=types,
+                                           initialdir=idir,
+                                           initialfile=ifile,
+                                           title=title,
+                                           defaultextension=".csv")
+        
+        self.write_lin_log_file(data_file_name)
+        self.clear_lin_buffer()
         
     def save_analog_buffer_as(self):
         types = [('Comma Separated Values', '*.csv')]
@@ -1972,7 +2098,7 @@ class SSS2(ttk.Frame):
                                            title=title,
                                            defaultextension=".csv")
         
-        self.write_analog_log_file(data_file_name,received_can1_messages)
+        self.write_analog_log_file(data_file_name,self.received_analog_messages)
         self.clear_analog_buffer()
    
     def save_j1939_buffer(self):
@@ -1980,7 +2106,7 @@ class SSS2(ttk.Frame):
             data_file_name=self.home_directory + "SSS2_J1939_Data_Log_{}.csv".format(time.strftime("%Y-%m-%d_%H%M%S", time.localtime()))
         else:
             self.save_j1939_buffer_as()
-        self.write_can_log_file(data_file_name,received_can0_messages)
+        self.write_can_log_file(data_file_name,self.received_can0_messages)
         self.clear_j1939_buffer()
         
     def save_can2_buffer(self):
@@ -1988,7 +2114,7 @@ class SSS2(ttk.Frame):
             data_file_name=self.home_directory + "SSS2_CAN2_Data_Log_{}.csv".format(time.strftime("%Y-%m-%d_%H%M%S", time.localtime()))
         else:
             self.save_can2_buffer_as()
-        self.write_can_log_file(data_file_name,received_can1_messages)
+        self.write_can_log_file(data_file_name,self.received_can1_messages)
         self.clear_can2_buffer()
    
     def save_j1708_buffer(self):
@@ -2000,6 +2126,16 @@ class SSS2(ttk.Frame):
         print("Saved {}".format(data_file_name))
         self.file_status_string.set("Saved log file to "+data_file_name)
         self.clear_j1708_buffer()
+
+    def save_lin_buffer(self):
+        if os.path.exists(self.home_directory):
+            data_file_name=self.home_directory + "SSS2_LIN_Data_Log_{}.csv".format(time.strftime("%Y-%m-%d_%H%M%S", time.localtime()))
+        else:
+            self.save_lin_buffer_as()
+        self.write_lin_log_file(data_file_name)
+        print("Saved {}".format(data_file_name))
+        self.file_status_string.set("Saved log file to "+data_file_name)
+        self.clear_lin_buffer()
 
     def save_analog_buffer(self):
         if os.path.exists(self.home_directory):
@@ -2032,6 +2168,12 @@ class SSS2(ttk.Frame):
         for tree_item in self.j1708_tree.get_children():
             self.j1708_tree.delete(tree_item)  
         self.j1708_tree.tag_configure('dataRow',background='white')
+
+    def clear_lin_buffer(self):
+        self.received_lin_messages=[]
+        for tree_item in self.lin_tree.get_children():
+            self.lin_tree.delete(tree_item)  
+        self.lin_tree.tag_configure('dataRow',background='white')
 
     def clear_analog_buffer(self):
         for tree_item in self.analog_tree.get_children():
@@ -2110,6 +2252,11 @@ class SSS2(ttk.Frame):
                     else:
                         self.can2_tree.tag_configure('dataRow',background='orange')
                      
+                elif new_serial_line[0:3]==b'LIN':
+                    LINdata = new_serial_line.decode('ascii',"ignore").strip().split(',')
+                    self.received_lin_messages.append(LINdata)
+                    latest = self.lin_tree.insert("",tk.END,text = LINdata[1:])
+                    self.lin_tree.see(latest)
                 elif new_serial_line[0:5]==b'J1708':
                     J1708Data = new_serial_line.decode('ascii',"ignore").strip().split()
                     self.received_j1708_messages.append(J1708Data)
@@ -2159,7 +2306,7 @@ class SSS2(ttk.Frame):
                     self.ignition_key_button.state(['!selected'])
                 else:
                     self.file_OK_received.set(True)
-                if new_serial_line[0:4]!=b'CAN0' and new_serial_line[0:4]!=b'CAN1' and new_serial_line[0:5]!=b'J1708' and new_serial_line[0:6]!=b'ANALOG':
+                if new_serial_line[0:4]!=b'CAN0' and new_serial_line[0:4]!=b'CAN1' and new_serial_line[0:5]!=b'J1708' and new_serial_line[0:6]!=b'ANALOG' and new_serial_line[0:4]!=b'LIN ':
                     self.serial_rx_entry.delete(0,tk.END)
                     self.serial_rx_entry.insert(0, new_serial_line.decode('ascii',"ignore"))
                     self.settings_text.insert(tk.END,new_serial_line.decode('ascii',"ignore"))
@@ -2199,10 +2346,11 @@ class SSS2(ttk.Frame):
         image_label.grid(row=2,column=2,sticky=tk.E)
 
     def send_ignition_key_command(self,event=None):
+        commandString = "50,0"    
         if self.ignition_key_button.instate(['selected']):
-            commandString = "50,1"
-        else:
-            commandString = "50,0"
+            self.root.bell()
+            if messagebox.askyesno("Turn Key Switch On","Do you have the desired settings and would you like to turn on the key switch?"):
+                commandString = "50,1"
         self.tx_queue.put_nowait(commandString)
      
     def on_quit(self,event=None):
@@ -2708,21 +2856,31 @@ class ecu_application(SSS2):
         self.setup_ecu_application()
         
     def setup_ecu_application(self):
+
+        colors=["PPL/WHT","BRN/WHT","YEL/BLK","PNK/BLK","Blue","GRN/BLK","ORN/BLK","YEL/RED","RED/WHT",
+                "RED/BLK","BLU/WHT","TAN/BLK","BROWN","BLK/WHT","GRN/WHT","TAN/RED","PURPLE","PINK","TAN",
+                "ORANGE","GREEN","YELLOW","RED","BLACK","RED/GRN","YEL/GRN"]
+
         
         self.ecu_frame = tk.LabelFrame(self.root,name='ecu_frame',text="ECU Application")
         self.ecu_frame.grid(row=self.row,column=self.col,columnspan=self.colspan,
                             rowspan=self.rowspan,sticky=tk.E+tk.W)
-        self.ecu_frame.grid_columnconfigure(2,weight=2)
+        self.ecu_frame.grid_columnconfigure(1,weight=2)
+        self.ecu_frame.grid_columnconfigure(3,weight=2)
         
-        tk.Label(self.ecu_frame,text="ECU Pins:").grid(row=0,column=0, sticky=tk.W)
-        
-        self.ecu_pins = ttk.Entry(self.ecu_frame,width=18,name="ecu pins")
+        tk.Label(self.ecu_frame,text="Pin").grid(row=0,column=0, sticky=tk.W)
+        self.ecu_pins = ttk.Entry(self.ecu_frame,width=9,name="ecu pins")
         self.ecu_pins.insert(0,self.settings_dict["ECU Pins"])
         self.ecu_pins.grid(row=0,column=1,sticky=tk.W)
+
+        #tk.Label(self.ecu_frame,text="Wire").grid(row=0,column=2, sticky=tk.W)
+        self.ecu_color = ttk.Combobox(self.ecu_frame,name="color",values=sorted(colors),width=9)
+        self.ecu_color.insert(0,self.settings_dict["Wire Color"])
+        self.ecu_color.grid(row=0,column=3,sticky=tk.E)
         
         self.ecu_app = tk.Entry(self.ecu_frame,name="ecu application")
         self.ecu_app.insert(tk.END,self.settings_dict["Application"])
-        self.ecu_app.grid(row=1,column=0,columnspan=3,sticky=tk.E+tk.W)
+        self.ecu_app.grid(row=1,column=0,columnspan=4,sticky=tk.E+tk.W)
 
         
 

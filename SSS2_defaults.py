@@ -70,6 +70,7 @@ def get_default_settings():
     u["Wiper Connect"]=True
     u["Wiper Position"]=210
     u["Pin"]="J24:1"
+    u["Wire Color"]="PPL/WHT"
     u["Port"]="1"
     u["ECU Pins"]="ECU Pins"
     u["Application"]="Application Description"
@@ -86,6 +87,7 @@ def get_default_settings():
     u["Wiper Connect"]=True
     u["Wiper Position"]=200
     u["Pin"]="J24:2"
+    u["Wire Color"]="BRN/WHT"
     u["Port"]="2"
     u["ECU Pins"]="ECU Pins"
     u["Application"]="Application Description"
@@ -106,6 +108,7 @@ def get_default_settings():
     u["Wiper Connect"]=True
     u["Wiper Position"]=190
     u["Pin"]="J24:3"
+    u["Wire Color"]="YEL/BLK"
     u["Port"]="3"
     u["ECU Pins"]="ECU Pins"
     u["Application"]="Application Description"
@@ -120,6 +123,7 @@ def get_default_settings():
     u["Wiper Connect"]=True
     u["Wiper Position"]=180
     u["Pin"]="J24:4"
+    u["Wire Color"]="PNK/BLK"
     u["Port"]="4"
     u["ECU Pins"]="ECU Pins"
     u["Application"]="Application Description"
@@ -140,6 +144,7 @@ def get_default_settings():
     u["Wiper Connect"]=True
     u["Wiper Position"]=170
     u["Pin"]="J24:5"
+    u["Wire Color"]="Blue"
     u["Port"]="5"
     u["ECU Pins"]="ECU Pins"
     u["Application"]="Application Description"
@@ -154,6 +159,7 @@ def get_default_settings():
     u["Wiper Connect"]=True
     u["Wiper Position"]=160
     u["Pin"]="J24:6"
+    u["Wire Color"]="GRN/BLK"
     u["Port"]="6"
     u["ECU Pins"]="ECU Pins"
     u["Application"]="Application Description"
@@ -174,6 +180,7 @@ def get_default_settings():
     u["Wiper Connect"]=True
     u["Wiper Position"]=150
     u["Pin"]="J24:7"
+    u["Wire Color"]="ORN/BLK"
     u["Port"]="7"
     u["ECU Pins"]="ECU Pins"
     u["Application"]="Application Description"
@@ -188,6 +195,7 @@ def get_default_settings():
     u["Wiper Connect"]=True
     u["Wiper Position"]=140
     u["Pin"]="J24:8"
+    u["Wire Color"]="YEL/RED"
     u["Port"]="8"
     u["ECU Pins"]="ECU Pins"
     u["Application"]="Application Description"
@@ -216,6 +224,7 @@ def get_default_settings():
     u["Wiper Connect"]=True
     u["Wiper Position"]=130
     u["Pin"]= "J24:9"
+    u["Wire Color"]="RED/WHT"
     u["Port"]= "9"
     u["ECU Pins"]="ECU Pins"
     u["Application"]="Application Description"
@@ -230,6 +239,7 @@ def get_default_settings():
     u["Wiper Connect"]=True
     u["Wiper Position"]=120
     u["Pin"]= "J24:10"
+    u["Wire Color"]="RED/BLK"
     u["Port"]="10"
     u["ECU Pins"]="ECU Pins"
     u["Application"]="Application Description"
@@ -250,6 +260,7 @@ def get_default_settings():
     u["Wiper Connect"]=True
     u["Wiper Position"]=110
     u["Pin"]="J24:11"
+    u["Wire Color"]="BLU/WHT"
     u["Port"]="11"
     u["ECU Pins"]="ECU Pins"
     u["Application"]="Application Description"
@@ -264,6 +275,7 @@ def get_default_settings():
     u["Wiper Connect"]=True
     u["Wiper Position"]=100
     u["Pin"]="J24:12"
+    u["Wire Color"]="TAN/BLK"
     u["Port"]="12"
     u["ECU Pins"]="ECU Pins"
     u["Application"]="Application Description"
@@ -284,6 +296,7 @@ def get_default_settings():
     u["Wiper Connect"]=True
     u["Wiper Position"]=90
     u["Pin"]="J24:13"
+    u["Wire Color"]="Brown"
     u["Port"]="13"
     u["ECU Pins"]="ECU Pins"
     u["Application"]="Application Description"
@@ -298,6 +311,7 @@ def get_default_settings():
     u["Wiper Connect"]=True
     u["Wiper Position"]=80
     u["Pin"]="J24:14"
+    u["Wire Color"]="BLK/WHT"
     u["Port"]="14"
     u["ECU Pins"] = "ECU Pins"
     u["Application"]="Application Description"
@@ -318,6 +332,7 @@ def get_default_settings():
     u["Wiper Connect"]=True
     u["Wiper Position"]=70
     u["Pin"]= "J24:15"
+    u["Wire Color"]="GRN/WHT"
     u["Port"]="15"
     u["ECU Pins"]="ECU Pins"
     u["Application"]="Application Description"
@@ -332,6 +347,7 @@ def get_default_settings():
     u["Wiper Connect"]=True
     u["Wiper Position"]=60
     u["Pin"]= "J24:16"
+    u["Wire Color"]="RED/GRN"
     u["Port"]= "16"
     u["ECU Pins"]="ECU Pins"
     u["Application"]="Application Description"
@@ -360,6 +376,7 @@ def get_default_settings():
     u["Wiper Connect"]=True
     u["Wiper Position"]=20
     u["Pin"]= "J18:12"
+    u["Wire Color"]="TAN/BLK"
     u["Port"]= "28"
     u["ECU Pins"]="ECU Pins"
     u["Application"]="Application Description"
@@ -374,6 +391,7 @@ def get_default_settings():
     u["Wiper Connect"]=True
     u["Wiper Position"]=50
     u["Pin"]= "J18:13"
+    u["Wire Color"]="BROWN"
     u["Port"]= "29"
     u["ECU Pins"]="ECU Pins"
     u["Application"]="Application Description"
@@ -388,6 +406,7 @@ def get_default_settings():
     u["Wiper Connect"]=True
     u["Wiper Position"]=50
     u["Pin"]= "J18:14"
+    u["Wire Color"]="GRN/WHT"
     u["Port"]= "30"
     u["ECU Pins"]="ECU Pins"
     u["Application"]="Application Description"
@@ -413,6 +432,7 @@ def get_default_settings():
     d["ECU Pins"]="ECU Pins"
     d["Application"]="Application Description"
     d["Pin"]= "J18:2"
+    d["Wire Color"]="BRN/WHT"
     d["Port"]= "18"
     d["Alt. Pin"]="J24:15"
     d["Alt. Pin Connect"]=False
@@ -431,6 +451,7 @@ def get_default_settings():
     d["ECU Pins"]="ECU Pins"
     d["Application"]="Application Description"
     d["Pin"]= "J18:3"
+    d["Wire Color"]="WHT/BLK"
     d["Port"]= "19"
     d["Alt. Pin"]="J24:10"
     d["Alt. Pin Connect"]=False
@@ -450,6 +471,7 @@ def get_default_settings():
     d["ECU Pins"]="ECU Pins"
     d["Application"]="Application Description"
     d["Pin"]= "J18:4"
+    d["Wire Color"]="PNK/BLK"
     d["Port"]= "20"
     d["Alt. Pin"]=None
     d["Alt. Pin Connect"]=False
@@ -468,6 +490,7 @@ def get_default_settings():
     d["ECU Pins"]="ECU Pins"
     d["Application"]="Application Description"
     d["Pin"]= "J18:5"
+    d["Wire Color"]="Pink"
     d["Port"]= "21"
     d["Alt. Pin"]=None
     d["Alt. Pin Connect"]=False
@@ -486,6 +509,7 @@ def get_default_settings():
     d["ECU Pins"]="ECU Pins"
     d["Application"]="Application Description"
     d["Pin"]= "J18:6"
+    d["Wire Color"]="Blue"
     d["Port"]= "22"
     d["Alt. Pin"]=None
     d["Alt. Pin Connect"]=False
@@ -504,6 +528,7 @@ def get_default_settings():
     d["ECU Pins"]="ECU Pins"
     d["Application"]="Application Description"
     d["Pin"]= "J18:7"
+    d["Wire Color"]="Tan"
     d["Port"]= "23"
     d["Alt. Pin"]=None
     d["Alt. Pin Connect"]=False
@@ -522,6 +547,7 @@ def get_default_settings():
     d["ECU Pins"]="ECU Pins"
     d["Application"]="Application Description"
     d["Pin"]= "J18:8"
+    d["Wire Color"]="ORN/BLK"
     d["Port"]= "24"
     d["Alt. Pin"]=None
     d["Alt. Pin Connect"]=False
@@ -540,6 +566,7 @@ def get_default_settings():
     d["ECU Pins"]="ECU Pins"
     d["Application"]="Application Description"
     d["Pin"]= "J18:9"
+    d["Wire Color"]="YEL/BLK"
     d["Port"]= "25"
     d["Alt. Pin"]=None
     d["Alt. Pin Connect"]=False
@@ -567,6 +594,7 @@ def get_default_settings():
     d["Application"]="Application Description"
     d["Port"]= "31"
     d["Pin"]= "J24:13"
+    d["Wire Color"]="BROWN"
     d["Pin Connect"]=True
     d["SSS2 pin setting"] = 67
     d["Alt. Port"]="13"
@@ -590,6 +618,7 @@ def get_default_settings():
     d["Application"]="Application Description"
     d["Port"]= "32"
     d["Pin"]= "J24:14"
+    d["Wire Color"]="BLK/WHT"
     d["Pin Connect"]=True
     d["SSS2 pin setting"] = 68
     d["Alt. Port"]="14"
@@ -612,6 +641,7 @@ def get_default_settings():
     d["Application"]="Application Description"
     d["Port"]= "27"
     d["Pin"]= "J18:10"
+    d["Wire Color"]="Orange"
     d["Pin Connect"]=True
     d["SSS2 pin setting"] = 69
     d["Alt. Port"]=None
@@ -634,6 +664,7 @@ def get_default_settings():
     d["Application"]="Application Description"
     d["Port"]= "17"
     d["Pin"]= "J18:1"
+    d["Wire Color"]="PPL/WHT"
     d["Pin Connect"]=True
     d["SSS2 pin setting"] = 70
     d["Alt. Port"]=None
@@ -652,6 +683,7 @@ def get_default_settings():
     d["Average Voltage"]=8.5
     d["Lowest Voltage"]= 4
     d["Pin"]= "J24:19"
+    d["Wire Color"]="TAN"
     d["Port"]= " "
     d["Alt. Pin"]=None
     d["Alt. Pin Connect"]=False
@@ -682,6 +714,8 @@ def get_default_settings():
     s["PWM2 Connect"]={"SSS2 setting":68,"State":True,"Label":"Connect PWM2 Output to J24:14"}
     s["PWM3 or 12V"]={"SSS2 setting":45,"State":False,"Label A":"Connect J18:10 to +12VDC","Label B":"Connect PWM3 Output to J18:10"}
     s["PWM4 or Ground"]={"SSS2 setting":47,"State":False,"Label A":"Connect J18:1 to Ground","Label B":"Connect PWM4 Output to J18:1"}
+
+    
     
     settings["CAN Config"]={"CAN0 Baudrate":"250000", "CAN1 Baudrate":"500000", "Buffer Size":1000000}
 
@@ -710,7 +744,22 @@ def get_default_settings():
     t[" 21.000"]="AMB from Body Controller,21,1,0,0,1000,   0,0,1,18FEF521,8, 0, 0, 0, 0, 0, 0, 0, 0,Yes" 
                 
     return settings
-
+def get_default_wiring():
+    wiring_dict={}
+    wiring_dict["J24:17"]={"Wire Color":"PURPLE","Application":"CAN2L/J1708-","ECU Pins":""}
+    wiring_dict["J24:18"]={"Wire Color":"PINK","Application":"CAN2H/J1708+","ECU Pins":""}
+    wiring_dict["J24:19"]={"Wire Color":"TAN","Application":"HVADJOUT","ECU Pins":""}
+    wiring_dict["J24:20"]={"Wire Color":"ORANGE","Application":"Ignition","ECU Pins":""}
+    wiring_dict["J24:21"]={"Wire Color":"GREEN","Application":"J1939L","ECU Pins":""}
+    wiring_dict["J24:22"]={"Wire Color":"YELLOW","Application":"J1939H","ECU Pins":""}
+    wiring_dict["J24:23"]={"Wire Color":"RED","Application":"+12V Out","ECU Pins":""}
+    wiring_dict["J24:24"]={"Wire Color":"BLACK","Application":"Ground","ECU Pins":""}
+    wiring_dict["J18:18"]={"Wire Color":"BLACK","Application":"Ground","ECU Pins":""}
+    wiring_dict["J18:17"]={"Wire Color":"Red","Application":"Battery +","ECU Pins":""}
+    wiring_dict["J18:16"]={"Wire Color":"YELLOW","Application":"CAN2H","ECU Pins":""}
+    wiring_dict["J18:15"]={"Wire Color":"GREEN","Application":"CAN2L","ECU Pins":""}
+    wiring_dict["J18:11"] ={"Wire Color":"PURPLE","Application":"","ECU Pins":""}
+    return wiring_dict
 if __name__ == '__main__':
     settings=get_default_settings()
     with open('SSS2defaults.json','w') as outfile:
