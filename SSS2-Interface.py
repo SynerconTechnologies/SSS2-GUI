@@ -211,6 +211,8 @@ class SSS2(ttk.Frame):
         self.can2_baud_value=tk.StringVar(value="250000")
         self.j1939_baud_value=tk.StringVar(value="250000")
         self.file_loaded = False
+        self.release_date = "03 May 2017"
+        self.release_version = "0.9beta"
         self.init_gui()
         
  
@@ -376,7 +378,7 @@ class SSS2(ttk.Frame):
         self.clear_analog_buffer()
 
         self.get_sss2_component_id()
-        #self.get_sss2_unique_id()
+        time.sleep(.01)
         self.get_sss2_software_id()
 
         time.sleep(.3)
@@ -400,7 +402,7 @@ class SSS2(ttk.Frame):
         
         types = [('Tab delimited file', '*.txt')]
         idir = self.home_directory
-        ifile = "SSS2 Wiring Table"
+        ifile = "SSS2 Partial Wiring Table"
         title='SSS2 Wiring Table'
         wiring_filename = filedialog.asksaveasfilename( filetypes=types,
                                            initialdir=idir,
@@ -569,6 +571,8 @@ class SSS2(ttk.Frame):
             ok_to_save = True ###Change to False for production
 ###############################
         if ok_to_save:
+            self.settings_dict["SSS2 Interface Release Date"] = self.release_date
+            self.settings_dict["SSS2 Interface Version"] = self.release_version
 
             self.file_status_string.set("Saved "+self.filename)
             self.settings_file_status_string.set(self.filename)
@@ -841,10 +845,16 @@ class SSS2(ttk.Frame):
         self.version_frame = tk.LabelFrame(self.profile_tab, name="version_frame",
                                                   text="Smart Sensor Simulator Interface Information")
         self.version_frame.grid(row=3,column=0,sticky=tk.S+tk.E+tk.W,columnspan=1)
-        tk.Label(self.version_frame,text="Smart Sensor Simulator Interface Version:").grid(row=0,column=0,sticky=tk.E)
-        tk.Label(self.version_frame, text=self.settings_dict["SSS2 Interface Version"]).grid(row=0,column=1,sticky=tk.W,columnspan=3)
-        tk.Label(self.version_frame,text="Smart Sensor Simulator Interface Release:").grid(row=1,column=0,sticky=tk.E)
-        tk.Label(self.version_frame, text=self.settings_dict["SSS2 Interface Release Date"]).grid(row=1,column=1,sticky=tk.W,columnspan=3)
+        self.interface_release = tk.StringVar(value=self.settings_dict["SSS2 Interface Version"])
+        tk.Label(self.version_frame,text="File Saved with Smart Sensor Simulator Interface Version:").grid(row=0,column=0,sticky=tk.E)
+        tk.Label(self.version_frame, textvariable=self.interface_release).grid(row=0,column=1,sticky=tk.W,columnspan=3)
+        self.interface_date = tk.StringVar(value=self.settings_dict["SSS2 Interface Release Date"])
+        tk.Label(self.version_frame,text="File Saved with Smart Sensor Simulator Interface Release:").grid(row=1,column=0,sticky=tk.E)
+        tk.Label(self.version_frame, textvariable=self.interface_date).grid(row=1,column=1,sticky=tk.W,columnspan=3)
+        tk.Label(self.version_frame,text="Current Smart Sensor Simulator Interface Version:").grid(row=2,column=0,sticky=tk.E)
+        tk.Label(self.version_frame, text=self.release_version).grid(row=2,column=1,sticky=tk.W,columnspan=3)
+        tk.Label(self.version_frame,text="Current Smart Sensor Simulator Interface Release:").grid(row=3,column=0,sticky=tk.E)
+        tk.Label(self.version_frame, text=self.release_date).grid(row=3,column=1,sticky=tk.W,columnspan=3)
         
 
         self.user_frame = tk.LabelFrame(self.profile_tab, name="user_frame",
@@ -1125,21 +1135,6 @@ class SSS2(ttk.Frame):
         logo.image= logo_file
         logo.grid(row=1,column=4,sticky=tk.W,rowspan=4)
         
-
-##        ttk.Button(self.truck_networks_tab, width = 35,
-##                                    text="Clear all CAN messages",
-##                                    command=self.send_clear_can).grid(row=5,
-##                                                                     column=1,
-##                                                                     sticky="W",
-##                                                                     pady=5,padx=5)
-##        ttk.Button(self.truck_networks_tab, width = 35,
-##                                    text="Reload default CAN messages",
-##                                    command=self.send_reload_can).grid(row=4,
-##                                                                     column=1,
-##                                                                     sticky="W",
-##                                                                     pady=5,padx=5)
-        
-
         self.can_edit_frame = tk.LabelFrame(self.truck_networks_tab, name="edit_can",text="CAN Message Editor")
         self.can_edit_frame.grid(row=5,column=1,sticky="EW",columnspan=5,rowspan=1)
         
@@ -1294,7 +1289,7 @@ class SSS2(ttk.Frame):
         self.new_message = True
         for msg_index in sorted(self.settings_dict["CAN"].keys()):
             self.load_can_frame(self.settings_dict["CAN"][msg_index])
-            time.sleep(0.002)
+            time.sleep(0.005)
 
             
         
@@ -1330,9 +1325,6 @@ class SSS2(ttk.Frame):
         
     def delete_can_message(self):
         selection = self.can_tree.selection()
-        #while self.can_tree.parent(selection) is not "":
-        #    selection = self.can_tree.parent(selection)
-        
         can_msg = self.can_tree.item(selection)
         index = self.can_thread_value.get()
         sub = self.can_sub_value.get()
@@ -1686,10 +1678,10 @@ class SSS2(ttk.Frame):
     def data_logger(self):
         
         #self.data_logger_tab.grid_rowconfigure(5,weight=2) #Expands blank space under radio buttons.
-        self.data_logger_tab.grid_columnconfigure(0,weight=1) #Expands blank space 
-        self.data_logger_tab.grid_columnconfigure(1,weight=1) #Expands blank space 
-        self.data_logger_tab.grid_columnconfigure(2,weight=1) #Expands blank space 
-        self.data_logger_tab.grid_columnconfigure(3,weight=1) #Expands blank space 
+        #self.data_logger_tab.grid_columnconfigure(0,weight=1) #Expands blank space 
+        #self.data_logger_tab.grid_columnconfigure(1,weight=1) #Expands blank space 
+        #self.data_logger_tab.grid_columnconfigure(2,weight=1) #Expands blank space 
+        self.data_logger_tab.grid_columnconfigure(3,weight=2) #Expands blank space 
 
         buffer_size_frame = tk.Frame(self.data_logger_tab)
         tk.Label(buffer_size_frame,text="Buffer Size:").grid(row=0,column=0,sticky=tk.E)
@@ -1762,7 +1754,7 @@ class SSS2(ttk.Frame):
 
         self.stream_can1_box =  ttk.Checkbutton(self.can2_frame,
                                     name="stream CAN2 (E-CAN)",
-                                    text="Stream CAN1 (CAN2)",
+                                    text="Stream CAN2 (PTCAN)",
                                     command=self.send_stream_can1)
         self.stream_can1_box.grid(row=0,column=0,sticky="W")
         self.stream_can1_box.state(['!alternate']) #Clears Check Box
@@ -2362,7 +2354,7 @@ class SSS2(ttk.Frame):
     def on_quit(self,event=None):
         """Exits program."""
         self.serial.close()
-        quit()
+        destroyer()
         sys.exit()
 
     
@@ -2863,7 +2855,7 @@ class ecu_application(SSS2):
         
     def setup_ecu_application(self):
 
-        colors=["PPL/WHT","BRN/WHT","YEL/BLK","PNK/BLK","Blue","GRN/BLK","ORN/BLK","YEL/RED","RED/WHT",
+        colors=[" ","PPL/WHT","BRN/WHT","YEL/BLK","PNK/BLK","Blue","GRN/BLK","ORN/BLK","YEL/RED","RED/WHT",
                 "RED/BLK","BLU/WHT","TAN/BLK","BROWN","BLK/WHT","GRN/WHT","TAN/RED","PURPLE","PINK","TAN",
                 "ORANGE","GREEN","YELLOW","RED","BLACK","RED/GRN","YEL/GRN"]
 
@@ -2888,16 +2880,17 @@ class ecu_application(SSS2):
         self.ecu_app.insert(tk.END,self.settings_dict["Application"])
         self.ecu_app.grid(row=1,column=0,columnspan=4,sticky=tk.E+tk.W)
 
-        
+def destroyer():
+    root.quit()
+    root.destroy()
+    sys.exit()
+
 
         
 if __name__ == '__main__':
 
     root = tk.Tk()
     mainwindow = SSS2(root,name='sss2')
+    root.protocol("WM_DELETE_WINDOW",destroyer)
     root.mainloop()
-    try:
-        root.destroy() # if mainloop quits, destroy window
-    except:
-        print("Bye.")
-    sys.exit()
+    

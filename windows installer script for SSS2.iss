@@ -16,10 +16,9 @@ UninstallDisplayIcon={app}\SSS2-Interface
 
 [Files]
 Source: "dist\*"; DestDir: "{app}"; Flags: recursesubdirs
-;;Source: "dist\tcl\*"; DestDir: "{app}\tcl"
 Source: "*.ico"; DestDir: "{app}"
 Source: "*.gif"; DestDir: "{app}"
-Source: "*.SSS2"; DestDir: "{app}"
+Source: "*.SSS2"; DestDir: "{userdocs}\SSS2"
 Source: "serial_install.exe"; DestDir: "{app}"
 
 [Icons]
@@ -32,4 +31,4 @@ Name: quicklaunchicon; Description: "Create a &Quick Launch icon";
 
 [Run]
 Filename: "{app}\serial_install.exe"; Description: "Install Serial Drivers";
-Filename: "{app}\SSS2-Interface.exe"; Description: "Launch application"; Flags: postinstall nowait skipifsilent unchecked
+Filename: "{app}\SSS2-Interface.exe"; Description: "Launch application"; Flags: postinstall nowait skipifsilent 
