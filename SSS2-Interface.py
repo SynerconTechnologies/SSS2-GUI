@@ -59,7 +59,7 @@ class SerialThread(threading.Thread):
 
         print("Serial Connection Closed.")
         self.serial.__del__()
-        
+        self.signal = False
         
 
 class setup_serial_connections(tk.Toplevel):
@@ -218,8 +218,8 @@ class SSS2(ttk.Frame):
         self.j1939_baud_value=tk.StringVar(value="250000")
         self.settings_file_status_string = tk.StringVar(value="Default Settings Loaded")
         self.file_loaded = False
-        self.release_date = "03 May 2017"
-        self.release_version = "0.9beta"
+        self.release_date = "11 May 2017"
+        self.release_version = "0.10beta"
         self.connection_status_string = tk.StringVar(name='status_string',value="Not Connected.")
         connection_status_string = self.connection_status_string
         self.serial_rx_entry = tk.Entry(self,width=60,name='serial_monitor')
@@ -395,7 +395,8 @@ class SSS2(ttk.Frame):
 
         time.sleep(.1)
         self.update_sha()
-        #self.autosave()
+        if self.filename is not None:
+            self.autosave()
 
     def export_wiring(self):
         for group_key in self.settings_dict["Potentiometers"]:
@@ -439,11 +440,11 @@ class SSS2(ttk.Frame):
             original_file = self.filename
             self.filename += ".txt"
             self.save_settings_file()
-            os.startfile(self.filename, "print")
+            os.startfile(self.filename, "open")
             print("Saved and printed "+self.filename)
-            os.remove(self.filename)
-            self.filename = original_file
-            self.save_settings_file()
+            #os.remove(self.filename)
+            #self.filename = original_file
+            #self.save_settings_file()
             
         except Exception as e:
             print(e)
@@ -682,7 +683,7 @@ class SSS2(ttk.Frame):
             with open(self.filename,'w') as outfile:
                 json.dump(self.settings_dict,outfile,indent=4,sort_keys=True)
             self.filename = original_file
-            print('Autosaving')
+            #print('Autosaving')
             
         self.lasthash = self.current_hash 
         
@@ -2000,18 +2001,22 @@ class SSS2(ttk.Frame):
                               "The SSS2 serial connection is not present. Please connect the SSS2. You may have to restart the program if the connectrion continues to fail." )                
         
     def check_serial_connection(self,event = None):
-        if self.serial:
-            available_comports = setup_serial_connections.find_serial_ports(self)
-            for port in available_comports:
-                if self.serial.port in port.split():
-                    
-                    self.serial_connected = self.check_SSS2_connection
-                    
-                    self.connection_status_string.set('SSS2 Connected on '+self.serial.port)
-                    self.serial_rx_entry['bg']='white'
-                    return True
+        try:
+            if self.thread.signal:
+                available_comports = setup_serial_connections.find_serial_ports(self)
+                for port in available_comports:
+                    if self.serial.port in port.split():
+                        
+                        self.serial_connected = self.check_SSS2_connection
+                        
+                        self.connection_status_string.set('SSS2 Connected on '+self.serial.port)
+                        self.serial_rx_entry['bg']='white'
+                        return True
         
-        self.thread.signal = False
+        
+            self.thread.signal = False
+        except:
+            pass
         self.connection_status_string.set('USB to Serial Connection Unavailable. Please install drivers and plug in the SSS2.')
         self.serial_rx_entry['bg']='red'
         if self.serial: 
