@@ -32,29 +32,35 @@ class SerialThread(threading.Thread):
         self.rx_queue = rx_queue
         self.tx_queue = tx_queue
         self.serial=serial
+        self.signal = True
         
     def run(self):
-        time.sleep(1)
+        time.sleep(.1)
         try:
-            while True:
-            
+            while self.serial.is_open and self.signal:           
                 if self.tx_queue.qsize():
                     s = self.tx_queue.get_nowait()
                     self.serial.write(bytes(s,'utf-8') + b'\x0A')
+                    time.sleep(.003)
                     print('TX: ', end='')
                     print(s)
-                if self.serial.inWaiting():
-                    lines = self.serial.readlines(self.serial.inWaiting())
+                if self.serial.in_waiting:
+                    lines = self.serial.readlines(self.serial.in_waiting)
                     for line in lines:
                         self.rx_queue.put(line)
                         #print('RX: ', end='')
                         #print(line)
-                time.sleep(.003)
+                time.sleep(.001)
         except Exception as e:
             print(e)
             print("Serial Connection Broken. Exiting Thread.")
             self.serial.close()
-            
+            self.serial.__del__()
+
+        print("Serial Connection Closed.")
+        self.serial.__del__()
+        
+        
 
 class setup_serial_connections(tk.Toplevel):
     def __init__(self, parent):
@@ -155,8 +161,8 @@ class setup_serial_connections(tk.Toplevel):
         else:
             try:
                 comport=(self.port_combo_box.get().split(" "))[0]
-                ser = serial.Serial(comport,baudrate=4000000,timeout=0,
-                                    parity=serial.PARITY_ODD,write_timeout=0,
+                ser = serial.Serial(comport,baudrate=4000000,timeout=0.010,
+                                    parity=serial.PARITY_ODD,write_timeout=.010,
                                     xonxoff=False, rtscts=False, dsrdtr=False)
                 self.result = ser
                 return True
@@ -210,9 +216,14 @@ class SSS2(ttk.Frame):
         self.unique_ID = None
         self.can2_baud_value=tk.StringVar(value="250000")
         self.j1939_baud_value=tk.StringVar(value="250000")
+        self.settings_file_status_string = tk.StringVar(value="Default Settings Loaded")
         self.file_loaded = False
         self.release_date = "03 May 2017"
         self.release_version = "0.9beta"
+        self.connection_status_string = tk.StringVar(name='status_string',value="Not Connected.")
+        connection_status_string = self.connection_status_string
+        self.serial_rx_entry = tk.Entry(self,width=60,name='serial_monitor')
+        serial_rx_entry = self.serial_rx_entry
         self.init_gui()
         
  
@@ -232,7 +243,7 @@ class SSS2(ttk.Frame):
         
         
         ttk.Label(self, text='USB/Serial Monitor:').grid(row=0,column=1,sticky=tk.E)
-        self.serial_rx_entry = tk.Entry(self,width=60,name='serial_monitor')
+        #self.serial_rx_entry = tk.Entry(self,width=60,name='serial_monitor')
         self.serial_rx_entry.grid(row=0,column=2,sticky=tk.W+tk.E)
         
         self.tabs = ttk.Notebook(self, name='tabs')
@@ -241,7 +252,7 @@ class SSS2(ttk.Frame):
         self.file_status_string = tk.StringVar(value="Default Settings Loaded")
         tk.Label(self, textvariable=self.file_status_string, name="file_status_label").grid(row=2,column=0,sticky=tk.W)
 
-        self.connection_status_string = tk.StringVar(name='status_string',value="Not Connected.")
+        #self.connection_status_string = tk.StringVar(name='status_string',value="Not Connected.")
         tk.Label(self, textvariable=self.connection_status_string,name="connection_label").grid(row=2,column=2,sticky="E")
 
         self.modified_entry_string = tk.StringVar(name='modified_string',value="")
@@ -337,6 +348,7 @@ class SSS2(ttk.Frame):
         
     def init_tabs(self,event=None):
         self.tx_queue.put_nowait("50,0")
+        time.sleep(.25)
         
         if self.autosave_job is not None:
             self.after_cancel(self.autosave_job)
@@ -378,10 +390,10 @@ class SSS2(ttk.Frame):
         self.clear_analog_buffer()
 
         self.get_sss2_component_id()
-        time.sleep(.01)
+        time.sleep(.05)
         self.get_sss2_software_id()
 
-        time.sleep(.3)
+        time.sleep(.1)
         self.update_sha()
         #self.autosave()
 
@@ -519,7 +531,7 @@ class SSS2(ttk.Frame):
             self.file_status_string.set("Error Opening "+self.filename)
         if ok_to_open:
             self.file_status_string.set("Opened "+self.filename)
-            self.settings_file_status_string.set(self.filename)
+            self.settings_file_status_string.set(os.path.basename(self.filename))
             print("Opened "+self.filename)
             self.settings_dict["SHA256 Digest"]=self.get_settings_hash()
 
@@ -557,15 +569,14 @@ class SSS2(ttk.Frame):
         sss2_id = self.sss2_product_code_text.get().strip()
         ###Take out this Conditional for production
         if not sss2_id == "UNIVERSAL":
-            #print(self.serial)
-            if self.serial:
                 if self.serial is not None:
                     command_string = "OK,{}".format(sss2_id.strip())
                     self.tx_queue.put_nowait(command_string)
                     self.wait_variable(self.file_OK_received)       
                     self.file_OK_received.set(False)
                     if self.file_authenticated: 
-                        ok_to_save = True 
+                        ok_to_save = True
+                    print("Authenticated. OK to Save")
         else:
 ###########################            
             ok_to_save = True ###Change to False for production
@@ -574,8 +585,11 @@ class SSS2(ttk.Frame):
             self.settings_dict["SSS2 Interface Release Date"] = self.release_date
             self.settings_dict["SSS2 Interface Version"] = self.release_version
 
+            self.interface_date.set(self.release_date)
+            self.interface_release.set(self.release_version)
+            
             self.file_status_string.set("Saved "+self.filename)
-            self.settings_file_status_string.set(self.filename)
+            self.settings_file_status_string.set(os.path.basename(self.filename))
             
             print("Saved "+self.filename)
             self.sss2_product_code['bg']='white'
@@ -627,6 +641,7 @@ class SSS2(ttk.Frame):
         self.settings_dict.pop("Original Creation Date",None)
         self.settings_dict.pop("Saved Date",None)
         sss_software_ID = self.settings_dict.pop("Software ID",None)
+        sss_component_ID = self.settings_dict.pop("Component ID",None)
         sss_component_ID = self.settings_dict.pop("Serial Number",None)
         
         temp_settings_dict = pformat(self.settings_dict)
@@ -636,8 +651,9 @@ class SSS2(ttk.Frame):
         self.settings_dict["Original File SHA"] = digest_from_file
         self.settings_dict["Original Creation Date"] = load_date
         self.settings_dict["Saved Date"]=save_date
-        self.settings_dict["Serial Number"] =sss_component_ID
+        self.settings_dict["Component ID"] =sss_component_ID
         self.settings_dict["Software ID"] = sss_software_ID
+        self.settings_dict["Serial Number"] = sss_component_ID
 
         if self.settings_dict["Original File SHA"] ==  "Current Settings Not Saved.":
             self.modified_entry_string.set("Default Settings")
@@ -826,7 +842,7 @@ class SSS2(ttk.Frame):
         self.file_frame.grid(row=2,column=0,sticky=tk.N+tk.E+tk.W,columnspan=1)
 
         tk.Label(self.file_frame,text="Settings File:").grid(row=0,column=0,sticky=tk.E)
-        self.settings_file_status_string = tk.StringVar(value="Default Settings Loaded")
+        
         self.file_status_label = tk.Label(self.file_frame, textvariable=self.settings_file_status_string,name="file_status_label")
         self.file_status_label.grid(row=0,column=1,sticky=tk.W)
           
@@ -1033,10 +1049,17 @@ class SSS2(ttk.Frame):
         self.settings_dict["Case Number"] = self.case_number_text.get()
         self.settings_dict["Date of Loss"] = self.date_of_loss_text.get()
         self.settings_dict["User Notes"] = self.case_notes.get(1.0,tk.END).strip()
-        self.settings_dict["File Name"] = self.filename
+        try:
+            self.settings_dict["File Name"] = os.path.basename(self.filename)
+        except:
+            pass
 
         self.settings_dict["CAN Config"]["CAN0 Baudrate"] = self.j1939_baud.get()
         self.settings_dict["CAN Config"]["CAN1 Baudrate"] = self.can2_baud.get()
+
+        self.settings_dict["SSS2 Interface Release Date"] = self.release_date
+        self.settings_dict["SSS2 Interface Version"] = self.release_version
+
         
         
     def get_all_children(self,tree, item=""):
@@ -1689,6 +1712,10 @@ class SSS2(ttk.Frame):
         self.j1939_size = tk.Entry(buffer_size_frame,textvariable= self.j1939_size_value, width=10)
         self.j1939_size.grid(row=0,column=1,sticky=tk.W,padx=5,pady=2)
         buffer_size_frame.grid(row=0,column=0,sticky=tk.W)
+        warning= tk.Label(self.data_logger_tab,
+                          text= "Caution: Using the datalogger features can set fault codes. CAN messages may be faster than USB and messages may be dropped. ",
+                          background = "yellow",justify=tk.CENTER,relief=tk.RAISED)
+        warning.grid(row=0,column=1,columnspan=2,sticky="EW")
         
         self.j1939_frame = tk.LabelFrame(self.data_logger_tab, text="J1939 Messages")
         self.j1939_frame.grid(row=1,column=0,sticky='NSEW')
@@ -1935,33 +1962,56 @@ class SSS2(ttk.Frame):
             self.analog_tree.heading(c, anchor = p, text = c)
 
         self.clear_analog_buffer()
-     
+
+    def check_SSS2_connection(self):
+        sss2_id = self.settings_dict["SSS2 Product Code"].strip()
+        command_string = "OK,{}".format(sss2_id)
+        self.tx_queue.put_nowait(command_string)
+        n=0
+        while (self.file_OK_received.get() == False) and n < 100 :
+            time.sleep(.01)
+            n+=1
+        if self.file_OK_received.get() == True:
+            self.file_OK_received.set(False)
+            return True
+        else:
+            messagebox.showwarning("Valid SSS2",
+                "There is not a valid unique ID from the SSS2. There might be something wrong with the USB/Serial connection.")
+            return False
+        
+            
+        
     def connect_to_serial(self):
         connection_dialog = setup_serial_connections(self)
         self.serial = connection_dialog.result
         print(self.serial)
         if self.serial: 
             if self.serial is not None:
-                if self.serial.isOpen():
+                if self.serial.is_open:
                     print("SSS2 connected.")
                     self.thread = SerialThread(self,self.rx_queue,self.tx_queue,self.serial)
+                    self.thread.signal = True
+                    self.thread.daemon = True
                     self.thread.start()
                     print("Started Serial Thread.")
                     return
-           
+       
         messagebox.showerror("SSS2 Serial Connection Error",
                               "The SSS2 serial connection is not present. Please connect the SSS2. You may have to restart the program if the connectrion continues to fail." )                
-
+        
     def check_serial_connection(self,event = None):
         if self.serial:
             available_comports = setup_serial_connections.find_serial_ports(self)
             for port in available_comports:
                 if self.serial.port in port.split():
-                    self.serial_connected = True
+                    
+                    self.serial_connected = self.check_SSS2_connection
+                    
                     self.connection_status_string.set('SSS2 Connected on '+self.serial.port)
                     self.serial_rx_entry['bg']='white'
                     return True
-          
+        
+        self.thread.signal = False
         self.connection_status_string.set('USB to Serial Connection Unavailable. Please install drivers and plug in the SSS2.')
         self.serial_rx_entry['bg']='red'
         if self.serial: 
@@ -1969,6 +2019,7 @@ class SSS2(ttk.Frame):
                 self.connect_to_serial()
             else:
                 self.serial.close()
+        self.serial = None
         return False
     
         self.after(2000,self.check_serial_connection())
@@ -2353,9 +2404,9 @@ class SSS2(ttk.Frame):
      
     def on_quit(self,event=None):
         """Exits program."""
-        self.serial.close()
+        
         destroyer()
-        sys.exit()
+      
 
     
 class pot_bank(SSS2):
@@ -2855,7 +2906,7 @@ class ecu_application(SSS2):
         
     def setup_ecu_application(self):
 
-        colors=[" ","PPL/WHT","BRN/WHT","YEL/BLK","PNK/BLK","Blue","GRN/BLK","ORN/BLK","YEL/RED","RED/WHT",
+        colors=[" ","PPL/WHT","BRN/WHT","YEL/BLK","PNK/BLK","BLUE","GRN/BLK","ORN/BLK","YEL/RED","RED/WHT",
                 "RED/BLK","BLU/WHT","TAN/BLK","BROWN","BLK/WHT","GRN/WHT","TAN/RED","PURPLE","PINK","TAN",
                 "ORANGE","GREEN","YELLOW","RED","BLACK","RED/GRN","YEL/GRN"]
 
@@ -2881,10 +2932,15 @@ class ecu_application(SSS2):
         self.ecu_app.grid(row=1,column=0,columnspan=4,sticky=tk.E+tk.W)
 
 def destroyer():
+    try:
+        mainwindow.tx_queue.put_nowait("50,0")
+        time.sleep(.3)
+        mainwindow.serial.close()
+    except Exception as e:
+        print(e)
     root.quit()
     root.destroy()
     sys.exit()
-
 
         
 if __name__ == '__main__':
@@ -2893,4 +2949,5 @@ if __name__ == '__main__':
     mainwindow = SSS2(root,name='sss2')
     root.protocol("WM_DELETE_WINDOW",destroyer)
     root.mainloop()
+    destroyer()
     
