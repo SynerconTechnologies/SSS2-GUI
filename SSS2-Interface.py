@@ -191,8 +191,8 @@ class SSS2(ttk.Frame):
     def __init__(self, parent, *args, **kwargs):
         self.frame_top = ttk.Frame.__init__(self, parent, *args, **kwargs)
         self.root = parent
-        #self.root.geometry('1527x887+0+0')
-        self.root.geometry('+0+0')
+        self.root.geometry('1527x887+0+0')
+        #self.root.geometry('+0+0')
         self.root.resizable(width=False, height=False)
         self.root.iconbitmap('synerconlogo.ico')
         self.settings_dict = get_default_settings()
@@ -218,12 +218,14 @@ class SSS2(ttk.Frame):
         self.j1939_baud_value=tk.StringVar(value="250000")
         self.settings_file_status_string = tk.StringVar(value="Default Settings Loaded")
         self.file_loaded = False
-        self.release_date = "11 May 2017"
-        self.release_version = "0.10beta"
+        self.release_date = "21 May 2017"
+        self.release_version = "0.11beta"
         self.connection_status_string = tk.StringVar(name='status_string',value="Not Connected.")
         connection_status_string = self.connection_status_string
         self.serial_rx_entry = tk.Entry(self,width=60,name='serial_monitor')
         serial_rx_entry = self.serial_rx_entry
+        self.sss_component_id_text = tk.StringVar(value = self.settings_dict["Component ID"])
+        self.sss_software_id_text = tk.StringVar(value = self.settings_dict["Software ID"])
         self.init_gui()
         
  
@@ -580,7 +582,7 @@ class SSS2(ttk.Frame):
                     print("Authenticated. OK to Save")
         else:
 ###########################            
-            ok_to_save = True ###Change to False for production
+            ok_to_save = False ###Change to False for production
 ###############################
         if ok_to_save:
             self.settings_dict["SSS2 Interface Release Date"] = self.release_date
@@ -769,7 +771,7 @@ class SSS2(ttk.Frame):
         self.sss2_frame.grid(row=1,column=0,sticky=tk.E+tk.W,columnspan=1)
 
         tk.Label(self.sss2_frame,text="SSS2 Component ID:").grid(row=0,column=0,sticky=tk.W)
-        self.sss_component_id_text = tk.StringVar(value = self.settings_dict["Component ID"])
+        
         self.sss2_serial_number = tk.Entry(self.sss2_frame, name="sss2_serial",textvariable=self.sss_component_id_text,width=75)
         self.sss2_serial_number.grid(row=0,column=1,sticky=tk.W,padx=5,pady=5,columnspan=2)
         self.sss2_serial_number.configure(state='readonly')
@@ -798,7 +800,6 @@ class SSS2(ttk.Frame):
 
 
         tk.Label(self.sss2_frame,text="SSS2 Software ID:").grid(row=3,column=0,sticky=tk.W)
-        self.sss_software_id_text = tk.StringVar(value = self.settings_dict["Software ID"])
         self.sss_software_id = tk.Entry(self.sss2_frame, textvariable= self.sss_software_id_text,width=75)
         self.sss_software_id.grid(row=3,column=1,sticky=tk.W,padx=5,pady=5,columnspan=2)
         self.sss_software_id.configure(state='readonly')
@@ -1669,7 +1670,11 @@ class SSS2(ttk.Frame):
         self.hvadjout_bank = tk.LabelFrame(self.DAC_bank, name="hvadjout_bank",
                                                   text="High Current Adjustable Regulator")
         self.hvadjout_bank.grid(row=2,column=3,sticky="NE",columnspan=1,rowspan=4)
-        self.hvadjout = DAC7678(self.hvadjout_bank,self.tx_queue, self.settings_dict["HVAdjOut"], row=0, col=0)
+        self.hvadjout = DAC7678(self.hvadjout_bank,self.tx_queue,
+                                self.settings_dict["HVAdjOut"],
+                                row=0,
+                                col=0,
+                                software_ID = self.sss_software_id_text)
 
         logo_file = tk.PhotoImage(file="SSS2Pins.gif")
         logo = tk.Label(self.DAC_bank,image=logo_file)
@@ -2705,9 +2710,10 @@ class potentiometer(SSS2):
         
 
 class DAC7678(SSS2):
-    def __init__(self, parent,tx_queue,sss2_settings, row = 2, col = 0):
+    def __init__(self, parent,tx_queue,sss2_settings, row = 2, col = 0, software_ID = ""):
         self.root = parent
         self.tx_queue = tx_queue
+        self.sss_software_id_text = software_ID
         self.row=row
         self.col=col
         self.settings_dict = sss2_settings
@@ -2764,7 +2770,11 @@ class DAC7678(SSS2):
         self.dac_mean_position_value.insert(0,self.dac_mean_slider.get()/100)
         x=float(self.dac_mean_position_value.get())
         if self.setting_num == 49:
-            dac_raw_setting = int(4.2646*x - 16.788)
+            if 'REV05' in self.sss_software_id_text.get():
+                dac_raw_setting = int(19.985*x - 37.522) ##Special for Rev5
+            else:
+                dac_raw_setting = int(4.2646*x - 16.788) ##Special for Rev3
+            
         else:
             slope = 4095/(self.high-self.low)
             dac_raw_setting = int(slope*(x - self.low))
