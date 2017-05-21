@@ -1,7 +1,4 @@
-; -- Example1.iss --
-; Demonstrates copying 3 files and creating an icon.
-
-; SEE THE DOCUMENTATION FOR DETAILS ON CREATING .ISS SCRIPT FILES!
+; -- SSS2 GUI.iss --
 
 [Setup]
 AppName=SSS2-Interface

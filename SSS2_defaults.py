@@ -681,7 +681,7 @@ def get_default_settings():
     d["Show Frequency"]=False
     d["Frequency"]= 0
     d["Average Voltage"]=8.5
-    d["Lowest Voltage"]= 4
+    d["Lowest Voltage"]= 1.9
     d["Pin"]= "J24:19"
     d["Wire Color"]="TAN"
     d["Port"]= " "
