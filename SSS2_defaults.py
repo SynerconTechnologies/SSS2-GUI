@@ -576,7 +576,7 @@ def get_default_settings():
 
             
     settings["PWMs"]={}
-    for i in range(1,5):
+    for i in range(1,7):
         settings["PWMs"]["PWM{}".format(i)]={}
 
     d=settings["PWMs"]["PWM1"]
@@ -654,6 +654,52 @@ def get_default_settings():
     d["Lowest Voltage"]=0
     d["Highest Voltage"]=5
     d["Duty Cycle"]=4 
+    d["SSS2 setting"] = 36
+    d["Frequency"]=200
+    d["Lowest Frequency"]=0
+    d["Highest Frequency"]=5000
+    d["SSS2 freq setting"] = 84
+    d["Show Frequency"]=True
+    d["ECU Pins"]="ECU Pins"
+    d["Application"]="Application Description"
+    d["Port"]= "17"
+    d["Pin"]= "J18:1"
+    d["Wire Color"]="PPL/WHT"
+    d["Pin Connect"]=True
+    d["SSS2 pin setting"] = 70
+    d["Alt. Port"]=None
+    d["Alt. Pin"]=""
+    d["Alt. Pin Connect"]=None
+    d["SSS2 alt setting"] =None
+
+    d=settings["PWMs"]["PWM5"]
+    d["Name"] = "PWM5"
+    d["Lowest Voltage"]=0
+    d["Highest Voltage"]=5
+    d["Duty Cycle"]=50 
+    d["SSS2 setting"] = 36
+    d["Frequency"]=200
+    d["Lowest Frequency"]=0
+    d["Highest Frequency"]=5000
+    d["SSS2 freq setting"] = 84
+    d["Show Frequency"]=True
+    d["ECU Pins"]="ECU Pins"
+    d["Application"]="Application Description"
+    d["Port"]= "17"
+    d["Pin"]= "J18:1"
+    d["Wire Color"]="PPL/WHT"
+    d["Pin Connect"]=True
+    d["SSS2 pin setting"] = 70
+    d["Alt. Port"]=None
+    d["Alt. Pin"]=""
+    d["Alt. Pin Connect"]=None
+    d["SSS2 alt setting"] =None
+
+    d=settings["PWMs"]["PWM6"]
+    d["Name"] = "PWM6"
+    d["Lowest Voltage"]=0
+    d["Highest Voltage"]=5
+    d["Duty Cycle"]=50
     d["SSS2 setting"] = 36
     d["Frequency"]=200
     d["Lowest Frequency"]=0

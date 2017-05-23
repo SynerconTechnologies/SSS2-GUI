@@ -41,7 +41,7 @@ class SerialThread(threading.Thread):
                 if self.tx_queue.qsize():
                     s = self.tx_queue.get_nowait()
                     self.serial.write(bytes(s,'utf-8') + b'\x0A')
-                    time.sleep(.003)
+                    time.sleep(.002)
                     print('TX: ', end='')
                     print(s)
                 if self.serial.in_waiting:
@@ -50,7 +50,7 @@ class SerialThread(threading.Thread):
                         self.rx_queue.put(line)
                         #print('RX: ', end='')
                         #print(line)
-                time.sleep(.001)
+                time.sleep(.002)
         except Exception as e:
             print(e)
             print("Serial Connection Broken. Exiting Thread.")
