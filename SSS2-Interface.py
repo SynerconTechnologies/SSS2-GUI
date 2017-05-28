@@ -298,7 +298,7 @@ class SSS2(ttk.Frame):
         #Create a Voltage out make the adjustments for PWM, DAC, and Regulators
         self.voltage_out_tab = tk.Frame(self.tabs, name='voltage_out_tab')
         self.tabs.add(self.voltage_out_tab, text="Voltage Output") # add tab to Notebook
-
+        
         #Create a Networks Tab to make the adjustments for J1939, CAN and J1708
         self.truck_networks_tab = tk.Frame(self.tabs, name='truck_network_tab')
         self.tabs.add(self.truck_networks_tab, text="Network Message Generator") # add tab to Notebook
@@ -1734,7 +1734,7 @@ class SSS2(ttk.Frame):
        
         self.DAC_bank = tk.LabelFrame(self.voltage_out_tab, name="dac_bank",
                                                   text="Voltage Outputs")
-        self.DAC_bank.grid(row=1,column=0,sticky="NW",columnspan=1)
+        self.DAC_bank.grid(row=2,column=0,sticky="NW",columnspan=1)
         self.DAC_bank.grid_rowconfigure(4,weight=2) #Expands blank space under radio buttons.
 
         dac_dict=self.settings_dict["DACs"]
@@ -1761,11 +1761,17 @@ class SSS2(ttk.Frame):
         logo = tk.Label(self.extra_tab,image=logo_file)
         logo.image= logo_file
         logo.grid(row=3,column=2,sticky="SW",columnspan=3,rowspan=1)
+
+        logo_file = tk.PhotoImage(file="SynerconLogoWithName300.gif")
+        logo = tk.Label(self.extra_tab,image=logo_file)
+        logo.image= logo_file
+        logo.grid(row=0,column=3,sticky=tk.W,columnspan=2,rowspan=2)
         
-        
+
+        tk.Label(self.voltage_out_tab,text="The following share a common frequency: PWM1 and PWM2,  PWM3 and PWM4, PWM5 and PWM6. Adjusting one in the group will affect the other.").grid(row=1,column=0)
         self.pwm_bank=tk.LabelFrame(self.voltage_out_tab, name="pwm_bank",
                                                   text="Pulse Width Modulated (PWM) Outputs")
-        self.pwm_bank.grid(row=0,column=0,sticky="E",columnspan=1)
+        self.pwm_bank.grid(row=0,column=0,sticky="SE",columnspan=1)
 
         self.pwm1_switch = config_switches(self.pwm_bank,self.tx_queue,
                             self.settings_dict["Switches"],"PWM1 Connect",row=1,col=0)
@@ -1776,7 +1782,13 @@ class SSS2(ttk.Frame):
         
         self.pwm4_switch = config_radio_switches(self.pwm_bank,self.tx_queue,
                             self.settings_dict["Switches"],"PWM4 or Ground",rowA=1,colA=3,rowB=2,colB=3)
-        
+        self.pwm4_28_switch = config_switches(self.pwm_bank,self.tx_queue,
+                            self.settings_dict["Switches"],"PWM4_28 Connect",row=3,col=3)
+        self.pwm5_switch = config_switches(self.pwm_bank,self.tx_queue,
+                            self.settings_dict["Switches"],"PWM5 Connect",row=1,col=4)
+        self.pwm6_switch = config_switches(self.pwm_bank,self.tx_queue,
+                            self.settings_dict["Switches"],"PWM6 Connect",row=1,col=5)
+                
         self.pwm12_switch = config_radio_switches(self.pwm_bank,self.tx_queue,
                             self.settings_dict["Switches"],"PWMs or CAN2",rowA=2,colA=0,rowB=3,colB=0)
         self.pwm_objects={}
@@ -1787,11 +1799,11 @@ class SSS2(ttk.Frame):
             col_index+=1
             
     def data_logger(self):
+
+
+        self.can1_switch = config_switches(self.data_logger_tab,self.tx_queue,
+                            self.settings_dict["Switches"],"CAN1 Connect",row=2,col=1)
         
-        #self.data_logger_tab.grid_rowconfigure(5,weight=2) #Expands blank space under radio buttons.
-        #self.data_logger_tab.grid_columnconfigure(0,weight=1) #Expands blank space 
-        #self.data_logger_tab.grid_columnconfigure(1,weight=1) #Expands blank space 
-        #self.data_logger_tab.grid_columnconfigure(2,weight=1) #Expands blank space 
         self.data_logger_tab.grid_columnconfigure(3,weight=2) #Expands blank space 
 
         buffer_size_frame = tk.Frame(self.data_logger_tab)
@@ -2049,7 +2061,7 @@ class SSS2(ttk.Frame):
         self.sent_serial_messages=[]
         self.sent_serial_messages_index=0
         
-        self.settings_text = tkst.ScrolledText(self.settings_frame,wrap=tk.NONE,width=115,height=35)
+        self.settings_text = tkst.ScrolledText(self.settings_frame,wrap=tk.NONE,width=130,height=35)
         self.settings_text.grid(row=1,column=0,sticky="NSEW",columnspan=4)
    
         self.settings_frame.grid_columnconfigure(3, weight=1)
@@ -2073,7 +2085,8 @@ class SSS2(ttk.Frame):
         
         
         colWidths = [65,65,65,65,65,65]
-        colNames = ["J24:10","J24:9","J24:8","J18:13","J18:14","J24:7"]
+        #colNames = ["J24:10","J24:9","J24:8","J18:13","J18:14","J24:7"]
+        colNames = ["J24:10","J24:9","J24:8","J18:13"]
         colPos = ['center','center','center','center','center','center']
         self.analog_tree = ttk.Treeview(self.analog_frame, columns=colNames, height=20)
         self.analog_tree.grid(row=4,column=0,sticky=tk.W,columnspan=4)
@@ -2105,6 +2118,8 @@ class SSS2(ttk.Frame):
             self.calibration_entries.append([])
             
             for j in range(len(self.settings_dict["Analog Calibration"][i])): #Columns
+                if j==4:
+                    break
                 self.calibration_variable[i].append(tk.StringVar(value="{}".format(self.settings_dict["Analog Calibration"][i][j])))
                 self.calibration_entries[i].append(tk.Entry(self.calibration_frame, width=11,textvariable = self.calibration_variable[i][j]))
                 self.calibration_entries[i][j].grid(row=i+1, column=j+1)
@@ -2249,7 +2264,8 @@ class SSS2(ttk.Frame):
             f.write("Units for time are seconds.\n")
             f.write("Units for Ports are Volts.\n")
             f.write("Voltage Readings on J24:7 require additional interior pins installed on the Teensy 3.6. See the schematics on Github for more details.\n")
-            f.write("Time,J24:10,J24:9,J24:8,J18:13,J18:14,J24:7\n")
+            #f.write("Time,J24:10,J24:9,J24:8,J18:13,J18:14,J24:7\n")
+            f.write("Time,J24:10,J24:9,J24:8,J18:13\n")
             for line in message_list:
                 f.write(",".join(line)+"\n")
         print("Saved {}".format(data_file_name))
@@ -2561,6 +2577,8 @@ class SSS2(ttk.Frame):
                         analog_time="{:>0.3f}".format(float(analog_data[0])/1000)
                         analog_list = []
                         for i in range(len(self.settings_dict["Analog Calibration"][0])):
+                            if i==4:
+                                break
                             analog_data.append(0) #makes sure data streams have values
                             analog_list.append("{:>0.3f}".format(self.settings_dict["Analog Calibration"][0][i]*float(analog_data[i+1])*float(analog_data[i+1])
                                                            + self.settings_dict["Analog Calibration"][1][i]*float(analog_data[i+1])
@@ -2614,30 +2632,20 @@ class SSS2(ttk.Frame):
             if bank_key == "Others":
                 self.pot_bank[bank_key] = pot_bank(self.extra_tab,self.tx_queue,pot_dict,bank_key,row=0,col=2,colspan=1)
             else:
-                self.pot_bank[bank_key] = pot_bank(self.settings_tab,self.tx_queue,pot_dict,bank_key,row=row_index,col=0,colspan=5)
+                self.pot_bank[bank_key] = pot_bank(self.settings_tab,self.tx_queue,pot_dict,bank_key,row=row_index,col=0,colspan=4)
             row_index += 1
  
         self.settings_tab.grid_columnconfigure(0,weight=1)
+        self.settings_tab.grid_columnconfigure(1,weight=1)
         self.settings_tab.grid_columnconfigure(2,weight=1)
-        self.settings_tab.grid_columnconfigure(4,weight=3)
+        self.settings_tab.grid_columnconfigure(3,weight=1)
                
         self.twelve2_switch = config_switches(self.settings_tab,self.tx_queue,
                             self.settings_dict["Switches"],"12V Out 2",row=2,col=1)
         self.ground2_switch = config_switches(self.settings_tab,self.tx_queue,
                             self.settings_dict["Switches"],"Ground Out 2",row=3,col=1)
-        self.can1_switch = config_switches(self.data_logger_tab,self.tx_queue,
-                            self.settings_dict["Switches"],"CAN1 Connect",row=2,col=1)
-        self.pwm5_switch = config_switches(self.settings_tab,self.tx_queue,
-                            self.settings_dict["Switches"],"PWM5 Connect",row=5,col=1)
-        self.pwm6_switch = config_switches(self.settings_tab,self.tx_queue,
-                            self.settings_dict["Switches"],"PWM6 Connect",row=6,col=1)
-        self.pwm4_28_switch = config_switches(self.extra_tab,self.tx_queue,
-                            self.settings_dict["Switches"],"PWM4_28 Connect",row=0,col=3)
-        #The following conflicts with other switches
-        #self.can2_switch = config_switches(self.data_logger_tab,self.tx_queue,
-        #                    self.settings_dict["Switches"],"CAN2 Connect",row=2,col=2)
-        
-        
+
+                
 
     def send_ignition_key_command(self,event=None):
         commandString = "50,0"    
@@ -3040,6 +3048,7 @@ class pwm_out(SSS2):
         self.label = self.settings_dict["Name"]+" ("+self.connector+")"
         self.name = self.label.lower()
         self.setting_num = self.settings_dict["SSS2 setting"]
+        self.freq_setting_num = self.settings_dict["SSS2 freq setting"]
         self.setup_pwm_widget()
         
     def setup_pwm_widget(self):
@@ -3076,8 +3085,8 @@ class pwm_out(SSS2):
                                         from_ = self.settings_dict["Lowest Frequency"],
                                         to = self.settings_dict["Highest Frequency"],
                                         digits = 1,
-                                        resolution = (self.settings_dict["Highest Frequency"] -
-                                                      self.settings_dict["Lowest Frequency"])/200,
+                                        resolution = 0.1,#(self.settings_dict["Highest Frequency"] -
+                                                      #self.settings_dict["Lowest Frequency"])/200,
                                         orient = tk.HORIZONTAL, length = 90,
                                         sliderlength = 14, showvalue = 0, 
                                         label = "Frequency (Hz)",
@@ -3109,7 +3118,7 @@ class pwm_out(SSS2):
         
         slope = 1
         pwm_raw_setting = int(slope*(float(self.pwm_frequency_value.get())))
-        commandString = "{},{}".format(self.setting_num+48,pwm_raw_setting)
+        commandString = "{},{}".format(self.freq_setting_num,pwm_raw_setting)
         self.tx_queue.put_nowait(commandString)
         
 
@@ -3129,6 +3138,7 @@ class pwm_out(SSS2):
         self.pwm_frequency_value['foreground'] = "black"
         try:
             self.pwm_frequency_slider.set(float(entry_value))
+            self.set_pwm_frequency()
         except Exception as e:
             print(e)
             self.root.bell()
@@ -3139,6 +3149,7 @@ class pwm_out(SSS2):
         self.pwm_duty_cycle_value['foreground'] = "black"
         try:
             self.pwm_duty_cycle_slider.set(float(entry_value))
+            self.set_pwm_duty_cycle()
         except Exception as e:
             print(e)
             self.root.bell()

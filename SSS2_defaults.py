@@ -583,8 +583,8 @@ def get_default_settings():
     d["Highest Voltage"]=5
     d["Duty Cycle"]=1 
     d["SSS2 setting"] = 33
-    d["Frequency"]=200
-    d["Lowest Frequency"]=0
+    d["Frequency"]=400
+    d["Lowest Frequency"]=245
     d["Highest Frequency"]=5000
     d["SSS2 freq setting"] = 81
     d["Show Frequency"]=True
@@ -607,8 +607,8 @@ def get_default_settings():
     d["Highest Voltage"]=5
     d["Duty Cycle"]=2
     d["SSS2 setting"] = 34
-    d["Frequency"]=200
-    d["Lowest Frequency"]=0
+    d["Frequency"]=400
+    d["Lowest Frequency"]=245
     d["Highest Frequency"]=5000
     d["SSS2 freq setting"] = 82
     d["Show Frequency"]=True
@@ -630,7 +630,7 @@ def get_default_settings():
     d["Highest Voltage"]=5
     d["Duty Cycle"]=3 
     d["SSS2 setting"] = 35
-    d["Frequency"]=200
+    d["Frequency"]=400
     d["Lowest Frequency"]=0
     d["Highest Frequency"]=5000
     d["SSS2 freq setting"] = 83
@@ -653,7 +653,7 @@ def get_default_settings():
     d["Highest Voltage"]=5
     d["Duty Cycle"]=4 
     d["SSS2 setting"] = 36
-    d["Frequency"]=200
+    d["Frequency"]=400
     d["Lowest Frequency"]=0
     d["Highest Frequency"]=5000
     d["SSS2 freq setting"] = 84
@@ -675,16 +675,16 @@ def get_default_settings():
     d["Lowest Voltage"]=0
     d["Highest Voltage"]=5
     d["Duty Cycle"]=50 
-    d["SSS2 setting"] = 36
+    d["SSS2 setting"] = 87
     d["Frequency"]=200
     d["Lowest Frequency"]=0
     d["Highest Frequency"]=5000
-    d["SSS2 freq setting"] = 84
+    d["SSS2 freq setting"] = 85
     d["Show Frequency"]=True
     d["ECU Pins"]="ECU Pins"
     d["Application"]="Application Description"
     d["Port"]= "17"
-    d["Pin"]= "J18:1"
+    d["Pin"]= "J18:2"
     d["Wire Color"]="PPL/WHT"
     d["Pin Connect"]=True
     d["SSS2 pin setting"] = 70
@@ -698,11 +698,11 @@ def get_default_settings():
     d["Lowest Voltage"]=0
     d["Highest Voltage"]=5
     d["Duty Cycle"]=50
-    d["SSS2 setting"] = 36
+    d["SSS2 setting"] = 88
     d["Frequency"]=200
     d["Lowest Frequency"]=0
     d["Highest Frequency"]=5000
-    d["SSS2 freq setting"] = 84
+    d["SSS2 freq setting"] = 85
     d["Show Frequency"]=True
     d["ECU Pins"]="ECU Pins"
     d["Application"]="Application Description"
@@ -762,8 +762,8 @@ def get_default_settings():
     s["PWM3 or 12V"]={"SSS2 setting":45,"State":False,"Label A":"Connect J18:10 to +12VDC","Label B":"Connect PWM3 Output to J18:10"}
     s["PWM4 or Ground"]={"SSS2 setting":47,"State":False,"Label A":"Connect J18:1 to Ground","Label B":"Connect PWM4 Output to J18:1"}
     s["CAN1 Connect"]={"SSS2 setting":91,"State":False,"Label":"Connect CAN1 (MCPCAN) to J24:3 and J24:4"}
-    s["PWM5 Connect"]={"SSS2 setting":89,"State":False,"Label":"Connect PWM5 Output to J24:1"}
-    s["PWM6 Connect"]={"SSS2 setting":90,"State":False,"Label":"Connect PWM6 Output to J24:2"}
+    s["PWM5 Connect"]={"SSS2 setting":89,"State":False,"Label":"Connect PWM5 Output to J24:2"}
+    s["PWM6 Connect"]={"SSS2 setting":90,"State":False,"Label":"Connect PWM6 Output to J24:1"}
     s["CAN2 Connect"]={"SSS2 setting":40,"State":False,"Label":"Connect CAN2H to J18:16 and CAN2L to J18:15"}
     
     
