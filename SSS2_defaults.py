@@ -4,6 +4,7 @@ import json
 def get_default_settings():
 
     settings = {}
+    settings["1: Message to User"]="This file is used to store settings for the SSS2.The SSS2 can be adjusted to match different ECUs. It is your responsibility to ensure the adjustments match the  application. Using the Smart Sensor Simulator 2 cannot guarantee a fault free environment for all electronic control units. If the elimination of fault codes is critical, then the user is encouraged to test the SSS2 settings with an exemplar module and adjust the settings accordingly. Only properly trained experts should use this software and product. This file should only be modified within the SSS2 Interface application."
     settings["Original File SHA"]="Current Settings Not Saved."
     settings["SSS2 Product Code"]="UNIVERSAL"
     settings["Component ID"] = "SYNER*SSS2-R03*XXXX*UNIVERSAL"
@@ -37,12 +38,9 @@ def get_default_settings():
     settings["Resistor Box Used"] = "Yes"
     settings["File Name"] = ""
 
-    settings["Analog Calibration"] = [(.00000842,.0086833,.03378),
-                                      (.00000842,.0086833,.03378),
-                                      (.00000842,.0086833,.03378),
-                                      (.00000842,.0086833,.03378),
-                                      (.00000842,.0086833,.03378),
-                                      (.00000842,.0086833,.03378)]
+    settings["Analog Calibration"] = [[.00000842,.00000842,.00000842,.00000842,.00000842,.00000842],
+                                      [.0086833,.0086833,.0086833,.0086833,.0086833,.0086833],
+                                      [.03378,.03378,.03378,.03378,.03378,.03378]]
     
     
     
@@ -758,12 +756,19 @@ def get_default_settings():
     s["LIN to Port 16"]={"SSS2 setting":72,"State":False,"Label":"Connect LIN to Port 16 (J24:16)"}
     s["PWM1 Connect"]={"SSS2 setting":67,"State":True,"Label":"Connect PWM1 Output to J24:13"}
     s["PWM2 Connect"]={"SSS2 setting":68,"State":True,"Label":"Connect PWM2 Output to J24:14"}
+    s["PWM3 Connect"]={"SSS2 setting":69,"State":True,"Label":"Connect PWM3 Output to J18:10"}
+    s["PWM4 Connect"]={"SSS2 setting":70,"State":True,"Label":"Connect PWM4 Output to J18:1"}
+    s["PWM4_28 Connect"]={"SSS2 setting":86,"State":True,"Label":"Connect PWM4 Output to J18:12"}
     s["PWM3 or 12V"]={"SSS2 setting":45,"State":False,"Label A":"Connect J18:10 to +12VDC","Label B":"Connect PWM3 Output to J18:10"}
     s["PWM4 or Ground"]={"SSS2 setting":47,"State":False,"Label A":"Connect J18:1 to Ground","Label B":"Connect PWM4 Output to J18:1"}
-
+    s["CAN1 Connect"]={"SSS2 setting":91,"State":False,"Label":"Connect CAN1 (MCPCAN) to J24:3 and J24:4"}
+    s["PWM5 Connect"]={"SSS2 setting":89,"State":False,"Label":"Connect PWM5 Output to J24:1"}
+    s["PWM6 Connect"]={"SSS2 setting":90,"State":False,"Label":"Connect PWM6 Output to J24:2"}
+    s["CAN2 Connect"]={"SSS2 setting":40,"State":False,"Label":"Connect CAN2H to J18:16 and CAN2L to J18:15"}
     
     
-    settings["CAN Config"]={"CAN0 Baudrate":"250000", "CAN1 Baudrate":"500000", "Buffer Size":1000000}
+    
+    settings["CAN Config"]={"CAN0 Baudrate":"250000", "MCPCAN Baudrate":"250000","CAN1 Baudrate":"500000", "Buffer Size":1000000}
 
     settings["CAN"]={}
     t=settings["CAN"]
@@ -808,6 +813,6 @@ def get_default_wiring():
     return wiring_dict
 if __name__ == '__main__':
     settings=get_default_settings()
-    with open('SSS2defaults.json','w') as outfile:
-        json.dump(settings,outfile,indent=4)
+    with open('defaults.SSS2','w') as outfile:
+        json.dump(settings,outfile,indent=4,sort_keys=True)
     

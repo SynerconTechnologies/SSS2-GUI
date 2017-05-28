@@ -2,32 +2,26 @@
     "Analog Calibration": [
         [
             8.42e-06,
-            0.0086833,
-            0.03378
+            8.42e-06,
+            8.42e-06,
+            8.42e-06,
+            8.42e-06,
+            8.42e-06
         ],
         [
-            8.42e-06,
             0.0086833,
-            0.03378
+            0.0086833,
+            0.0086833,
+            0.0086833,
+            0.0086833,
+            0.0086833
         ],
         [
-            8.42e-06,
-            0.0086833,
-            0.03378
-        ],
-        [
-            8.42e-06,
-            0.0086833,
-            0.03378
-        ],
-        [
-            8.42e-06,
-            0.0086833,
-            0.03378
-        ],
-        [
-            8.42e-06,
-            0.0086833,
+            0.03378,
+            0.03378,
+            0.03378,
+            0.03378,
+            0.03378,
             0.03378
         ]
     ],
@@ -126,11 +120,12 @@
     "CAN Config": {
         "Buffer Size": 1000000,
         "CAN0 Baudrate": "250000",
-        "CAN1 Baudrate": "666000"
+        "CAN1 Baudrate": "666666",
+        "MCPCAN Baudrate": "250000"
     },
     "Case Number": "CASE IDENTIFIER",
     "Company": "COMPANY NAME",
-    "Component ID": "SYNER*SSS2-R03*0017*UNIVERSAL",
+    "Component ID": "SYNER*SSS2-03*XXXX*UNIVERSAL",
     "DACs": {
         "Vout1": {
             "Alt. Pin": "J24:15",
@@ -315,8 +310,8 @@
         "Wire Color": "Tan"
     },
     "Location": "ADDRESS, CITY, STATE, ZIP",
-    "Original Creation Date": "Friday, 05 May 2017 08:07:28 Central Daylight Time",
-    "Original File SHA": "bed6dc712928a8cf407024a8ddd4c73a3ccc783fccd7b7ab8df75606047d4aa4",
+    "Original Creation Date": "Sunday, 28 May 2017 08:26:24 Central Daylight Time",
+    "Original File SHA": "2c7028b74d8d76f9bd0e3ef9280ddf2e564d368ce8c67f91a265ce3cdaf40625",
     "PWMs": {
         "PWM1": {
             "Alt. Pin": "J18:15",
@@ -786,16 +781,16 @@
     },
     "Programmed By": "USER NAME",
     "Resistor Box Used": "No",
-    "SHA256 Digest": "bed6dc712928a8cf407024a8ddd4c73a3ccc783fccd7b7ab8df75606047d4aa4",
+    "SHA256 Digest": "2c7028b74d8d76f9bd0e3ef9280ddf2e564d368ce8c67f91a265ce3cdaf40625",
     "SSS2 Cable": "SSS2-DDEC10",
-    "SSS2 Interface Release Date": "03 May 2017",
-    "SSS2 Interface Version": "0.9beta",
+    "SSS2 Interface Release Date": "27 May 2017",
+    "SSS2 Interface Version": "0.11beta",
     "SSS2 Product Code": "UNIVERSAL",
     "SSS2 Source Address": 250,
-    "Saved Date": "Friday, 05 May 2017 08:07:57 Central Daylight Time",
+    "Saved Date": "Sunday, 28 May 2017 08:27:47 Central Daylight Time",
     "Send SSS2 Component ID": "1",
-    "Serial Number": "SYNER*SSS2-R03*0017*UNIVERSAL",
-    "Software ID": "SSS2*REV03*0.91b*master*18887b06f7f46973e403baf2cbbdc876b832adba",
+    "Serial Number": "SYNER*SSS2-03*XXXX*UNIVERSAL",
+    "Software ID": "SSS2*REV05*0.93b*master*7c1ec40e272233b5c69eb16a293705007af312bd",
     "Switches": {
         "12V Out 1": {
             "Label": "Connect +12V to Port 27 (J18:10)",

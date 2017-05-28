@@ -1,33 +1,28 @@
 {
+    "1: Message to User": "This file is used to store settings for the SSS2.The SSS2 can be adjusted to match different ECUs. It is your responsibility to ensure the adjustments match the  application. Using the Smart Sensor Simulator 2 cannot guarantee a fault free environment for all electronic control units. If the elimination of fault codes is critical, then the user is encouraged to test the SSS2 settings with an exemplar module and adjust the settings accordingly. Only properly trained experts should use this software and product. This file should only be modified within the SSS2 Interface application.",
     "Analog Calibration": [
         [
             8.42e-06,
-            0.0086833,
-            0.03378
+            8.42e-06,
+            8.42e-06,
+            8.42e-06,
+            8.42e-06,
+            8.42e-06
         ],
         [
-            8.42e-06,
             0.0086833,
-            0.03378
+            0.0086833,
+            0.0086833,
+            0.0086833,
+            0.0086833,
+            0.0086833
         ],
         [
-            8.42e-06,
-            0.0086833,
-            0.03378
-        ],
-        [
-            8.42e-06,
-            0.0086833,
-            0.03378
-        ],
-        [
-            8.42e-06,
-            0.0086833,
-            0.03378
-        ],
-        [
-            8.42e-06,
-            0.0086833,
+            0.03378,
+            0.03378,
+            0.03378,
+            0.03378,
+            0.03378,
             0.03378
         ]
     ],
@@ -57,11 +52,12 @@
     "CAN Config": {
         "Buffer Size": 1000000,
         "CAN0 Baudrate": "250000",
-        "CAN1 Baudrate": "500000"
+        "CAN1 Baudrate": "500000",
+        "MCPCAN Baudrate": "250000"
     },
     "Case Number": "CASE IDENTIFIER",
     "Company": "COMPANY NAME",
-    "Component ID": "SYNER*SSS2-R03*0017*UNIVERSAL",
+    "Component ID": "SYNER*SSS2-R03*XXXX*UNIVERSAL",
     "DACs": {
         "Vout1": {
             "Alt. Pin": "J24:15",
@@ -69,7 +65,7 @@
             "Amplitude": 0,
             "Application": "Application Description",
             "Average Voltage": 2.5,
-            "ECU Pins": "BRN/WHT",
+            "ECU Pins": "ECU Pins",
             "Frequency": 0,
             "Highest Voltage": 5,
             "Lowest Voltage": 0,
@@ -88,7 +84,7 @@
             "Amplitude": 0,
             "Application": "Application Description",
             "Average Voltage": 2.5,
-            "ECU Pins": "WHT/BLK",
+            "ECU Pins": "ECU Pins",
             "Frequency": 0,
             "Highest Voltage": 5,
             "Lowest Voltage": 0,
@@ -107,7 +103,7 @@
             "Amplitude": 0,
             "Application": "Application Description",
             "Average Voltage": 2.5,
-            "ECU Pins": "PNK/BLK",
+            "ECU Pins": "ECU Pins",
             "Frequency": 0,
             "Highest Voltage": 5,
             "Lowest Voltage": 0,
@@ -126,7 +122,7 @@
             "Amplitude": 0,
             "Application": "Application Description",
             "Average Voltage": 2.5,
-            "ECU Pins": "Pink",
+            "ECU Pins": "ECU Pins",
             "Frequency": 0,
             "Highest Voltage": 5,
             "Lowest Voltage": 0,
@@ -145,7 +141,7 @@
             "Amplitude": 0,
             "Application": "Application Description",
             "Average Voltage": 2.5,
-            "ECU Pins": "Blue",
+            "ECU Pins": "ECU Pins",
             "Frequency": 0,
             "Highest Voltage": 5,
             "Lowest Voltage": 0,
@@ -164,7 +160,7 @@
             "Amplitude": 0,
             "Application": "Application Description",
             "Average Voltage": 2.5,
-            "ECU Pins": "Tan",
+            "ECU Pins": "ECU Pins",
             "Frequency": 0,
             "Highest Voltage": 5,
             "Lowest Voltage": 0,
@@ -183,7 +179,7 @@
             "Amplitude": 0,
             "Application": "Application Description",
             "Average Voltage": 2.5,
-            "ECU Pins": "ORN/BLK",
+            "ECU Pins": "ECU Pins",
             "Frequency": 0,
             "Highest Voltage": 5,
             "Lowest Voltage": 0,
@@ -202,7 +198,7 @@
             "Amplitude": 0,
             "Application": "Application Description",
             "Average Voltage": 2.5,
-            "ECU Pins": "YEL/BLK",
+            "ECU Pins": "ECU Pins",
             "Frequency": 0,
             "Highest Voltage": 5,
             "Lowest Voltage": 0,
@@ -225,17 +221,17 @@
     "Engine Configuration": "CONFIGURATION",
     "Engine Model": "MODEL",
     "Engine Serial Number": "SERIAL NUMBER",
-    "File Name": "defaults.SSS2",
+    "File Name": "",
     "HVAdjOut": {
         "Alt. Pin": null,
         "Alt. Pin Connect": false,
         "Amplitude": 0,
         "Application": "Application Description",
         "Average Voltage": 8.5,
-        "ECU Pins": "Tan",
+        "ECU Pins": "ECU Pins",
         "Frequency": 0,
         "Highest Voltage": 11.5,
-        "Lowest Voltage": 4,
+        "Lowest Voltage": 1.9,
         "Name": "High Current Regulator",
         "Pin": "J24:19",
         "Port": " ",
@@ -243,11 +239,11 @@
         "Shape": "Constant",
         "Show Amplitude": false,
         "Show Frequency": false,
-        "Wire Color": "Tan"
+        "Wire Color": "TAN"
     },
     "Location": "ADDRESS, CITY, STATE, ZIP",
-    "Original Creation Date": "Sunday, 07 May 2017 12:57:00 Central Daylight Time",
-    "Original File SHA": "3156d600c42741e411c3726b05f66aedc89802682c766ca27c7ebec2ee116f66",
+    "Original Creation Date": "21 April 2017",
+    "Original File SHA": "Current Settings Not Saved.",
     "PWMs": {
         "PWM1": {
             "Alt. Pin": "J18:15",
@@ -255,7 +251,7 @@
             "Alt. Port": "13",
             "Application": "Application Description",
             "Duty Cycle": 1,
-            "ECU Pins": "Brown",
+            "ECU Pins": "ECU Pins",
             "Frequency": 200,
             "Highest Frequency": 5000,
             "Highest Voltage": 5,
@@ -270,7 +266,7 @@
             "SSS2 pin setting": 67,
             "SSS2 setting": 33,
             "Show Frequency": true,
-            "Wire Color": "Brown"
+            "Wire Color": "BROWN"
         },
         "PWM2": {
             "Alt. Pin": "J18:16",
@@ -278,7 +274,7 @@
             "Alt. Port": "14",
             "Application": "Application Description",
             "Duty Cycle": 2,
-            "ECU Pins": "BLK/WHT",
+            "ECU Pins": "ECU Pins",
             "Frequency": 200,
             "Highest Frequency": 5000,
             "Highest Voltage": 5,
@@ -301,7 +297,7 @@
             "Alt. Port": null,
             "Application": "Application Description",
             "Duty Cycle": 3,
-            "ECU Pins": "Orange",
+            "ECU Pins": "ECU Pins",
             "Frequency": 200,
             "Highest Frequency": 5000,
             "Highest Voltage": 5,
@@ -324,13 +320,59 @@
             "Alt. Port": null,
             "Application": "Application Description",
             "Duty Cycle": 4,
-            "ECU Pins": "PPL/WHT",
+            "ECU Pins": "ECU Pins",
             "Frequency": 200,
             "Highest Frequency": 5000,
             "Highest Voltage": 5,
             "Lowest Frequency": 0,
             "Lowest Voltage": 0,
             "Name": "PWM4",
+            "Pin": "J18:1",
+            "Pin Connect": true,
+            "Port": "17",
+            "SSS2 alt setting": null,
+            "SSS2 freq setting": 84,
+            "SSS2 pin setting": 70,
+            "SSS2 setting": 36,
+            "Show Frequency": true,
+            "Wire Color": "PPL/WHT"
+        },
+        "PWM5": {
+            "Alt. Pin": "",
+            "Alt. Pin Connect": null,
+            "Alt. Port": null,
+            "Application": "Application Description",
+            "Duty Cycle": 50,
+            "ECU Pins": "ECU Pins",
+            "Frequency": 200,
+            "Highest Frequency": 5000,
+            "Highest Voltage": 5,
+            "Lowest Frequency": 0,
+            "Lowest Voltage": 0,
+            "Name": "PWM5",
+            "Pin": "J18:1",
+            "Pin Connect": true,
+            "Port": "17",
+            "SSS2 alt setting": null,
+            "SSS2 freq setting": 84,
+            "SSS2 pin setting": 70,
+            "SSS2 setting": 36,
+            "Show Frequency": true,
+            "Wire Color": "PPL/WHT"
+        },
+        "PWM6": {
+            "Alt. Pin": "",
+            "Alt. Pin Connect": null,
+            "Alt. Port": null,
+            "Application": "Application Description",
+            "Duty Cycle": 50,
+            "ECU Pins": "ECU Pins",
+            "Frequency": 200,
+            "Highest Frequency": 5000,
+            "Highest Voltage": 5,
+            "Lowest Frequency": 0,
+            "Lowest Voltage": 0,
+            "Name": "PWM6",
             "Pin": "J18:1",
             "Pin Connect": true,
             "Port": "17",
@@ -353,7 +395,7 @@
                             "Application": "Application Description",
                             "ECM Fault High Setting": 255,
                             "ECM Fault Low Setting": 0,
-                            "ECU Pins": "PPL/WHT",
+                            "ECU Pins": "ECU Pins",
                             "Name": "Potentiometer 1",
                             "Pin": "J24:1",
                             "Port": "1",
@@ -368,7 +410,7 @@
                         },
                         "U2": {
                             "Application": "Application Description",
-                            "ECU Pins": "BRN/WHT",
+                            "ECU Pins": "ECU Pins",
                             "Name": "Potentiometer 2",
                             "Pin": "J24:2",
                             "Port": "2",
@@ -390,7 +432,7 @@
                     "Pots": {
                         "U3": {
                             "Application": "Application Description",
-                            "ECU Pins": "YEL/BLK",
+                            "ECU Pins": "ECU Pins",
                             "Name": "Potentiometer 3",
                             "Pin": "J24:3",
                             "Port": "3",
@@ -405,7 +447,7 @@
                         },
                         "U4": {
                             "Application": "Application Description",
-                            "ECU Pins": "PNK/BLK",
+                            "ECU Pins": "ECU Pins",
                             "Name": "Potentiometer 4",
                             "Pin": "J24:4",
                             "Port": "4",
@@ -427,7 +469,7 @@
                     "Pots": {
                         "U5": {
                             "Application": "Application Description",
-                            "ECU Pins": "Blue",
+                            "ECU Pins": "ECU Pins",
                             "Name": "Potentiometer 5",
                             "Pin": "J24:5",
                             "Port": "5",
@@ -442,7 +484,7 @@
                         },
                         "U6": {
                             "Application": "Application Description",
-                            "ECU Pins": "GRN/BLK",
+                            "ECU Pins": "ECU Pins",
                             "Name": "Potentiometer 6",
                             "Pin": "J24:6",
                             "Port": "6",
@@ -464,7 +506,7 @@
                     "Pots": {
                         "U7": {
                             "Application": "Application Description",
-                            "ECU Pins": "ORN/BLK",
+                            "ECU Pins": "ECU Pins",
                             "Name": "Potentiometer 7",
                             "Pin": "J24:7",
                             "Port": "7",
@@ -479,7 +521,7 @@
                         },
                         "U8": {
                             "Application": "Application Description",
-                            "ECU Pins": "YEL/RED",
+                            "ECU Pins": "ECU Pins",
                             "Name": "Potentiometer 8",
                             "Pin": "J24:8",
                             "Port": "8",
@@ -508,7 +550,7 @@
                     "Pots": {
                         "U09": {
                             "Application": "Application Description",
-                            "ECU Pins": "RED/WHT",
+                            "ECU Pins": "ECU Pins",
                             "Name": "Potentiometer  9",
                             "Pin": "J24:9",
                             "Port": "9",
@@ -523,7 +565,7 @@
                         },
                         "U10": {
                             "Application": "Application Description",
-                            "ECU Pins": "RED/BLK",
+                            "ECU Pins": "ECU Pins",
                             "Name": "Potentiometer 10",
                             "Pin": "J24:10",
                             "Port": "10",
@@ -545,7 +587,7 @@
                     "Pots": {
                         "U11": {
                             "Application": "Application Description",
-                            "ECU Pins": "BLU/WHT",
+                            "ECU Pins": "ECU Pins",
                             "Name": "Potentiometer 11",
                             "Pin": "J24:11",
                             "Port": "11",
@@ -560,7 +602,7 @@
                         },
                         "U12": {
                             "Application": "Application Description",
-                            "ECU Pins": "TAN/BLK",
+                            "ECU Pins": "ECU Pins",
                             "Name": "Potentiometer 12",
                             "Pin": "J24:12",
                             "Port": "12",
@@ -582,7 +624,7 @@
                     "Pots": {
                         "U13": {
                             "Application": "Application Description",
-                            "ECU Pins": "Brown",
+                            "ECU Pins": "ECU Pins",
                             "Name": "Potentiometer 13",
                             "Pin": "J24:13",
                             "Port": "13",
@@ -597,7 +639,7 @@
                         },
                         "U14": {
                             "Application": "Application Description",
-                            "ECU Pins": "BLK/WHT",
+                            "ECU Pins": "ECU Pins",
                             "Name": "Potentiometer 14",
                             "Pin": "J24:14",
                             "Port": "14",
@@ -619,7 +661,7 @@
                     "Pots": {
                         "U15": {
                             "Application": "Application Description",
-                            "ECU Pins": "GRN/WHT",
+                            "ECU Pins": "ECU Pins",
                             "Name": "Potentiometer 15",
                             "Pin": "J24:15",
                             "Port": "15",
@@ -634,7 +676,7 @@
                         },
                         "U16": {
                             "Application": "Application Description",
-                            "ECU Pins": "RED/GRN",
+                            "ECU Pins": "ECU Pins",
                             "Name": "Potentiometer 16",
                             "Pin": "J24:16",
                             "Port": "16",
@@ -663,7 +705,7 @@
                     "Pots": {
                         "U34": {
                             "Application": "Application Description",
-                            "ECU Pins": "TAN/BLK",
+                            "ECU Pins": "ECU Pins",
                             "Name": "Port 28 Potentiometer",
                             "Pin": "J18:12",
                             "Port": "28",
@@ -678,7 +720,7 @@
                         },
                         "U36": {
                             "Application": "Application Description",
-                            "ECU Pins": "BROWN",
+                            "ECU Pins": "ECU Pins",
                             "Name": "Port 29 Potentiometer",
                             "Pin": "J18:13",
                             "Port": "29",
@@ -693,7 +735,7 @@
                         },
                         "U37": {
                             "Application": "Application Description",
-                            "ECU Pins": "GRN/WHT",
+                            "ECU Pins": "ECU Pins",
                             "Name": "Port 30 Potentiometer",
                             "Pin": "J18:14",
                             "Port": "30",
@@ -717,21 +759,19 @@
     },
     "Programmed By": "USER NAME",
     "Resistor Box Used": "Yes",
-    "SHA256 Digest": "3156d600c42741e411c3726b05f66aedc89802682c766ca27c7ebec2ee116f66",
     "SSS2 Cable": " ",
-    "SSS2 Interface Release Date": "03 May 2017",
-    "SSS2 Interface Version": "0.9beta",
+    "SSS2 Interface Release Date": "File Not Saved",
+    "SSS2 Interface Version": "File Not Saved",
     "SSS2 Product Code": "UNIVERSAL",
     "SSS2 Source Address": 250,
-    "Saved Date": "Sunday, 07 May 2017 12:57:20 Central Daylight Time",
+    "Saved Date": "NOT SAVED",
     "Send SSS2 Component ID": "1",
-    "Serial Number": "SYNER*SSS2-R03*0017*UNIVERSAL",
-    "Software ID": "SSS2*REV03*0.91b*master*18887b06f7f46973e403baf2cbbdc876b832adba",
+    "Software ID": "SOFTWARE ID",
     "Switches": {
         "12V Out 1": {
             "Label": "Connect +12V to Port 27 (J18:10)",
             "SSS2 setting": 45,
-            "State": true
+            "State": false
         },
         "12V Out 2": {
             "Label": "Connect +12V to Port 11 (J24:11)",
@@ -748,6 +788,11 @@
             "SSS2 setting": 42,
             "State": true
         },
+        "CAN1 Connect": {
+            "Label": "Connect CAN1 (MCPCAN) to J24:3 and J24:4",
+            "SSS2 setting": 91,
+            "State": false
+        },
         "CAN1 or J1708": {
             "Label A": "Connect J1708 to J24:17 and J24:18",
             "Label B": "Connect CAN2 to J24:17 and J24:18",
@@ -759,10 +804,15 @@
             "SSS2 setting": 43,
             "State": true
         },
+        "CAN2 Connect": {
+            "Label": "Connect CAN2H to J18:16 and CAN2L to J18:15",
+            "SSS2 setting": 40,
+            "State": false
+        },
         "Ground Out 1": {
             "Label": "Connect Ground to Port 17 (J18:1)",
             "SSS2 setting": 47,
-            "State": true
+            "State": false
         },
         "Ground Out 2": {
             "Label": "Connect Ground to Port 12 (J24:12)",
@@ -794,16 +844,41 @@
             "SSS2 setting": 68,
             "State": true
         },
+        "PWM3 Connect": {
+            "Label": "Connect PWM3 Output to J18:10",
+            "SSS2 setting": 69,
+            "State": true
+        },
         "PWM3 or 12V": {
             "Label A": "Connect J18:10 to +12VDC",
             "Label B": "Connect PWM3 Output to J18:10",
             "SSS2 setting": 45,
             "State": false
         },
+        "PWM4 Connect": {
+            "Label": "Connect PWM4 Output to J18:1",
+            "SSS2 setting": 70,
+            "State": true
+        },
         "PWM4 or Ground": {
             "Label A": "Connect J18:1 to Ground",
             "Label B": "Connect PWM4 Output to J18:1",
             "SSS2 setting": 47,
+            "State": false
+        },
+        "PWM4_28 Connect": {
+            "Label": "Connect PWM4 Output to J18:12",
+            "SSS2 setting": 86,
+            "State": true
+        },
+        "PWM5 Connect": {
+            "Label": "Connect PWM5 Output to J24:1",
+            "SSS2 setting": 89,
+            "State": false
+        },
+        "PWM6 Connect": {
+            "Label": "Connect PWM6 Output to J24:2",
+            "SSS2 setting": 90,
             "State": false
         },
         "PWMs or CAN2": {
@@ -825,7 +900,7 @@
             "State": false
         }
     },
-    "User Notes": "USER ENTERED NOTES\n\nDEFAULTS",
+    "User Notes": "USER ENTERED NOTES",
     "Vehicle Make": "MAKE",
     "Vehicle Model": "MODEL",
     "Vehicle VIN": "VEHICLE IDENTIFICATION NUMBER",
