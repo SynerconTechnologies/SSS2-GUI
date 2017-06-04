@@ -25,8 +25,6 @@ import tkinter.scrolledtext as tkst
 import collections
 
 from SSS2_defaults import *
-
-
             
 class SerialThread(threading.Thread):
     def __init__(self, parent, rx_queue, tx_queue,serial):
@@ -45,7 +43,7 @@ class SerialThread(threading.Thread):
                 if self.tx_queue.qsize():
                     s = self.tx_queue.get_nowait()
                     self.serial.write(bytes(s,'utf-8') + b'\x0A')
-                    time.sleep(.0015)
+                    time.sleep(.0015) #ensure the listener can process the commands.
                     print('TX: ', end='')
                     print(s)
                 if self.serial.in_waiting:
@@ -56,7 +54,6 @@ class SerialThread(threading.Thread):
                         if line[0:3] == b'CAN': 
                             canline = line[3:]
                             if len(canline) == 22:
-                                #print("Complete CAN String")
                                 self.rx_queue.put(self.getCANstring(canline))
                                 canline = b''
                                 needsMore = False
@@ -75,10 +72,8 @@ class SerialThread(threading.Thread):
                                 needsMore = True
                         else:
                             self.rx_queue.put(line)
-                            
-                        #print('RX: ', end='')
-                        #print(line)
-                time.sleep(.001)
+                time.sleep(.001) #add a sleep statement to reduce CPU load for this thread.
+                
         except Exception as e:
             print(e)
             print("Serial Connection Broken. Exiting Thread.")
@@ -196,7 +191,6 @@ class setup_serial_connections(tk.Toplevel):
         self.parent.focus_set()
         self.destroy()
 
-    #
     # command hooks
 
     def validate(self):
@@ -282,8 +276,11 @@ class SSS2(ttk.Frame):
         self.j1939_baud_value=tk.StringVar(value="250000")
         self.settings_file_status_string = tk.StringVar(value="Default Settings Loaded")
         self.file_loaded = False
-        self.release_date = "27 May 2017"
-        self.release_version = "0.11beta"
+        self.release_date = "03 June 2017"
+################# Use this for production
+        self.release_version = "1.0"
+################## Use this for Universal
+        #self.release_version = "1.0 UNIVERSAL" 
         self.connection_status_string = tk.StringVar(name='status_string',value="Not Connected.")
         connection_status_string = self.connection_status_string
         self.serial_rx_entry = tk.Entry(self,width=60,name='serial_monitor')
@@ -471,8 +468,8 @@ class SSS2(ttk.Frame):
             self.autosave()
 
        #Use these messages to determine window size during development.  
-        print("Window Height: {}".format(self.root.winfo_height()))
-        print("Window Width: {}".format(self.root.winfo_width()))
+       # print("Window Height: {}".format(self.root.winfo_height()))
+       # print("Window Width: {}".format(self.root.winfo_width()))
 
     def export_wiring(self):
         for group_key in self.settings_dict["Potentiometers"]:
@@ -517,10 +514,7 @@ class SSS2(ttk.Frame):
             self.filename += ".txt"
             self.save_settings_file()
             os.startfile(self.filename, "open")
-            print("Saved and printed "+self.filename)
-            #os.remove(self.filename)
-            #self.filename = original_file
-            #self.save_settings_file()
+            print("Saved and opened "+self.filename)
             
         except Exception as e:
             print(e)
@@ -539,9 +533,7 @@ class SSS2(ttk.Frame):
                                                      initialfile=ifile,
                                                      title=title,
                                                      defaultextension=".SSS2")
-
-        
-        
+      
         try:
             with open(self.filename,'r') as infile:
                 new_settings_dict=json.load(infile)
@@ -550,7 +542,6 @@ class SSS2(ttk.Frame):
                 new_settings_dict["Analog Calibration"] = self.settings_dict["Analog Calibration"]
             
             self.settings_dict = update_dict(self.settings_dict,new_settings_dict)
-
             
         except Exception as e:
             print(e)
@@ -570,9 +561,10 @@ class SSS2(ttk.Frame):
         
         #self.load_settings_file()
         ok_to_open = False
- ########################       
-        if True:
-        #if newhash==digest_from_file:
+############### Use this for Universal       
+        #if True:
+############### Use this for Production       
+        if newhash==digest_from_file:
             print("Hash digests match.")
             sss2_id = self.settings_dict["SSS2 Product Code"].strip()
             if  sss2_id == "UNIVERSAL":
@@ -662,9 +654,10 @@ class SSS2(ttk.Frame):
                         ok_to_save = True
                     print("Authenticated. OK to Save")
         else:
-###########################            
-            ok_to_save = True ###Change to False for production
-###############################
+################# Use this for UNIVERSAL     
+            #ok_to_save = True ###Change to False for production
+################# Use this for Production
+            ok_to_save = False 
         if ok_to_save:
             self.settings_dict["SSS2 Interface Release Date"] = self.release_date
             self.settings_dict["SSS2 Interface Version"] = self.release_version
