@@ -684,7 +684,7 @@ def get_default_settings():
     d["ECU Pins"]="ECU Pins"
     d["Application"]="Application Description"
     d["Port"]= "17"
-    d["Pin"]= "J18:2"
+    d["Pin"]= "J24:2"
     d["Wire Color"]="PPL/WHT"
     d["Pin Connect"]=True
     d["SSS2 pin setting"] = 70
@@ -707,7 +707,7 @@ def get_default_settings():
     d["ECU Pins"]="ECU Pins"
     d["Application"]="Application Description"
     d["Port"]= "17"
-    d["Pin"]= "J18:1"
+    d["Pin"]= "J24:1"
     d["Wire Color"]="PPL/WHT"
     d["Pin Connect"]=True
     d["SSS2 pin setting"] = 70

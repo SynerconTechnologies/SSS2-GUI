@@ -2,6 +2,7 @@ import tkinter as tk
 from tkinter import filedialog
 from tkinter import ttk
 from tkinter import messagebox
+from tkinter import simpledialog
 import serial
 import serial.tools.list_ports
 import os
@@ -16,6 +17,7 @@ import re
 import getpass
 import webbrowser
 from operator import itemgetter
+import struct
 
 from tkinter.tix import *
 from tkinter.constants import *
@@ -37,21 +39,46 @@ class SerialThread(threading.Thread):
         
     def run(self):
         time.sleep(.1)
+        needsMore = False
         try:
             while self.serial.is_open and self.signal:           
                 if self.tx_queue.qsize():
                     s = self.tx_queue.get_nowait()
                     self.serial.write(bytes(s,'utf-8') + b'\x0A')
-                    time.sleep(.002)
+                    time.sleep(.0015)
                     print('TX: ', end='')
                     print(s)
                 if self.serial.in_waiting:
                     lines = self.serial.readlines(self.serial.in_waiting)
+                    
                     for line in lines:
-                        self.rx_queue.put(line)
+                        
+                        if line[0:3] == b'CAN': 
+                            canline = line[3:]
+                            if len(canline) == 22:
+                                #print("Complete CAN String")
+                                self.rx_queue.put(self.getCANstring(canline))
+                                canline = b''
+                                needsMore = False
+                                continue
+                            else:
+                                needsMore = True
+                        if needsMore:
+                            canline+=line
+                            if len(canline) == 22:
+                                #print("Complete CAN String")
+                                self.rx_queue.put(self.getCANstring(canline))
+                                canline = b''
+                                needsMore = False
+                                continue
+                            else:
+                                needsMore = True
+                        else:
+                            self.rx_queue.put(line)
+                            
                         #print('RX: ', end='')
                         #print(line)
-                time.sleep(.002)
+                time.sleep(.001)
         except Exception as e:
             print(e)
             print("Serial Connection Broken. Exiting Thread.")
@@ -61,6 +88,25 @@ class SerialThread(threading.Thread):
         print("Serial Connection Closed.")
         self.serial.__del__()
         self.signal = False
+    def getCANstring(self,databytes):
+        
+        channel = databytes[4]
+        now = struct.unpack('>L',databytes[0:4])[0]
+        fractions = struct.unpack('>L',b'\x00'+databytes[5:8])[0]
+        canID = struct.unpack('>L',databytes[8:12])[0] & 0x1FFFFFFF
+        extended = (databytes[8] & 0x80) >> 7
+        length = databytes[12]
+        
+        line = "CAN{:d} {:d}.{:06d}".format(channel,now,fractions)
+        line+= " {:08X}".format(canID)
+        line+= " {:d}".format(extended)
+        line+= " {:d}".format(length)
+        for d in databytes[13:21]:
+            line+= " {:02X}".format(d)
+        line+= "\n"
+        #print(line,end='')
+        return bytearray(line,'ascii')
+        
         
 
 class setup_serial_connections(tk.Toplevel):
@@ -1240,7 +1286,8 @@ class SSS2(ttk.Frame):
         self.can_name_value = tk.StringVar()
         self.can_name = ttk.Entry(self.can_edit_frame,textvariable=self.can_name_value,width=65)
         self.can_name.grid(row=0,column=1,sticky="W",columnspan=6,pady=5)
-        self.can_name.bind('<FocusOut>',self.modify_can_message)
+        #self.can_name.bind('<Return>',self.modify_can_message)
+        #self.can_name.bind('<Tab>',self.modify_can_message)
         
 
         tk.Label(self.can_edit_frame,text="Thread:").grid(row=1,column=0,sticky="E")
@@ -1263,7 +1310,8 @@ class SSS2(ttk.Frame):
         self.can_id_value=tk.StringVar()
         self.can_id = tk.Entry(self.can_edit_frame,textvariable=self.can_id_value,width=12)
         self.can_id.grid(row=2,column=1,sticky="W",pady=5,columnspan=2)
-        self.can_id.bind('<FocusOut>',self.modify_can_message)
+        self.can_name.bind('<Return>',self.modify_can_message)
+        self.can_name.bind('<Tab>',self.modify_can_message)
         
 
 
@@ -1272,23 +1320,28 @@ class SSS2(ttk.Frame):
         spinbox_values = ["1","2","3","4","5","6","7","8"]
         self.can_dlc = ttk.Combobox(self.can_edit_frame,textvariable=self.can_dlc_value,width=2,values=spinbox_values)
         self.can_dlc.grid(row=2,column=3,sticky="W",pady=5,columnspan=1)
-        self.can_dlc.bind('<FocusOut>',self.modify_can_message)
+        self.can_dlc.bind('<<ComboboxSelected>>',self.modify_can_message)
        
 
         
         self.can_ext_id_state = tk.IntVar(value=1)
-        self.can_ext_id = ttk.Checkbutton(self.can_edit_frame,text="Use Extended (29-bit) ID",variable=self.can_ext_id_state)
+        self.can_ext_id = ttk.Checkbutton(self.can_edit_frame,text="Use Extended (29-bit) ID",
+                                          variable=self.can_ext_id_state,
+                                          command=self.modify_can_message)
         self.can_ext_id.grid(row=2,column=4,sticky="W",padx=10,columnspan=3)
         
         tk.Label(self.can_edit_frame,text="Channel:").grid(row=3,column=0,sticky="E")
         self.can_radio_frame = tk.Frame(self.can_edit_frame)
         self.can_radio_frame.grid(row=3,column=1,sticky="W",columnspan=2,pady=5)
         self.can_channel_value = tk.StringVar(value="0")
-        self.can_channel_0 = ttk.Radiobutton(self.can_radio_frame,value="0",text="J1939",variable=self.can_channel_value)
+        self.can_channel_0 = ttk.Radiobutton(self.can_radio_frame,value="0",text="J1939",variable=self.can_channel_value,
+                                        command=self.modify_can_message)
         self.can_channel_0.grid(row=0,column=0,sticky="E")
-        self.can_channel_0 = ttk.Radiobutton(self.can_radio_frame,value="1",text="CAN1",variable=self.can_channel_value)
+        self.can_channel_0 = ttk.Radiobutton(self.can_radio_frame,value="2",text="CAN1",variable=self.can_channel_value,
+                                        command=self.modify_can_message)
         self.can_channel_0.grid(row=0,column=1,sticky="W")
-        self.can_channel_0 = ttk.Radiobutton(self.can_radio_frame,value="2",text="CAN2",variable=self.can_channel_value)
+        self.can_channel_0 = ttk.Radiobutton(self.can_radio_frame,value="1",text="CAN2",variable=self.can_channel_value,
+                                        command=self.modify_can_message)
         self.can_channel_0.grid(row=0,column=2,sticky="W")
         
         self.can_send_state = tk.IntVar(value=1)
@@ -1302,23 +1355,26 @@ class SSS2(ttk.Frame):
         self.can_period_value = tk.StringVar(value="100")
         self.can_period = tk.Entry(self.can_edit_frame,textvariable=self.can_period_value,width=10)
         self.can_period.grid(row=4,column=1,sticky="W",pady=5)
-        self.can_period.bind('<FocusOut>',self.modify_can_message)
-       
+        self.can_period.bind('<Return>',self.modify_can_message)
+        self.can_period.bind('<Tab>',self.modify_can_message)
+        
 
 
         tk.Label(self.can_edit_frame,text="  Restart (msec):").grid(row=4,column=2,sticky="E")
         self.can_restart_value = tk.StringVar(value="0")
         self.can_restart = tk.Entry(self.can_edit_frame,textvariable=self.can_restart_value,width=10)
         self.can_restart.grid(row=4,column=3,sticky="W",pady=5)
-        self.can_restart.bind('<FocusOut>',self.modify_can_message)
-
+        self.can_restart.bind('<Return>',self.modify_can_message)
+        self.can_restart.bind('<Tab>',self.modify_can_message)
+        
 
         tk.Label(self.can_edit_frame,text="Total to Send:").grid(row=4,column=4,sticky="E")
         self.can_total_value = tk.StringVar(value="0")
         self.can_total = tk.Entry(self.can_edit_frame,textvariable=self.can_total_value,width=10)
         self.can_total.grid(row=4,column=5,sticky="W")
-        self.can_total.bind('<FocusOut>',self.modify_can_message)
-
+        self.can_total.bind('<Return>',self.modify_can_message)
+        self.can_total.bind('<Tab>',self.modify_can_message)
+        
         self.can_data_frame = tk.Frame(self.can_edit_frame)
         self.can_byte_value=[]
         self.can_byte=[]
@@ -1327,7 +1383,8 @@ class SSS2(ttk.Frame):
             self.can_byte_value.append(tk.StringVar(value="00"))
             self.can_byte.append(tk.Entry(self.can_data_frame,textvariable=self.can_byte_value[byteLabel],width=3))
             self.can_byte[byteLabel].grid(row=0,column=2*byteLabel+1,pady=5)
-            self.can_byte[-1].bind('<FocusOut>',self.modify_can_message)
+            self.can_byte[-1].bind('<Return>',self.modify_can_message)
+            self.can_byte[-1].bind('<Tab>',self.modify_can_message)
         self.can_data_frame.grid(row=5,column=1,columnspan=6,sticky="W")
         tk.Label(self.can_edit_frame,text="Data Bytes (Hex):").grid(row=5,column=0,sticky="W")
 
@@ -1461,10 +1518,11 @@ class SSS2(ttk.Frame):
         self.can_tree.set(tree_item,"Send",state)
         if self.can_channel_value.get() == "0":
             chan = "J1939"
-        elif self.can_channel_value.get() == "1":
-            chan = "CAN1"
         elif self.can_channel_value.get() == "2":
+            chan = "CAN1"
+        elif self.can_channel_value.get() == "1":
             chan = "CAN2"
+        
         self.can_tree.set(tree_item,"Channel",chan)
         self.can_tree.set(tree_item,"Period",self.can_period_value.get())
         self.can_tree.set(tree_item,"Restart",self.can_restart_value.get())
@@ -1478,9 +1536,9 @@ class SSS2(ttk.Frame):
             self.can_tree.set(tree_item,"Send",state)
             if self.can_channel_value.get() == "0":
                 chan = "J1939"
-            elif self.can_channel_value.get() == "1":
-                chan = "CAN1"
             elif self.can_channel_value.get() == "2":
+                chan = "CAN1"
+            elif self.can_channel_value.get() == "1":
                 chan = "CAN2"
             self.can_tree.set(tree_item,"Channel",chan)
             self.can_tree.set(tree_item,"Period",self.can_period_value.get())
@@ -1490,7 +1548,11 @@ class SSS2(ttk.Frame):
             
                      
     def create_new_message(self):
+        new_name = simpledialog.askstring("Input", "New CAN Message Name:",parent=self, initialvalue="CAN Message")
+        if new_name is None:
+            return
         self.new_message = True
+        self.can_name_value.set(new_name)
         selection = self.can_tree.selection()
         can_thread_list=[]
         for selection in self.can_tree.get_children(""):
@@ -1529,6 +1591,8 @@ class SSS2(ttk.Frame):
         
     def common_can_message(self,can_thread):
         #new_thread = from serial len(self.settings_dict["CAN"]["Load Preprogrammed"])
+        selection = self.can_tree.selection()
+        can_msg = self.can_tree.item(selection)
         m = ""
         m += self.can_name_value.get()
         m += ","
@@ -1632,12 +1696,12 @@ class SSS2(ttk.Frame):
                 self.can_send_state.set(1)
             else:
                 self.can_send_state.set(0)
-            if vals[4] == "J1939":
-                self.can_channel_value.set("0")
             if vals[4] == "CAN1":
+                self.can_channel_value.set("2")
+            elif vals[4] == "CAN2":
                 self.can_channel_value.set("1")
             else:
-                self.can_channel_value.set("2")
+                self.can_channel_value.set("0")
             self.can_period_value.set(vals[5])
             self.can_restart_value.set(vals[6])
             self.can_total_value.set(vals[7])
@@ -1655,12 +1719,13 @@ class SSS2(ttk.Frame):
         
         num = msg[2].strip()
         sub = msg[3].strip()
-        
+
+        #Switch CAN 1 and 2 becuse they are switched on the Arduino
         if msg[4] == "0":
             channel = "J1939"
-        elif msg[4] == "1":
-            channel = "CAN1"
         elif msg[4] == "2":
+            channel = "CAN1"
+        elif msg[4] == "1": 
             channel = "CAN2"
         else:
             channel = msg[4].strip()
@@ -1702,7 +1767,10 @@ class SSS2(ttk.Frame):
                 self.can_tree.set(selection,"DLC",dlc)
                 for i in range(8):
                     self.can_tree.set(selection,"B{}".format(i+1),B[i])
-            selection = int(selection[0])
+            try:
+                selection = int(selection[0])
+            except:
+                pass
 
         self.can_tree.selection_set(selection)
          
@@ -2123,7 +2191,8 @@ class SSS2(ttk.Frame):
                 self.calibration_variable[i].append(tk.StringVar(value="{}".format(self.settings_dict["Analog Calibration"][i][j])))
                 self.calibration_entries[i].append(tk.Entry(self.calibration_frame, width=11,textvariable = self.calibration_variable[i][j]))
                 self.calibration_entries[i][j].grid(row=i+1, column=j+1)
-                self.calibration_entries[i][j].bind("<FocusOut>",self.adjust_calibrations)
+                self.calibration_entries[i][j].bind("<Tab>",self.adjust_calibrations)
+                self.calibration_entries[i][j].bind("<Return>",self.adjust_calibrations)
               
     def adjust_calibrations(self,event=None):
         for i in range(len(self.settings_dict["Analog Calibration"])): #Rows
@@ -3017,7 +3086,8 @@ class DAC7678(SSS2):
                 dac_raw_setting = int(19.985*x - 37.522) ##Special for Rev5
             else:
                 dac_raw_setting = int(4.2646*x - 16.788) ##Special for Rev3
-            
+            if dac_raw_setting < 0:
+               dac_raw_setting = 0 
         else:
             slope = 4095/(self.high-self.low)
             dac_raw_setting = int(slope*(x - self.low))
