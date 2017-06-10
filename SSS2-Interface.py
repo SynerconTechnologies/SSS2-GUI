@@ -278,9 +278,9 @@ class SSS2(ttk.Frame):
         self.file_loaded = False
         self.release_date = "03 June 2017"
 ################# Use this for production
-        self.release_version = "1.0"
+        #self.release_version = "1.0"
 ################## Use this for Universal
-        #self.release_version = "1.0 UNIVERSAL" 
+        self.release_version = "1.0 UNIVERSAL" 
         self.connection_status_string = tk.StringVar(name='status_string',value="Not Connected.")
         connection_status_string = self.connection_status_string
         self.serial_rx_entry = tk.Entry(self,width=60,name='serial_monitor')
@@ -295,7 +295,8 @@ class SSS2(ttk.Frame):
         
         self.tx_queue = queue.Queue()
         self.rx_queue = queue.Queue()
-       
+
+        
 
         # Button to do something on the right
         self.ignition_key_button =  ttk.Checkbutton(self,name='ignition_key_switch',
@@ -540,7 +541,9 @@ class SSS2(ttk.Frame):
 
             if (len(new_settings_dict["Analog Calibration"]) < len(self.settings_dict["Analog Calibration"])):
                 new_settings_dict["Analog Calibration"] = self.settings_dict["Analog Calibration"]
-            
+
+            self.settings_dict["CAN"]={}
+
             self.settings_dict = update_dict(self.settings_dict,new_settings_dict)
             
         except Exception as e:
@@ -562,9 +565,9 @@ class SSS2(ttk.Frame):
         #self.load_settings_file()
         ok_to_open = False
 ############### Use this for Universal       
-        #if True:
+        if True:
 ############### Use this for Production       
-        if newhash==digest_from_file:
+        #if newhash==digest_from_file:
             print("Hash digests match.")
             sss2_id = self.settings_dict["SSS2 Product Code"].strip()
             if  sss2_id == "UNIVERSAL":
@@ -614,7 +617,7 @@ class SSS2(ttk.Frame):
         else:
             self.settings_dict = get_default_settings()    
 
-        
+        self.send_clear_can()
         self.init_tabs()
         
         
@@ -655,9 +658,9 @@ class SSS2(ttk.Frame):
                     print("Authenticated. OK to Save")
         else:
 ################# Use this for UNIVERSAL     
-            #ok_to_save = True ###Change to False for production
+            ok_to_save = True ###Change to False for production
 ################# Use this for Production
-            ok_to_save = False 
+            #ok_to_save = False 
         if ok_to_save:
             self.settings_dict["SSS2 Interface Release Date"] = self.release_date
             self.settings_dict["SSS2 Interface Version"] = self.release_version
@@ -1178,9 +1181,10 @@ class SSS2(ttk.Frame):
         self.tx_queue.put_nowait(commandString)         
 
     def send_clear_can(self):
+        
         for tree_item in self.can_tree.get_children():
             self.can_tree.delete(tree_item)   
-        #self.tx_queue.put_nowait("CLEARCAN,")
+        self.tx_queue.put_nowait("CLEARCAN,")
 
     def send_reload_can(self):
         msg_index=0
@@ -1430,7 +1434,6 @@ class SSS2(ttk.Frame):
             self.can_tree.heading(c, anchor = p, text = c)
         self.item_identifier={}
 
-        self.send_clear_can()
         for i in self.can_tree.get_children():
             self.can_tree.delete(i)
         self.new_message = True
@@ -2257,7 +2260,7 @@ class SSS2(ttk.Frame):
                         return True
         
         
-            self.thread.signal = False
+            #self.thread.signal = False
         except:
             pass
         self.connection_status_string.set('USB to Serial Connection Unavailable. Please install drivers and plug in the SSS2.')

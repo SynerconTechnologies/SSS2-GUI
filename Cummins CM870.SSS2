@@ -33,101 +33,42 @@
         ]
     ],
     "CAN": {
-        "  1.000": "DDEC MCM 01,1,1,0,1,10,0,0,1, 8FF0001,8,00,00,00,00,00,00,00,00,Yes",
-        "  2.000": "DDEC TCM 01,2,1,0,1,10,0,0,1, CFF0203,8,00,00,00,00,00,00,00,00,Yes",
-        "  3.000": "DDEC TCM 02,3,1,0,1,10,0,0,1, 8FF0303,8,FF,FF,FF,FF,FF,FF,FF,FF,Yes",
-        "  4.000": "DDEC TCM 03,4,1,0,1,100,0,0,1,18F00503,8,00,00,00,00,00,00,00,00,Yes",
+        "  1.000": "DDEC MCM 01,1,1,0,1,10,   0,0,1, 8FF0001,8, 0, 0, 0, 0, 0, 0, 0, 0,No",
+        "  2.000": "DDEC TCM 01,2,1,0,1,10,   0,0,1, CF00203,8, 0, 0, 0, 0, 0, 0, 0, 0,No",
+        "  3.000": "DDEC TCM 02,3,1,0,1,10,   0,0,1, 8FF0303,8, 0, 0, 0, 0, 0, 0, 0, 0,No",
+        "  4.000": "DDEC TCM 03,4,1,0,1,100,   0,0,1,18F00503,8, 0, 0, 0, 0, 0, 0, 0, 0,No",
         "  5.000": "HRW from Brake Controller,5,1,0,0,20,0,0,1, CFE6E0B,8,00,00,00,00,00,00,00,00,Yes",
-        "  6.000": "EBC1 from Cab Controller,6,1,0,0,100,0,0,1,18F00131,8,00,00,00,00,00,00,00,00,No",
-        "  7.000": "EBC1 from Brake Controller,7,1,0,0,100,0,0,1,18F0010B,8,00,00,00,00,00,00,00,00,Yes",
-        "  8.000": "CCVS1 from Instrument Cluster,8,1,0,0,100,0,0,1,18FEF117,8,00,00,00,00,00,00,00,00,Yes",
+        "  6.000": "EBC1 from Cab Controller, 6,1,0,0, 100,0,0,1,18F00131,8, 0, 0, 0, 0, 0, 0, 0, 0,Yes",
+        "  7.000": "EBC1 from Brake Controller, 7,1,0,0, 100,0,0,1,18F0010B,8, 0, 0, 0, 0, 0, 0, 0, 0,Yes",
+        "  8.000": "CCVS1 from Instrument Cluster,8,1,0,0,100,0,0,1,18FEF117,8,00,00,00,00,00,00,00,00,No",
         "  9.000": "CCVS1 from Cab Display 1,9,1,0,0,100,0,0,1,18FEF128,8,00,00,00,00,00,00,00,00,No",
         " 10.000": "CCVS1 from Body Controller,10,1,0,0,100,0,0,1,18FEF121,8,00,00,00,00,00,00,00,00,No",
-        " 11.000": "CCVS1 from Cab Controller,11,1,0,0,100,0,0,1,18FEF131,8,00,00,00,00,00,00,00,00,Yes",
-        " 12.000": "CM1 from Instrument Cluster,12,1,0,0,100,0,0,1,18E00017,8,00,00,00,00,00,00,00,00,Yes",
-        " 13.000": "CM1 from Climate Control 1,13,1,0,0,100,   0,0,1,18E00019,8, 0, 0, 0, 0, 0, 0, 0, 0,Yes",
-        " 14.000": "CM1 from Body Controller,14,1,0,0,100,   0,0,1,18E00021,8, 0, 0, 0, 0, 0, 0, 0, 0,Yes",
-        " 15.000": "CM1 from Cab Display,15,1,0,0,100,   0,0,1,18E00028,8, 0, 0, 0, 0, 0, 0, 0, 0,Yes",
-        " 16.000": "CM1 from Cab Controller,16,1,0,0,100,0,0,1,18E00031,8,00,00,00,00,00,00,00,00,Yes",
-        " 17.000": "PTO from Instrument Cluster,17,1,0,0, 100,   0,0,1,18FEF017,8, 0, 0, 0, 0, 0, 0, 0, 0,Yes",
-        " 18.000": "PTO from Body Controller,18,1,0,0,100,   0,0,1,18FEF021,8, 0, 0, 0, 0, 0, 0, 0, 0,Yes",
-        " 19.000": "PTO from Cab Display,19,1,0,0, 100,   0,0,1,18FEF028,8, 0, 0, 0, 0, 0, 0, 0, 0,Yes",
-        " 20.000": "PTO from Cab Controller,20,1,0,0, 100,   0,0,1,18FEF031,8, 0, 0, 0, 0, 0, 0, 0, 0,Yes",
+        " 11.000": "CCVS1 from Cab Controller,11,1,0,0,100,0,0,1,18FEF131,8,00,00,00,00,00,00,00,00,No",
+        " 12.000": "CM1 from Instrument Cluster,12,1,0,0,100,   0,0,1,18E00017,8, 0, 0, 0, 0, 0, 0, 0, 0,Yes",
+        " 13.000": "CM1 from Climate Control 1,13,1,0,0,100,0,0,1,18E00019,8,00,00,00,00,00,00,00,00,No",
+        " 14.000": "CM1 from Body Controller,14,1,0,0,100,0,0,1,18E00021,8,00,00,00,00,00,00,00,00,No",
+        " 15.000": "CM1 from Cab Display,15,1,0,0,100,0,0,1,18E00028,8,00,00,00,00,00,00,00,00,No",
+        " 16.000": "CM1 from Cab Controller,16,1,0,0,100,0,0,1,18E00031,8,00,00,00,00,00,00,00,00,No",
+        " 17.000": "PTO from Instrument Cluster,17,1,0,0,100,0,0,1,18FEF017,8,00,00,00,00,00,00,00,00,No",
+        " 18.000": "PTO from Body Controller,18,1,0,0,100,0,0,1,18FEF021,8,00,00,00,00,00,00,00,00,No",
+        " 19.000": "PTO from Cab Display,19,1,0,0,100,0,0,1,18FEF028,8,00,00,00,00,00,00,00,00,No",
+        " 20.000": "PTO from Cab Controller,20,1,0,0,100,0,0,1,18FEF031,8,00,00,00,00,00,00,00,00,No",
         " 21.000": "AMB from Body Controller,21,1,0,0,1000,   0,0,1,18FEF521,8, 0, 0, 0, 0, 0, 0, 0, 0,Yes",
-        " 22.000": "DDEC Fault Codes from ACM,22,1,0,1,1000,0,0,1,10FECA3D,8,00,00,00,00,00,00,00,00,Yes",
-        " 23.000": "DDEC Fault Codes from MCM,23,1,0,1,1000,0,0,1,10FECA01,8,00,00,00,00,00,00,00,00,Yes",
-        " 24.000": "DDEC Fault Codes from TCM,24,1,0,1,1000,0,0,1,10FECA03,8,00,00,00,00,00,00,00,00,Yes",
-        " 26.000": "TCM Output Shaft Speed,26,3,0,1,10,0,0,1, 8FF0103,8,FF,FF,00,00,FF,DF,0F,33,Yes",
-        " 26.001": "TCM Output Shaft Speed,26,3,1,1,10,0,0,1, 8FF0103,8,FF,FF,00,00,FF,DF,1F,01,Yes",
-        " 26.002": "TCM Output Shaft Speed,26,16,2,1,10,0,0,1, 8FF0103,8,FF,FF,00,00,FF,DF,2F,57,Yes",
-        " 26.003": "TCM Output Shaft Speed,26,16,3,1,10,0,0,1, 8FF0103,8,FF,FF,00,00,FF,DF,3F,65,Yes",
-        " 26.004": "TCM Output Shaft Speed,26,16,4,1,10,0,0,1, 8FF0103,8,FF,FF,00,00,FF,DF,4F,FB,Yes",
-        " 26.005": "TCM Output Shaft Speed,26,16,5,1,10,0,0,1, 8FF0103,8,FF,FF,00,00,FF,DF,5F,C9,Yes",
-        " 26.006": "TCM Output Shaft Speed,26,16,6,1,10,0,0,1, 8FF0103,8,FF,FF,00,00,FF,DF,6F,9F,Yes",
-        " 26.007": "TCM Output Shaft Speed,26,16,7,1,10,0,0,1, 8FF0103,8,FF,FF,00,00,FF,DF,7F,AD,Yes",
-        " 26.008": "TCM Output Shaft Speed,26,16,8,1,10,0,0,1, 8FF0103,8,FF,FF,00,00,FF,DF,8F,38,Yes",
-        " 26.009": "TCM Output Shaft Speed,26,16,9,1,10,0,0,1, 8FF0103,8,FF,FF,00,00,FF,DF,9F,0A,Yes",
-        " 26.010": "TCM Output Shaft Speed,26,16,10,1,10,0,0,1, 8FF0103,8,FF,FF,00,00,FF,DF,AF,5C,Yes",
-        " 26.011": "TCM Output Shaft Speed,26,16,11,1,10,0,0,1, 8FF0103,8,FF,FF,00,00,FF,DF,BF,6E,Yes",
-        " 26.012": "TCM Output Shaft Speed,26,16,12,1,10,0,0,1, 8FF0103,8,FF,FF,00,00,FF,DF,CF,F0,Yes",
-        " 26.013": "TCM Output Shaft Speed,26,16,13,1,10,0,0,1, 8FF0103,8,FF,FF,00,00,FF,DF,DF,C2,Yes",
-        " 26.014": "TCM Output Shaft Speed,26,16,14,1,10,0,0,1, 8FF0103,8,FF,FF,00,00,FF,DF,EF,94,Yes",
-        " 26.015": "TCM Output Shaft Speed,26,16,15,1,10,0,0,1, 8FF0103,8,FF,FF,00,00,FF,DF,FF,A6,Yes",
-        " 27.000": "TCM System IDs,27,16,0,1,10,0,0,1, 8FF0003,8,FF,FF,FF,FF,FF,FF,0F,70,Yes",
-        " 27.001": "TCM System IDs,27,16,1,1,10,0,0,1, 8FF0003,8,FF,FF,FF,FF,FF,FF,1F,00,No",
-        " 27.002": "TCM System IDs,27,16,2,1,10,0,0,1, 8FF0003,8,FF,FF,FF,FF,FF,FF,2F,00,No",
-        " 27.003": "TCM System IDs,27,16,3,1,10,0,0,1, 8FF0003,8,FF,FF,FF,FF,FF,FF,3F,00,No",
-        " 27.004": "TCM System IDs,27,16,4,1,10,0,0,1, 8FF0003,8,FF,FF,FF,FF,FF,FF,4F,00,No",
-        " 27.005": "TCM System IDs,27,16,5,1,10,0,0,1, 8FF0003,8,FF,FF,FF,FF,FF,FF,5F,00,No",
-        " 27.006": "TCM System IDs,27,16,6,1,10,0,0,1, 8FF0003,8,FF,FF,FF,FF,FF,FF,6F,00,No",
-        " 27.007": "TCM System IDs,27,16,7,1,10,0,0,1, 8FF0003,8,FF,FF,FF,FF,FF,FF,7F,00,No",
-        " 27.008": "TCM System IDs,27,16,8,1,10,0,0,1, 8FF0003,8,FF,FF,FF,FF,FF,FF,8F,00,No",
-        " 27.009": "TCM System IDs,27,16,9,1,10,0,0,1, 8FF0003,8,FF,FF,FF,FF,FF,FF,9F,00,No",
-        " 27.010": "TCM System IDs,27,16,10,1,10,0,0,1, 8FF0003,8,FF,FF,FF,FF,FF,FF,AF,00,No",
-        " 27.011": "TCM System IDs,27,16,11,1,10,0,0,1, 8FF0003,8,FF,FF,FF,FF,FF,FF,BF,00,No",
-        " 27.012": "TCM System IDs,27,16,12,1,10,0,0,1, 8FF0003,8,FF,FF,FF,FF,FF,FF,CF,00,No",
-        " 27.013": "TCM System IDs,27,16,13,1,10,0,0,1, 8FF0003,8,FF,FF,FF,FF,FF,FF,DF,00,No",
-        " 27.014": "TCM System IDs,27,16,14,1,10,0,0,1, 8FF0003,8,FF,FF,FF,FF,FF,FF,EF,00,No",
-        " 27.015": "TCM System IDs,27,16,15,1,10,0,0,1, 8FF0003,8,FF,FF,FF,FF,FF,FF,FF,00,Yes",
-        " 27.016": "TCM System IDs,27,16,15,1,10,0,0,1, 8FF0003,8,FF,FF,FF,FF,FF,FF,FF,00,Yes",
-        " 28.000": "TCM Oil Temperature,28,1,0,1,1000,0,0,1,18FEF803,8,FF,FF,FF,FF,00,00,00,00,Yes",
-        " 30.000": "TCM Sys ID,30,16,0,1,20,0,0,1, CFF0703,8,D0,20,C3,00,FF,59,0F,02,Yes",
-        " 30.001": "TCM Sys ID,30,16,1,1,20,0,0,1, CFF0703,8,D0,20,C3,00,FF,5A,1F,30,Yes",
-        " 30.002": "TCM Sys ID,30,16,2,1,20,0,0,1, CFF0703,8,D0,20,C3,00,FF,5A,2F,66,Yes",
-        " 30.003": "TCM Sys ID,30,16,3,1,20,0,0,1, CFF0703,8,D0,20,C3,00,FF,5A,3F,54,Yes",
-        " 30.004": "TCM Sys ID,30,16,4,1,20,0,0,1, CFF0703,8,D0,20,C3,00,FF,5A,4F,CA,Yes",
-        " 30.005": "TCM Sys ID,30,16,5,1,20,0,0,1, CFF0703,8,D0,20,C3,00,FF,5A,5F,F8,Yes",
-        " 30.006": "TCM Sys ID,30,16,6,1,20,0,0,1, CFF0703,8,D0,20,C3,00,FF,5A,6F,AE,Yes",
-        " 30.007": "TCM Sys ID,30,16,7,1,20,0,0,1, CFF0703,8,D0,20,C3,00,FF,5A,7F,9C,Yes",
-        " 30.008": "TCM Sys ID,30,16,8,1,20,0,0,1, CFF0703,8,D0,20,C3,00,FF,5A,8F,09,Yes",
-        " 30.009": "TCM Sys ID,30,16,9,1,20,0,0,1, CFF0703,8,D0,20,C3,00,FF,5A,9F,3B,Yes",
-        " 30.010": "TCM Sys ID,30,16,10,1,20,0,0,1, CFF0703,8,D0,20,C3,00,FF,5A,AF,6D,Yes",
-        " 30.011": "TCM Sys ID,30,16,11,1,20,0,0,1, CFF0703,8,D0,20,C3,00,FF,5A,BF,5F,Yes",
-        " 30.012": "TCM Sys ID,30,16,12,1,20,0,0,1, CFF0703,8,D0,20,C3,00,FF,5A,CF,C1,Yes",
-        " 30.013": "TCM Sys ID,30,16,13,1,20,0,0,1, CFF0703,8,D0,20,C3,00,FF,5A,DF,F3,Yes",
-        " 30.014": "TCM Sys ID,30,16,14,1,20,0,0,1, CFF0703,8,D0,20,C3,00,FF,5A,EF,A5,Yes",
-        " 30.015": "TCM Sys ID,30,16,15,1,20,0,0,1, CFF0703,8,D0,20,C3,00,FF,5A,FF,97,Yes",
-        " 31.000": "TCM FF0903,31,16,0,1,50,0,0,1,10FF0903,8,00,00,00,58,00,00,0F,02,Yes",
-        " 31.001": "TCM FF0903,31,2,1,1,50,0,0,1,10FF0903,8,00,00,00,00,00,00,1F,30,Yes",
-        " 31.002": "TCM FF0903,31,16,2,1,50,0,0,1,10FF0903,8,00,00,00,00,00,00,2F,66,Yes",
-        " 31.003": "TCM FF0903,31,16,3,1,50,0,0,1,10FF0903,8,00,00,00,00,00,00,3F,54,Yes",
-        " 31.004": "TCM FF0903,31,16,4,1,50,0,0,1,10FF0903,8,00,00,00,00,00,00,4F,CA,Yes",
-        " 31.005": "TCM FF0903,31,16,5,1,50,0,0,1,10FF0903,8,00,00,00,00,00,00,5F,F8,Yes",
-        " 31.006": "TCM FF0903,31,16,6,1,50,0,0,1,10FF0903,8,00,00,00,00,00,00,6F,AE,Yes",
-        " 31.007": "TCM FF0903,31,16,7,1,50,0,0,1,10FF0903,8,00,00,00,00,00,00,7F,9C,Yes",
-        " 31.008": "TCM FF0903,31,16,8,1,50,0,0,1,10FF0903,8,00,00,00,00,00,00,8F,09,Yes",
-        " 31.009": "TCM FF0903,31,16,9,1,50,0,0,1,10FF0903,8,00,00,00,00,00,00,9F,3B,Yes",
-        " 31.010": "TCM FF0903,31,16,10,1,50,0,0,1,10FF0903,8,00,00,00,00,00,00,AF,6D,Yes",
-        " 31.011": "TCM FF0903,31,16,11,1,50,0,0,1,10FF0903,8,00,00,00,00,00,00,BF,5F,Yes",
-        " 31.012": "TCM FF0903,31,16,12,1,50,0,0,1,10FF0903,8,00,00,00,00,00,00,CF,C1,Yes",
-        " 31.013": "TCM FF0903,31,16,13,1,50,0,0,1,10FF0903,8,00,00,00,00,00,00,DF,F3,Yes",
-        " 31.014": "TCM FF0903,31,16,14,1,50,0,0,1,10FF0903,8,00,00,00,00,00,00,EF,A5,Yes",
-        " 31.015": "TCM FF0903,31,16,15,1,50,0,0,1,10FF0903,8,00,00,00,00,00,00,FF,97,Yes"
+        " 22.000": "CCVS from Cruise Control,22,1,0,0,100,0,0,1,18FEF111,8,00,00,00,00,00,00,00,00,Yes",
+        " 23.000": "CCVS from Transmission,23,1,0,0,100,0,0,1,18FEF103,8,00,00,00,00,00,00,00,00,Yes",
+        " 24.000": "CM1 from Cruise Control,24,1,0,0,100,0,0,1,18E00011,8,00,00,00,00,00,00,00,00,Yes",
+        " 25.000": "PTO from Cruise Control,25,1,0,0,100,0,0,1,18FEF011,8,00,00,00,00,00,00,00,00,Yes",
+        " 26.000": "DM13 - Stop Broadcast,26,3,0,0,5000,20,0,1,18DF00F9,8,00,00,3F,FF,FF,FF,FF,FF,No",
+        " 26.001": "DM13 - Stop Broadcast,26,2,1,0,5000,20,0,1,18DFFFF9,8,00,00,00,00,00,00,00,00,No",
+        " 26.002": "DM13 - Stop Broadcast,26,3,2,0,5000,20,0,1,18DFFFF9,8,00,00,00,00,00,00,00,00,No",
+        " 27.000": "SFS from Cruise,27,1,0,0,1000,0,0,1,18FCE211,8,00,00,00,00,00,00,00,00,Yes",
+        " 28.000": "SHUTDN from Cruise Control,28,1,0,0,1000,0,0,1,18FEE411,8,00,00,00,00,00,00,00,00,Yes",
+        " 29.000": "ERC1 from Cruise Control,29,1,0,0,100,0,0,1,18F00011,8,00,00,00,00,00,00,00,00,Yes"
     },
     "CAN Config": {
         "Buffer Size": 1000000,
         "CAN0 Baudrate": "250000",
-        "CAN1 Baudrate": "666666",
+        "CAN1 Baudrate": "500000",
         "MCPCAN Baudrate": "250000"
     },
     "Case Number": "CASE IDENTIFIER",
@@ -138,9 +79,9 @@
             "Alt. Pin": "J24:15",
             "Alt. Pin Connect": false,
             "Amplitude": 0,
-            "Application": "Coolant",
-            "Average Voltage": 0.0,
-            "ECU Pins": "",
+            "Application": "Barometric Pressure",
+            "Average Voltage": 0.66,
+            "ECU Pins": "K7-3",
             "Frequency": 0,
             "Highest Voltage": 5,
             "Lowest Voltage": 0,
@@ -151,15 +92,15 @@
             "Shape": "Constant",
             "Show Amplitude": false,
             "Show Frequency": false,
-            "Wire Color": ""
+            "Wire Color": "BRN/WHT"
         },
         "Vout2": {
             "Alt. Pin": "J24:10",
             "Alt. Pin Connect": false,
             "Amplitude": 0,
-            "Application": "",
+            "Application": "Turbo Charger Control Valve",
             "Average Voltage": 2.5,
-            "ECU Pins": "",
+            "ECU Pins": "K7-21",
             "Frequency": 0,
             "Highest Voltage": 5,
             "Lowest Voltage": 0,
@@ -170,15 +111,15 @@
             "Shape": "Constant",
             "Show Amplitude": false,
             "Show Frequency": false,
-            "Wire Color": ""
+            "Wire Color": "WHT/BLK"
         },
         "Vout3": {
             "Alt. Pin": null,
             "Alt. Pin Connect": false,
             "Amplitude": 0,
-            "Application": "",
-            "Average Voltage": 2.5,
-            "ECU Pins": "",
+            "Application": "EGR Motor Singnal (+)",
+            "Average Voltage": 0.13,
+            "ECU Pins": "K7-9",
             "Frequency": 0,
             "Highest Voltage": 5,
             "Lowest Voltage": 0,
@@ -189,15 +130,15 @@
             "Shape": "Constant",
             "Show Amplitude": false,
             "Show Frequency": false,
-            "Wire Color": ""
+            "Wire Color": "PNK/BLK"
         },
         "Vout4": {
             "Alt. Pin": null,
             "Alt. Pin Connect": false,
             "Amplitude": 0,
-            "Application": "",
-            "Average Voltage": 2.5,
-            "ECU Pins": "",
+            "Application": "EGR Valve Motor Signal (-)",
+            "Average Voltage": 0.13,
+            "ECU Pins": "K7-10",
             "Frequency": 0,
             "Highest Voltage": 5,
             "Lowest Voltage": 0,
@@ -208,15 +149,15 @@
             "Shape": "Constant",
             "Show Amplitude": false,
             "Show Frequency": false,
-            "Wire Color": ""
+            "Wire Color": "Pink"
         },
         "Vout5": {
             "Alt. Pin": null,
             "Alt. Pin Connect": false,
             "Amplitude": 0,
-            "Application": "",
+            "Application": "Engine Oil Pressure",
             "Average Voltage": 2.5,
-            "ECU Pins": "",
+            "ECU Pins": "K7-23",
             "Frequency": 0,
             "Highest Voltage": 5,
             "Lowest Voltage": 0,
@@ -227,15 +168,15 @@
             "Shape": "Constant",
             "Show Amplitude": false,
             "Show Frequency": false,
-            "Wire Color": ""
+            "Wire Color": "Blue"
         },
         "Vout6": {
             "Alt. Pin": null,
             "Alt. Pin Connect": false,
             "Amplitude": 0,
-            "Application": "",
-            "Average Voltage": 2.5,
-            "ECU Pins": "",
+            "Application": "Water In Fuel",
+            "Average Voltage": 0.0,
+            "ECU Pins": "K7-14",
             "Frequency": 0,
             "Highest Voltage": 5,
             "Lowest Voltage": 0,
@@ -246,15 +187,15 @@
             "Shape": "Constant",
             "Show Amplitude": false,
             "Show Frequency": false,
-            "Wire Color": ""
+            "Wire Color": "Tan"
         },
         "Vout7": {
             "Alt. Pin": null,
             "Alt. Pin Connect": false,
             "Amplitude": 0,
-            "Application": "",
-            "Average Voltage": 2.5,
-            "ECU Pins": "",
+            "Application": "Fuel Shutoff Valve (Small resistance to ground)",
+            "Average Voltage": 0.0,
+            "ECU Pins": "K7-31",
             "Frequency": 0,
             "Highest Voltage": 5,
             "Lowest Voltage": 0,
@@ -265,15 +206,15 @@
             "Shape": "Constant",
             "Show Amplitude": false,
             "Show Frequency": false,
-            "Wire Color": ""
+            "Wire Color": "ORN/BLK"
         },
         "Vout8": {
             "Alt. Pin": null,
             "Alt. Pin Connect": false,
             "Amplitude": 0,
-            "Application": "",
-            "Average Voltage": 2.5,
-            "ECU Pins": "",
+            "Application": "Intake Manifold Pressure",
+            "Average Voltage": 1.73,
+            "ECU Pins": "K7-44",
             "Frequency": 0,
             "Highest Voltage": 5,
             "Lowest Voltage": 0,
@@ -284,29 +225,29 @@
             "Shape": "Constant",
             "Show Amplitude": false,
             "Show Frequency": false,
-            "Wire Color": ""
+            "Wire Color": "PURPLE"
         }
     },
     "Date of Loss": "DATE",
-    "ECU Component ID": "DTDSC*471N13*S0263108",
-    "ECU Make": "Detroit Diesel",
-    "ECU Model": "CPC4",
-    "ECU Software Version": "R34_00_000A ",
-    "ECU Year": "2016",
-    "Engine Configuration": "DDEC 13 A 003 446 10 02 / 005",
+    "ECU Component ID": "CMMNS*6X1u04D150*79076145",
+    "ECU Make": "CUMMINS",
+    "ECU Model": "MODEL",
+    "ECU Software Version": "06050402",
+    "ECU Year": "2004",
+    "Engine Configuration": "ECM Code: AB10402.22",
     "Engine Model": "MODEL",
-    "Engine Serial Number": "471927S0263108",
-    "File Name": "DDEC 13 CPC4 from 2016 DD15 with a TCM.SSS2",
+    "Engine Serial Number": "79076145",
+    "File Name": "Cummins CM870.SSS2",
     "HVAdjOut": {
         "Alt. Pin": null,
         "Alt. Pin Connect": false,
         "Amplitude": 0,
-        "Application": "Multifunction",
-        "Average Voltage": 4.0,
-        "ECU Pins": "CPC4-16",
+        "Application": "Accelerator Pedal Position Supply (Not used)",
+        "Average Voltage": 5.0,
+        "ECU Pins": "K4-22",
         "Frequency": 0,
         "Highest Voltage": 11.5,
-        "Lowest Voltage": 4,
+        "Lowest Voltage": 1.9,
         "Name": "High Current Regulator",
         "Pin": "J24:19",
         "Port": " ",
@@ -314,23 +255,23 @@
         "Shape": "Constant",
         "Show Amplitude": false,
         "Show Frequency": false,
-        "Wire Color": "Tan"
+        "Wire Color": "TAN"
     },
     "Location": "ADDRESS, CITY, STATE, ZIP",
-    "Original Creation Date": "Friday, 09 June 2017 19:33:47 Central Daylight Time",
-    "Original File SHA": "4d0e6ef874847916a4491cfc2e631f95e33cfb5838860fab4403209e6fae5dc1",
+    "Original Creation Date": "Friday, 09 June 2017 19:34:27 Central Daylight Time",
+    "Original File SHA": "edae8b05e07dbf14c1fb0fa1b8d3d83af1c2e509166e9072091bf570ce0f48a3",
     "PWMs": {
         "PWM1": {
             "Alt. Pin": "J18:15",
             "Alt. Pin Connect": true,
             "Alt. Port": "13",
-            "Application": "Throttle Position 1",
-            "Duty Cycle": 69,
-            "ECU Pins": "CPC1-7",
-            "Frequency": 3850,
+            "Application": "(See Digital Potentiometers)",
+            "Duty Cycle": 1,
+            "ECU Pins": "",
+            "Frequency": 400,
             "Highest Frequency": 5000,
             "Highest Voltage": 5,
-            "Lowest Frequency": 0,
+            "Lowest Frequency": 245,
             "Lowest Voltage": 0,
             "Name": "PWM1",
             "Pin": "J24:13",
@@ -347,13 +288,13 @@
             "Alt. Pin": "J18:16",
             "Alt. Pin Connect": true,
             "Alt. Port": "14",
-            "Application": "Throttle Position 2",
-            "Duty Cycle": 20,
-            "ECU Pins": "CPC4-14",
-            "Frequency": 3850,
+            "Application": "See Digital Potentiometers",
+            "Duty Cycle": 2,
+            "ECU Pins": "",
+            "Frequency": 400,
             "Highest Frequency": 5000,
             "Highest Voltage": 5,
-            "Lowest Frequency": 0,
+            "Lowest Frequency": 245,
             "Lowest Voltage": 0,
             "Name": "PWM2",
             "Pin": "J24:14",
@@ -370,10 +311,10 @@
             "Alt. Pin": "",
             "Alt. Pin Connect": null,
             "Alt. Port": null,
-            "Application": "",
+            "Application": "Not Connected",
             "Duty Cycle": 3,
             "ECU Pins": "",
-            "Frequency": 200,
+            "Frequency": 400,
             "Highest Frequency": 5000,
             "Highest Voltage": 5,
             "Lowest Frequency": 0,
@@ -387,16 +328,16 @@
             "SSS2 pin setting": 69,
             "SSS2 setting": 35,
             "Show Frequency": true,
-            "Wire Color": ""
+            "Wire Color": "Orange"
         },
         "PWM4": {
             "Alt. Pin": "",
             "Alt. Pin Connect": null,
             "Alt. Port": null,
-            "Application": "",
-            "Duty Cycle": 4,
-            "ECU Pins": "",
-            "Frequency": 200,
+            "Application": "Exhaust Gas Pressure (PWM Mode)",
+            "Duty Cycle": 51,
+            "ECU Pins": "K7-20",
+            "Frequency": 5000,
             "Highest Frequency": 5000,
             "Highest Voltage": 5,
             "Lowest Frequency": 0,
@@ -410,16 +351,16 @@
             "SSS2 pin setting": 70,
             "SSS2 setting": 36,
             "Show Frequency": true,
-            "Wire Color": ""
+            "Wire Color": "PPL/WHT"
         },
         "PWM5": {
             "Alt. Pin": "",
             "Alt. Pin Connect": null,
             "Alt. Port": null,
-            "Application": "Application Description",
-            "Duty Cycle": 50,
-            "ECU Pins": "ECU Pins",
-            "Frequency": 200,
+            "Application": "Accelerator Pedal Switch Return",
+            "Duty Cycle": 0,
+            "ECU Pins": "K4-34",
+            "Frequency": 1000,
             "Highest Frequency": 5000,
             "Highest Voltage": 5,
             "Lowest Frequency": 0,
@@ -433,16 +374,16 @@
             "SSS2 pin setting": 70,
             "SSS2 setting": 87,
             "Show Frequency": true,
-            "Wire Color": "PPL/WHT"
+            "Wire Color": "BRN/WHT"
         },
         "PWM6": {
             "Alt. Pin": "",
             "Alt. Pin Connect": null,
             "Alt. Port": null,
-            "Application": "Application Description",
-            "Duty Cycle": 50,
-            "ECU Pins": "ECU Pins",
-            "Frequency": 200,
+            "Application": "On Idle Validation",
+            "Duty Cycle": 0,
+            "ECU Pins": "K4-11",
+            "Frequency": 1000,
             "Highest Frequency": 5000,
             "Highest Voltage": 5,
             "Lowest Frequency": 0,
@@ -467,10 +408,10 @@
                     "Name": "Terminal A Voltage for U1 and U2",
                     "Pots": {
                         "U1": {
-                            "Application": "Idle Validation Switch 2",
+                            "Application": "On idle validation signal\n",
                             "ECM Fault High Setting": 255,
                             "ECM Fault Low Setting": 0,
-                            "ECU Pins": "CPC1-3",
+                            "ECU Pins": "K4-11",
                             "Name": "Potentiometer 1",
                             "Pin": "J24:1",
                             "Port": "1",
@@ -478,14 +419,14 @@
                             "SSS2 TCON Setting": 51,
                             "SSS2 Wiper Setting": 1,
                             "Term. A Connect": true,
-                            "Term. B Connect": true,
+                            "Term. B Connect": false,
                             "Wiper Connect": true,
-                            "Wiper Position": 0,
+                            "Wiper Position": 255,
                             "Wire Color": "PPL/WHT"
                         },
                         "U2": {
-                            "Application": "Supply",
-                            "ECU Pins": "CPC3-3",
+                            "Application": "Accel Pedal Switch Return",
+                            "ECU Pins": "K4-34",
                             "Name": "Potentiometer 2",
                             "Pin": "J24:2",
                             "Port": "2",
@@ -495,7 +436,7 @@
                             "Term. A Connect": false,
                             "Term. B Connect": true,
                             "Wiper Connect": true,
-                            "Wiper Position": 255,
+                            "Wiper Position": 0,
                             "Wire Color": "BRN/WHT"
                         }
                     },
@@ -506,8 +447,8 @@
                     "Name": "Terminal A Voltage for U3 and U4",
                     "Pots": {
                         "U3": {
-                            "Application": "Vehicle Speed (-)",
-                            "ECU Pins": "CPC3-14",
+                            "Application": "Vehicle Speed Sensor (-)",
+                            "ECU Pins": "K4-27",
                             "Name": "Potentiometer 3",
                             "Pin": "J24:3",
                             "Port": "3",
@@ -515,14 +456,14 @@
                             "SSS2 TCON Setting": 53,
                             "SSS2 Wiper Setting": 3,
                             "Term. A Connect": true,
-                            "Term. B Connect": false,
+                            "Term. B Connect": true,
                             "Wiper Connect": true,
-                            "Wiper Position": 232,
+                            "Wiper Position": 200,
                             "Wire Color": "YEL/BLK"
                         },
                         "U4": {
-                            "Application": "Vehicle Speed (+)",
-                            "ECU Pins": "CPC3-13",
+                            "Application": "Vehicle Speed Sensor (+)",
+                            "ECU Pins": "K4-36",
                             "Name": "Potentiometer 4",
                             "Pin": "J24:4",
                             "Port": "4",
@@ -532,7 +473,7 @@
                             "Term. A Connect": true,
                             "Term. B Connect": true,
                             "Wiper Connect": true,
-                            "Wiper Position": 241,
+                            "Wiper Position": 255,
                             "Wire Color": "PNK/BLK"
                         }
                     },
@@ -543,34 +484,34 @@
                     "Name": "Terminal A Voltage for U5 and U6",
                     "Pots": {
                         "U5": {
-                            "Application": "Multifunction",
-                            "ECU Pins": "CPC4-15 ",
+                            "Application": "Fan Control",
+                            "ECU Pins": "K4-38",
                             "Name": "Potentiometer 5",
                             "Pin": "J24:5",
                             "Port": "5",
                             "Resistance": "10k",
                             "SSS2 TCON Setting": 55,
                             "SSS2 Wiper Setting": 5,
-                            "Term. A Connect": true,
+                            "Term. A Connect": false,
                             "Term. B Connect": true,
                             "Wiper Connect": true,
-                            "Wiper Position": 75,
-                            "Wire Color": "BLUE"
+                            "Wiper Position": 170,
+                            "Wire Color": "Blue"
                         },
                         "U6": {
-                            "Application": "Throttle Position Sensor Supply",
-                            "ECU Pins": "CPC1-8",
+                            "Application": "Off Idle Validation Signal",
+                            "ECU Pins": "K4-1",
                             "Name": "Potentiometer 6",
                             "Pin": "J24:6",
                             "Port": "6",
                             "Resistance": "100k",
                             "SSS2 TCON Setting": 56,
                             "SSS2 Wiper Setting": 6,
-                            "Term. A Connect": true,
+                            "Term. A Connect": false,
                             "Term. B Connect": true,
                             "Wiper Connect": true,
-                            "Wiper Position": 255,
-                            "Wire Color": "GRN/BLK"
+                            "Wiper Position": 0,
+                            "Wire Color": "ORN/BLK"
                         }
                     },
                     "SSS Setting": 27,
@@ -580,8 +521,8 @@
                     "Name": "Terminal A Voltage for U7 and U8",
                     "Pots": {
                         "U7": {
-                            "Application": "Ambient Air Temp. Sensor",
-                            "ECU Pins": "CPC3-15",
+                            "Application": "Coolant Temperature Sensor",
+                            "ECU Pins": "K7-15",
                             "Name": "Potentiometer 7",
                             "Pin": "J24:7",
                             "Port": "7",
@@ -591,12 +532,12 @@
                             "Term. A Connect": false,
                             "Term. B Connect": true,
                             "Wiper Connect": true,
-                            "Wiper Position": 17,
-                            "Wire Color": "ORN/BLK"
+                            "Wiper Position": 20,
+                            "Wire Color": "YEL/GRN"
                         },
                         "U8": {
-                            "Application": "Multifunction",
-                            "ECU Pins": "CPC3-5",
+                            "Application": "Fuel Pressure Sensor",
+                            "ECU Pins": "ECU Pins",
                             "Name": "Potentiometer 8",
                             "Pin": "J24:8",
                             "Port": "8",
@@ -605,9 +546,9 @@
                             "SSS2 Wiper Setting": 8,
                             "Term. A Connect": true,
                             "Term. B Connect": true,
-                            "Wiper Connect": false,
-                            "Wiper Position": 70,
-                            "Wire Color": "YEL/GRN"
+                            "Wiper Connect": true,
+                            "Wiper Position": 140,
+                            "Wire Color": "RED/WHT"
                         }
                     },
                     "SSS Setting": 28,
@@ -624,23 +565,23 @@
                     "Name": "Terminal A Voltage for U9 and U10",
                     "Pots": {
                         "U09": {
-                            "Application": "Multifunction",
-                            "ECU Pins": "CPC1-4",
+                            "Application": "Sens Return",
+                            "ECU Pins": "K7-38",
                             "Name": "Potentiometer  9",
                             "Pin": "J24:9",
                             "Port": "9",
                             "Resistance": "10k",
                             "SSS2 TCON Setting": 59,
                             "SSS2 Wiper Setting": 9,
-                            "Term. A Connect": true,
+                            "Term. A Connect": false,
                             "Term. B Connect": true,
-                            "Wiper Connect": false,
-                            "Wiper Position": 130,
+                            "Wiper Connect": true,
+                            "Wiper Position": 0,
                             "Wire Color": "RED/BLK"
                         },
                         "U10": {
-                            "Application": "Multifunction",
-                            "ECU Pins": "CPC1-1",
+                            "Application": "Engine Speed +",
+                            "ECU Pins": "K7-28",
                             "Name": "Potentiometer 10",
                             "Pin": "J24:10",
                             "Port": "10",
@@ -649,9 +590,9 @@
                             "SSS2 Wiper Setting": 10,
                             "Term. A Connect": true,
                             "Term. B Connect": true,
-                            "Wiper Connect": false,
-                            "Wiper Position": 81,
-                            "Wire Color": "RED/WHT"
+                            "Wiper Connect": true,
+                            "Wiper Position": 120,
+                            "Wire Color": "BLU/WHT"
                         }
                     },
                     "SSS Setting": 29,
@@ -661,23 +602,23 @@
                     "Name": "Terminal A Voltage for U11 and U12",
                     "Pots": {
                         "U11": {
-                            "Application": "Multifunction",
-                            "ECU Pins": "CPC1-17",
+                            "Application": "EGR Temperature",
+                            "ECU Pins": "K7-17",
                             "Name": "Potentiometer 11",
                             "Pin": "J24:11",
                             "Port": "11",
                             "Resistance": "10k",
                             "SSS2 TCON Setting": 61,
                             "SSS2 Wiper Setting": 11,
-                            "Term. A Connect": true,
+                            "Term. A Connect": false,
                             "Term. B Connect": true,
                             "Wiper Connect": true,
-                            "Wiper Position": 75,
-                            "Wire Color": "BLU/WHT"
+                            "Wiper Position": 52,
+                            "Wire Color": "BLK/WHT"
                         },
                         "U12": {
-                            "Application": "Sensor Return",
-                            "ECU Pins": "CPC3-2",
+                            "Application": "Turbo Charger Inlet",
+                            "ECU Pins": "ECU Pins",
                             "Name": "Potentiometer 12",
                             "Pin": "J24:12",
                             "Port": "12",
@@ -687,8 +628,8 @@
                             "Term. A Connect": false,
                             "Term. B Connect": true,
                             "Wiper Connect": true,
-                            "Wiper Position": 0,
-                            "Wire Color": "TAN/BLK"
+                            "Wiper Position": 100,
+                            "Wire Color": "RED/GRN"
                         }
                     },
                     "SSS Setting": 30,
@@ -698,8 +639,8 @@
                     "Name": "Terminal A Voltage for U13 and U14",
                     "Pots": {
                         "U13": {
-                            "Application": "Throttle Position Sensor 1",
-                            "ECU Pins": "CPC1-7",
+                            "Application": "Application Description",
+                            "ECU Pins": "ECU Pins",
                             "Name": "Potentiometer 13",
                             "Pin": "J24:13",
                             "Port": "13",
@@ -709,12 +650,12 @@
                             "Term. A Connect": true,
                             "Term. B Connect": true,
                             "Wiper Connect": true,
-                            "Wiper Position": 90,
-                            "Wire Color": "BROWN"
+                            "Wiper Position": 52,
+                            "Wire Color": "Brown"
                         },
                         "U14": {
-                            "Application": "Throttle Position Sensor 2",
-                            "ECU Pins": "CPC4-14",
+                            "Application": "Application Description",
+                            "ECU Pins": "ECU Pins",
                             "Name": "Potentiometer 14",
                             "Pin": "J24:14",
                             "Port": "14",
@@ -723,8 +664,8 @@
                             "SSS2 Wiper Setting": 14,
                             "Term. A Connect": true,
                             "Term. B Connect": true,
-                            "Wiper Connect": false,
-                            "Wiper Position": 87,
+                            "Wiper Connect": true,
+                            "Wiper Position": 238,
                             "Wire Color": "BLK/WHT"
                         }
                     },
@@ -735,23 +676,23 @@
                     "Name": "Terminal A Voltage for U15 and U16",
                     "Pots": {
                         "U15": {
-                            "Application": "Coolant",
-                            "ECU Pins": "CPC3-11",
+                            "Application": "Application Description",
+                            "ECU Pins": "ECU Pins",
                             "Name": "Potentiometer 15",
                             "Pin": "J24:15",
                             "Port": "15",
                             "Resistance": "10k",
                             "SSS2 TCON Setting": 65,
                             "SSS2 Wiper Setting": 15,
-                            "Term. A Connect": false,
+                            "Term. A Connect": true,
                             "Term. B Connect": true,
                             "Wiper Connect": true,
-                            "Wiper Position": 0,
+                            "Wiper Position": 46,
                             "Wire Color": "GRN/WHT"
                         },
                         "U16": {
-                            "Application": "LIN",
-                            "ECU Pins": "CPC2-4",
+                            "Application": "Application Description",
+                            "ECU Pins": "ECU Pins",
                             "Name": "Potentiometer 16",
                             "Pin": "J24:16",
                             "Port": "16",
@@ -760,13 +701,13 @@
                             "SSS2 Wiper Setting": 16,
                             "Term. A Connect": true,
                             "Term. B Connect": true,
-                            "Wiper Connect": false,
+                            "Wiper Connect": true,
                             "Wiper Position": 60,
                             "Wire Color": "RED/GRN"
                         }
                     },
                     "SSS Setting": 32,
-                    "Terminal A Voltage": "+12V"
+                    "Terminal A Voltage": "+5V"
                 }
             },
             "SSS2 Setting": 74,
@@ -779,8 +720,8 @@
                     "Name": "Terminal A Voltage is Fixed at +5V",
                     "Pots": {
                         "U34": {
-                            "Application": "",
-                            "ECU Pins": "",
+                            "Application": "EGR Differential Pressure",
+                            "ECU Pins": "K7-12",
                             "Name": "Port 28 Potentiometer",
                             "Pin": "J18:12",
                             "Port": "28",
@@ -791,26 +732,26 @@
                             "Term. B Connect": true,
                             "Wiper Connect": true,
                             "Wiper Position": 20,
-                            "Wire Color": ""
+                            "Wire Color": "TAN/BLK"
                         },
                         "U36": {
-                            "Application": "",
-                            "ECU Pins": "",
+                            "Application": "Intake Manifold Air Temp.",
+                            "ECU Pins": "K7-13",
                             "Name": "Port 29 Potentiometer",
                             "Pin": "J18:13",
                             "Port": "29",
                             "Resistance": "10k",
                             "SSS2 TCON Setting": 79,
                             "SSS2 Wiper Setting": 76,
-                            "Term. A Connect": true,
+                            "Term. A Connect": false,
                             "Term. B Connect": true,
                             "Wiper Connect": true,
-                            "Wiper Position": 50,
-                            "Wire Color": ""
+                            "Wiper Position": 220,
+                            "Wire Color": "BROWN"
                         },
                         "U37": {
-                            "Application": "",
-                            "ECU Pins": "",
+                            "Application": "EGR Valve Position",
+                            "ECU Pins": "K7-14",
                             "Name": "Port 30 Potentiometer",
                             "Pin": "J18:14",
                             "Port": "30",
@@ -820,12 +761,12 @@
                             "Term. A Connect": true,
                             "Term. B Connect": true,
                             "Wiper Connect": true,
-                            "Wiper Position": 50,
-                            "Wire Color": ""
+                            "Wiper Position": 20,
+                            "Wire Color": "GRN/WHT"
                         }
                     },
                     "SSS Setting": null,
-                    "Terminal A Voltage": false
+                    "Terminal A Voltage": null
                 }
             },
             "SSS2 Setting": null,
@@ -834,13 +775,13 @@
     },
     "Programmed By": "USER NAME",
     "Resistor Box Used": "No",
-    "SHA256 Digest": "4d0e6ef874847916a4491cfc2e631f95e33cfb5838860fab4403209e6fae5dc1",
-    "SSS2 Cable": "SSS2-DDEC10",
+    "SHA256 Digest": "edae8b05e07dbf14c1fb0fa1b8d3d83af1c2e509166e9072091bf570ce0f48a3",
+    "SSS2 Cable": "SSS2-CUSTOM-CM870",
     "SSS2 Interface Release Date": "03 June 2017",
     "SSS2 Interface Version": "1.0 UNIVERSAL",
     "SSS2 Product Code": "UNIVERSAL",
     "SSS2 Source Address": 250,
-    "Saved Date": "Friday, 09 June 2017 19:33:49 Central Daylight Time",
+    "Saved Date": "Friday, 09 June 2017 19:34:28 Central Daylight Time",
     "Send SSS2 Component ID": "1",
     "Serial Number": "SYNER*SSS2-R05*0037*UNIVERSAL",
     "Software ID": "SSS2*REV05*1.0*master*c3b62b583f1f7b22da9f3ec93ed09addc75a1d1e",
@@ -874,7 +815,7 @@
             "Label A": "Connect J1708 to J24:17 and J24:18",
             "Label B": "Connect CAN2 to J24:17 and J24:18",
             "SSS2 setting": 39,
-            "State": false
+            "State": true
         },
         "CAN2": {
             "Label": "Connect CAN2 (FlexCAN1) Termination Resistor (E-CAN)",
@@ -894,7 +835,7 @@
         "Ground Out 2": {
             "Label": "Connect Ground to Port 12 (J24:12)",
             "SSS2 setting": 48,
-            "State": true
+            "State": false
         },
         "LIN Master Pullup Resistor": {
             "Label": "Connect LIN Master Pullup Resistor",
@@ -904,7 +845,7 @@
         "LIN to Port 16": {
             "Label": "Connect LIN to Port 16 (J24:16)",
             "SSS2 setting": 72,
-            "State": true
+            "State": false
         },
         "LIN to SHLD": {
             "Label": "Connect LIN to Round Pin E (J10:5)",
@@ -914,12 +855,12 @@
         "PWM1 Connect": {
             "Label": "Connect PWM1 Output to J24:13",
             "SSS2 setting": 67,
-            "State": true
+            "State": false
         },
         "PWM2 Connect": {
             "Label": "Connect PWM2 Output to J24:14",
             "SSS2 setting": 68,
-            "State": true
+            "State": false
         },
         "PWM3 Connect": {
             "Label": "Connect PWM3 Output to J18:10",
@@ -946,17 +887,17 @@
         "PWM4_28 Connect": {
             "Label": "Connect PWM4 Output to J18:12",
             "SSS2 setting": 86,
-            "State": true
+            "State": false
         },
         "PWM5 Connect": {
             "Label": "Connect PWM5 Output to J24:2",
             "SSS2 setting": 89,
-            "State": false
+            "State": true
         },
         "PWM6 Connect": {
             "Label": "Connect PWM6 Output to J24:1",
             "SSS2 setting": 90,
-            "State": false
+            "State": true
         },
         "PWMs or CAN2": {
             "Label A": "Connect CAN2 to J18:15 and J18:16",
@@ -977,10 +918,10 @@
             "State": false
         }
     },
-    "User Notes": "Additional Information from the CPC4T - Common Powertrain Controller 4\nDiagnostic Version 10\nShift Map Part Number: A017 448 84 02 ZGS 001\nECU Serial Number: 15.1701.00888\nSoftware Part Number: A003 446 10 02 ZGS 005\nHardware Part Number: A017 448 66 02 ZGS 001\n\nProgrammed for an Automated Transmission",
-    "Vehicle Make": "Western Star",
-    "Vehicle Model": "5700",
-    "Vehicle VIN": "5KJJBHD51GLGY2307",
-    "Vehicle Year": "2016",
+    "User Notes": "USER ENTERED NOTES\nENGINE BUILD DATE: 110504\nFUEL CODE: FC0P388\n\nA J1939 Multiplexing Fault Still Remains.",
+    "Vehicle Make": "",
+    "Vehicle Model": "",
+    "Vehicle VIN": "4V4NC9TG25N391063",
+    "Vehicle Year": "",
     "Warnings": "Using the Smart Sensor Simulator 2 cannot guarantee a fault free environment for all electronic control units. If the elimination of fault codes is critical, then the user is encouraged to test the SSS2 settings with an exemplar module and adjust the settings accordingly. Only properly trained experts should use this software and product."
 }

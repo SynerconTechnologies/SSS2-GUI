@@ -1,4 +1,5 @@
 {
+    "1: Message to User": "This file is used to store settings for the SSS2.The SSS2 can be adjusted to match different ECUs. It is your responsibility to ensure the adjustments match the  application. Using the Smart Sensor Simulator 2 cannot guarantee a fault free environment for all electronic control units. If the elimination of fault codes is critical, then the user is encouraged to test the SSS2 settings with an exemplar module and adjust the settings accordingly. Only properly trained experts should use this software and product. This file should only be modified within the SSS2 Interface application.",
     "Analog Calibration": [
         [
             8.42e-06,
@@ -57,11 +58,12 @@
     "CAN Config": {
         "Buffer Size": 1000000,
         "CAN0 Baudrate": "250000",
-        "CAN1 Baudrate": "500000"
+        "CAN1 Baudrate": "500000",
+        "MCPCAN Baudrate": "250000"
     },
     "Case Number": "CASE IDENTIFIER",
     "Company": "COMPANY NAME",
-    "Component ID": "SYNER*SSS2-R03*0017*UNIVERSAL",
+    "Component ID": "SYNER*SSS2-R05*0037*UNIVERSAL",
     "DACs": {
         "Vout1": {
             "Alt. Pin": "J24:15",
@@ -246,8 +248,8 @@
         "Wire Color": "TAN"
     },
     "Location": "ADDRESS, CITY, STATE, ZIP",
-    "Original Creation Date": "Wednesday, 10 May 2017 14:59:20 Central Daylight Time",
-    "Original File SHA": "57cb8b233b416c96be474063a2b44ce0a35b8de94ba6be8c1dba5cd89b0f4073",
+    "Original Creation Date": "Friday, 09 June 2017 19:32:31 Central Daylight Time",
+    "Original File SHA": "c975435e4c0ee95ab9f995ad7d1c1015ee3ccddcdddd69c78787da350b4dc1ce",
     "PWMs": {
         "PWM1": {
             "Alt. Pin": "J18:15",
@@ -340,6 +342,52 @@
             "SSS2 setting": 36,
             "Show Frequency": true,
             "Wire Color": "PPL/WHT"
+        },
+        "PWM5": {
+            "Alt. Pin": "",
+            "Alt. Pin Connect": null,
+            "Alt. Port": null,
+            "Application": "Accelerator Pedal Switch Return",
+            "Duty Cycle": 0,
+            "ECU Pins": "K4-34",
+            "Frequency": 1000,
+            "Highest Frequency": 5000,
+            "Highest Voltage": 5,
+            "Lowest Frequency": 0,
+            "Lowest Voltage": 0,
+            "Name": "PWM5",
+            "Pin": "J24:2",
+            "Pin Connect": true,
+            "Port": "17",
+            "SSS2 alt setting": null,
+            "SSS2 freq setting": 85,
+            "SSS2 pin setting": 70,
+            "SSS2 setting": 87,
+            "Show Frequency": true,
+            "Wire Color": "BRN/WHT"
+        },
+        "PWM6": {
+            "Alt. Pin": "",
+            "Alt. Pin Connect": null,
+            "Alt. Port": null,
+            "Application": "On Idle Validation",
+            "Duty Cycle": 0,
+            "ECU Pins": "K4-11",
+            "Frequency": 1000,
+            "Highest Frequency": 5000,
+            "Highest Voltage": 5,
+            "Lowest Frequency": 0,
+            "Lowest Voltage": 0,
+            "Name": "PWM6",
+            "Pin": "J24:1",
+            "Pin Connect": true,
+            "Port": "17",
+            "SSS2 alt setting": null,
+            "SSS2 freq setting": 85,
+            "SSS2 pin setting": 70,
+            "SSS2 setting": 88,
+            "Show Frequency": true,
+            "Wire Color": "PPL/WHT"
         }
     },
     "Potentiometers": {
@@ -413,7 +461,7 @@
                             "SSS2 TCON Setting": 54,
                             "SSS2 Wiper Setting": 4,
                             "Term. A Connect": true,
-                            "Term. B Connect": false,
+                            "Term. B Connect": true,
                             "Wiper Connect": true,
                             "Wiper Position": 180,
                             "Wire Color": "PNK/BLK"
@@ -717,16 +765,16 @@
     },
     "Programmed By": "USER NAME",
     "Resistor Box Used": "No",
-    "SHA256 Digest": "57cb8b233b416c96be474063a2b44ce0a35b8de94ba6be8c1dba5cd89b0f4073",
+    "SHA256 Digest": "c975435e4c0ee95ab9f995ad7d1c1015ee3ccddcdddd69c78787da350b4dc1ce",
     "SSS2 Cable": "SSS2-ADEM3",
-    "SSS2 Interface Release Date": "03 May 2017",
-    "SSS2 Interface Version": "0.9beta",
+    "SSS2 Interface Release Date": "03 June 2017",
+    "SSS2 Interface Version": "1.0 UNIVERSAL",
     "SSS2 Product Code": "UNIVERSAL",
     "SSS2 Source Address": 250,
-    "Saved Date": "Wednesday, 10 May 2017 15:18:46 Central Daylight Time",
+    "Saved Date": "Friday, 09 June 2017 19:32:33 Central Daylight Time",
     "Send SSS2 Component ID": "1",
-    "Serial Number": "SYNER*SSS2-R03*0017*UNIVERSAL",
-    "Software ID": "SSS2*REV03*0.91b*master*18887b06f7f46973e403baf2cbbdc876b832adba",
+    "Serial Number": "SYNER*SSS2-R05*0037*UNIVERSAL",
+    "Software ID": "SSS2*REV05*1.0*master*c3b62b583f1f7b22da9f3ec93ed09addc75a1d1e",
     "Switches": {
         "12V Out 1": {
             "Label": "Connect +12V to Port 27 (J18:10)",
@@ -748,6 +796,11 @@
             "SSS2 setting": 42,
             "State": true
         },
+        "CAN1 Connect": {
+            "Label": "Connect CAN1 (MCPCAN) to J24:3 and J24:4",
+            "SSS2 setting": 91,
+            "State": false
+        },
         "CAN1 or J1708": {
             "Label A": "Connect J1708 to J24:17 and J24:18",
             "Label B": "Connect CAN2 to J24:17 and J24:18",
@@ -758,6 +811,11 @@
             "Label": "Connect CAN2 (FlexCAN1) Termination Resistor (E-CAN)",
             "SSS2 setting": 43,
             "State": true
+        },
+        "CAN2 Connect": {
+            "Label": "Connect CAN2H to J18:16 and CAN2L to J18:15",
+            "SSS2 setting": 40,
+            "State": false
         },
         "Ground Out 1": {
             "Label": "Connect Ground to Port 17 (J18:1)",
@@ -794,17 +852,42 @@
             "SSS2 setting": 68,
             "State": true
         },
+        "PWM3 Connect": {
+            "Label": "Connect PWM3 Output to J18:10",
+            "SSS2 setting": 69,
+            "State": true
+        },
         "PWM3 or 12V": {
             "Label A": "Connect J18:10 to +12VDC",
             "Label B": "Connect PWM3 Output to J18:10",
             "SSS2 setting": 45,
             "State": false
         },
+        "PWM4 Connect": {
+            "Label": "Connect PWM4 Output to J18:1",
+            "SSS2 setting": 70,
+            "State": true
+        },
         "PWM4 or Ground": {
             "Label A": "Connect J18:1 to Ground",
             "Label B": "Connect PWM4 Output to J18:1",
             "SSS2 setting": 47,
             "State": false
+        },
+        "PWM4_28 Connect": {
+            "Label": "Connect PWM4 Output to J18:12",
+            "SSS2 setting": 86,
+            "State": false
+        },
+        "PWM5 Connect": {
+            "Label": "Connect PWM5 Output to J24:2",
+            "SSS2 setting": 89,
+            "State": true
+        },
+        "PWM6 Connect": {
+            "Label": "Connect PWM6 Output to J24:1",
+            "SSS2 setting": 90,
+            "State": true
         },
         "PWMs or CAN2": {
             "Label A": "Connect CAN2 to J18:15 and J18:16",
