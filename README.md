@@ -10,7 +10,10 @@ A Python tkinter GUI for the SSS2 that sends and recieves serial commands to the
 2. Install the Teensy USB drivers from https://www.pjrc.com/teensy/serial_install.exe
 3. Download Github Desktop from https://desktop.github.com/
 4. Clone this repository in Github Desktop to work on it.
-5. Change the Universal Save Flag to false.
+5. Set the Universal Flag to True (```UNIVERSAL = True```) for preparing files.
+6. Open each SSS2 file and resave.
+7. Copy all updated SSS2 files into this directory.
+5. Change the Universal Flag to False (```UNIVERSAL = False```) for a production release.
 5. Package the Python sources into an executable using ```py -3.4 createExecutable.py py2exe```
 6. Copy all graphics files into the newly created dist and build directories.
 7. Use Inno windows installer to create a single executable file. http://www.jrsoftware.org/isdl.php#qsp
@@ -18,3 +21,6 @@ A Python tkinter GUI for the SSS2 that sends and recieves serial commands to the
    2. Compile it.
    3. Find the executable in Documents/SSS2
    4. Rename the executable with the version number and post it to the web.
+8. Set the Universal Flag to True (```UNIVERSAL = True```) 
+9. Repeat the executable creation and installer. Be sure to append the word UNIVERSAL
+10. Copy files to Dropbox.
