@@ -139,3 +139,5 @@ $RECYCLE.BIN/
 *.lnk
 *.zip
 
+*.AUTOSAVE
+SSS2comPort.txt

@@ -1,4 +1,5 @@
 {
+    "1: Message to User": "This file is used to store settings for the SSS2.The SSS2 can be adjusted to match different ECUs. It is your responsibility to ensure the adjustments match the  application. Using the Smart Sensor Simulator 2 cannot guarantee a fault free environment for all electronic control units. If the elimination of fault codes is critical, then the user is encouraged to test the SSS2 settings with an exemplar module and adjust the settings accordingly. Only properly trained experts should use this software and product. This file should only be modified within the SSS2 Interface application.",
     "Analog Calibration": [
         [
             8.42e-06,
@@ -32,45 +33,46 @@
         ]
     ],
     "CAN": {
-        "  5.000": "HRW from Brake Controller,5,1,0,0,20,0,0,1, CFE6E0B,8,00,00,00,00,00,00,00,00,Yes",
-        "  6.000": "EBC1 from Cab Controller,6,1,0,0,100,0,0,1,18F00131,8,00,00,00,00,00,00,00,00,Yes",
-        "  7.000": "EBC1 from Brake Controller,7,1,0,0,100,0,0,1,18F0010B,8,00,00,00,00,00,00,00,00,Yes",
-        "  8.000": "CCVS1 from Instrument Cluster,8,1,0,0,100,0,0,1,18FEF117,8,00,00,00,00,00,00,00,00,Yes",
-        "  9.000": "CCVS1 from Cab Display 1,9,1,0,0,100,0,0,1,18FEF128,8,00,00,00,00,00,00,00,00,Yes",
-        " 10.000": "CCVS1 from Body Controller,10,1,0,0,100,0,0,1,18FEF121,8,00,00,00,00,00,00,00,00,Yes",
-        " 11.000": "CCVS1 from Cab Controller,11,1,0,0,100,0,0,1,18FEF131,8,00,00,00,00,00,00,00,00,Yes",
-        " 12.000": "CM1 from Instrument Cluster,12,1,0,0,100,   0,0,1,18E00017,8, 0, 0, 0, 0, 0, 0, 0, 0,Yes",
-        " 13.000": "CM1 from Climate Control 1,13,1,0,0,100,   0,0,1,18E00019,8, 0, 0, 0, 0, 0, 0, 0, 0,Yes",
-        " 14.000": "CM1 from Body Controller,14,1,0,0,100,   0,0,1,18E00021,8, 0, 0, 0, 0, 0, 0, 0, 0,Yes",
-        " 15.000": "CM1 from Cab Display,15,1,0,0,100,   0,0,1,18E00028,8, 0, 0, 0, 0, 0, 0, 0, 0,Yes",
-        " 16.000": "CM1 from Cab Controller,16,1,0,0,100,   0,0,1,18E00031,8, 0, 0, 0, 0, 0, 0, 0, 0,Yes",
-        " 17.000": "PTO from Instrument Cluster,17,1,0,0, 100,   0,0,1,18FEF017,8, 0, 0, 0, 0, 0, 0, 0, 0,Yes",
-        " 18.000": "PTO from Body Controller,18,1,0,0,100,   0,0,1,18FEF021,8, 0, 0, 0, 0, 0, 0, 0, 0,Yes",
-        " 19.000": "PTO from Cab Display,19,1,0,0, 100,   0,0,1,18FEF028,8, 0, 0, 0, 0, 0, 0, 0, 0,Yes",
-        " 20.000": "PTO from Cab Controller,20,1,0,0, 100,   0,0,1,18FEF031,8, 0, 0, 0, 0, 0, 0, 0, 0,Yes",
-        " 21.000": "AMB from Body Controller,21,1,0,0,1000,0,0,1,18FEF521,8,00,00,00,00,00,00,00,00,Yes",
-        " 23.000": "MBE PLD 03,23,1,0,1,10,0,0,0,254,8,02,40,F3,01,FF,40,FF,7D,Yes",
-        " 24.000": "MBE PLD 04,24,1,0,1,10,0,0,0,255,8,00,37,1E,83,A8,61,00,00,Yes",
-        " 27.000": "MBE PLD 07,27,1,0,1,100,0,0,0,554,8,F8,FF,F3,FF,19,FF,FF,FF,Yes",
-        " 28.000": "MBE PLD 08,28,1,0,1,100,0,0,0,555,8,F8,FF,F3,FF,19,FF,FF,FF,Yes",
-        " 29.000": "MBE PLD 09,29,1,0,1,100,0,0,0,556,8,F8,FF,F3,FF,19,FF,FF,FF,Yes",
-        " 30.000": "MBE PLD 10,30,1,0,1,100,0,0,0,558,8,F8,FF,F3,FF,19,FF,FF,FF,Yes",
-        " 31.000": "MBE PLD 11,31,1,0,1,100,0,0,0,568,8,F8,FF,F3,FF,19,FF,FF,FF,Yes",
-        " 32.000": "MBE PLD 12,32,1,0,1,100,0,0,0,569,8,F8,FF,F3,FF,19,FF,FF,FF,Yes",
-        " 33.000": "MBE PLD 13,33,1,0,1,1000,0,0,0,654,8,F8,FF,F3,FF,19,FF,FF,FF,Yes",
-        " 34.000": "MBE PLD 14,34,1,0,1,1000,0,0,0,655,8,F8,FF,F3,FF,19,FF,FF,FF,Yes",
-        " 35.000": "MBE PLD 15,35,1,0,1,1000,0,0,0,656,8,F8,FF,F3,FF,19,FF,FF,FF,Yes",
-        " 36.000": "MBE PLD 17,36,1,0,1,1000,0,0,0,657,8,F8,FF,F3,FF,19,FF,FF,FF,Yes",
-        " 38.000": "MBE PLD 17,38,1,0,1,50,0,0,0,4F1,8,F8,FF,F3,FF,19,FF,FF,FF,Yes"
+        "  1.000": "HRW from Brake Controller,1,1,0,0,20,0,0,1, CFE6E0B,8,00,00,00,00,00,00,00,00,Yes",
+        "  2.000": "EBC1 from Cab Controller,2,1,0,0,100,0,0,1,18F00131,8,00,00,00,00,00,00,00,00,Yes",
+        "  3.000": "EBC1 from Brake Controller,3,1,0,0,100,0,0,1,18F0010B,8,00,00,00,00,00,00,00,00,Yes",
+        "  4.000": "CCVS1 from Instrument Cluster,4,1,0,0,100,0,0,1,18FEF117,8,00,00,00,00,00,00,00,00,No",
+        "  5.000": "CCVS1 from Cab Display 1,5,1,0,0,100,0,0,1,18FEF128,8,00,00,00,00,00,00,00,00,No",
+        "  6.000": "CCVS1 from Body Controller,6,1,0,0,100,0,0,1,18FEF121,8,00,00,00,00,00,00,00,00,Yes",
+        "  7.000": "CCVS1 from Cab Controller,7,1,0,0,100,0,0,1,18FEF131,8,00,00,00,00,00,00,00,00,Yes",
+        "  8.000": "CM1 from Instrument Cluster,8,1,0,0,100,   0,0,1,18E00017,8, 0, 0, 0, 0, 0, 0, 0, 0,Yes",
+        "  9.000": "CM1 from Climate Control 1,9,1,0,0,100,   0,0,1,18E00019,8, 0, 0, 0, 0, 0, 0, 0, 0,Yes",
+        " 10.000": "CM1 from Body Controller,10,1,0,0,100,   0,0,1,18E00021,8, 0, 0, 0, 0, 0, 0, 0, 0,Yes",
+        " 11.000": "CM1 from Cab Display,11,1,0,0,100,   0,0,1,18E00028,8, 0, 0, 0, 0, 0, 0, 0, 0,Yes",
+        " 12.000": "CM1 from Cab Controller,12,1,0,0,100,   0,0,1,18E00031,8, 0, 0, 0, 0, 0, 0, 0, 0,Yes",
+        " 13.000": "PTO from Instrument Cluster,13,1,0,0, 100,   0,0,1,18FEF017,8, 0, 0, 0, 0, 0, 0, 0, 0,Yes",
+        " 14.000": "PTO from Body Controller,14,1,0,0,100,   0,0,1,18FEF021,8, 0, 0, 0, 0, 0, 0, 0, 0,Yes",
+        " 15.000": "PTO from Cab Display,15,1,0,0, 100,   0,0,1,18FEF028,8, 0, 0, 0, 0, 0, 0, 0, 0,Yes",
+        " 16.000": "PTO from Cab Controller,16,1,0,0, 100,   0,0,1,18FEF031,8, 0, 0, 0, 0, 0, 0, 0, 0,Yes",
+        " 17.000": "AMB from Body Controller,17,1,0,0,1000,0,0,1,18FEF521,8,00,00,00,00,00,00,00,00,Yes",
+        " 18.000": "MBE PLD 03,18,1,0,1,10,0,0,0,254,8,02,40,F3,01,FF,40,FF,7D,Yes",
+        " 19.000": "MBE PLD 04,19,1,0,1,10,0,0,0,255,8,00,37,1E,83,A8,61,00,00,Yes",
+        " 20.000": "MBE PLD 07,20,1,0,1,100,0,0,0,554,8,F8,FF,F3,FF,19,FF,FF,FF,Yes",
+        " 21.000": "MBE PLD 08,21,1,0,1,100,0,0,0,555,8,F8,FF,F3,FF,19,FF,FF,FF,Yes",
+        " 22.000": "MBE PLD 09,22,1,0,1,100,0,0,0,556,8,F8,FF,F3,FF,19,FF,FF,FF,Yes",
+        " 23.000": "MBE PLD 10,23,1,0,1,100,0,0,0,558,8,F8,FF,F3,FF,19,FF,FF,FF,Yes",
+        " 24.000": "MBE PLD 11,24,1,0,1,100,0,0,0,568,8,F8,FF,F3,FF,19,FF,FF,FF,Yes",
+        " 25.000": "MBE PLD 12,25,1,0,1,100,0,0,0,569,8,F8,FF,F3,FF,19,FF,FF,FF,Yes",
+        " 26.000": "MBE PLD 13,26,1,0,1,1000,0,0,0,654,8,F8,FF,F3,FF,19,FF,FF,FF,Yes",
+        " 27.000": "MBE PLD 14,27,1,0,1,1000,0,0,0,655,8,F8,FF,F3,FF,19,FF,FF,FF,Yes",
+        " 28.000": "MBE PLD 15,28,1,0,1,1000,0,0,0,656,8,F8,FF,F3,FF,19,FF,FF,FF,Yes",
+        " 29.000": "MBE PLD 16,29,1,0,1,1000,0,0,0,657,8,F8,FF,F3,FF,19,FF,FF,FF,Yes",
+        " 30.000": "MBE PLD 17,30,1,0,1,50,0,0,0,4F1,8,F8,FF,F3,FF,19,FF,FF,FF,Yes"
     },
     "CAN Config": {
         "Buffer Size": 1000000,
         "CAN0 Baudrate": "250000",
-        "CAN1 Baudrate": "125000"
+        "CAN1 Baudrate": "125000",
+        "MCPCAN Baudrate": "250000"
     },
     "Case Number": "CASE IDENTIFIER",
     "Company": "COMPANY NAME",
-    "Component ID": "SYNER*SSS2-R03*0017*UNIVERSAL",
+    "Component ID": "SYNER*SSS2-R05*0037*UNIVERSAL",
     "DACs": {
         "Vout1": {
             "Alt. Pin": "J24:15",
@@ -255,8 +257,8 @@
         "Wire Color": ""
     },
     "Location": "ADDRESS, CITY, STATE, ZIP",
-    "Original Creation Date": "Sunday, 07 May 2017 13:02:50 Central Daylight Time",
-    "Original File SHA": "c2d686dedcb520389eac5adb7dd243a2a6e5833277928d6e6db4b17b752429af",
+    "Original Creation Date": "Friday, 09 June 2017 19:34:05 Central Daylight Time",
+    "Original File SHA": "09935103d02313ffe1a002730069982271c204a02149a8cef46220c694da6c46",
     "PWMs": {
         "PWM1": {
             "Alt. Pin": "J18:15",
@@ -349,6 +351,52 @@
             "SSS2 setting": 36,
             "Show Frequency": true,
             "Wire Color": ""
+        },
+        "PWM5": {
+            "Alt. Pin": "",
+            "Alt. Pin Connect": null,
+            "Alt. Port": null,
+            "Application": "Application Description",
+            "Duty Cycle": 50,
+            "ECU Pins": "ECU Pins",
+            "Frequency": 200,
+            "Highest Frequency": 5000,
+            "Highest Voltage": 5,
+            "Lowest Frequency": 0,
+            "Lowest Voltage": 0,
+            "Name": "PWM5",
+            "Pin": "J24:2",
+            "Pin Connect": true,
+            "Port": "17",
+            "SSS2 alt setting": null,
+            "SSS2 freq setting": 85,
+            "SSS2 pin setting": 70,
+            "SSS2 setting": 87,
+            "Show Frequency": true,
+            "Wire Color": "PPL/WHT"
+        },
+        "PWM6": {
+            "Alt. Pin": "",
+            "Alt. Pin Connect": null,
+            "Alt. Port": null,
+            "Application": "Application Description",
+            "Duty Cycle": 50,
+            "ECU Pins": "ECU Pins",
+            "Frequency": 200,
+            "Highest Frequency": 5000,
+            "Highest Voltage": 5,
+            "Lowest Frequency": 0,
+            "Lowest Voltage": 0,
+            "Name": "PWM6",
+            "Pin": "J24:1",
+            "Pin Connect": true,
+            "Port": "17",
+            "SSS2 alt setting": null,
+            "SSS2 freq setting": 85,
+            "SSS2 pin setting": 70,
+            "SSS2 setting": 88,
+            "Show Frequency": true,
+            "Wire Color": "PPL/WHT"
         }
     },
     "Potentiometers": {
@@ -369,7 +417,7 @@
                             "Resistance": "10k",
                             "SSS2 TCON Setting": 51,
                             "SSS2 Wiper Setting": 1,
-                            "Term. A Connect": false,
+                            "Term. A Connect": true,
                             "Term. B Connect": true,
                             "Wiper Connect": true,
                             "Wiper Position": 0,
@@ -385,8 +433,8 @@
                             "SSS2 TCON Setting": 52,
                             "SSS2 Wiper Setting": 2,
                             "Term. A Connect": false,
-                            "Term. B Connect": false,
-                            "Wiper Connect": false,
+                            "Term. B Connect": true,
+                            "Wiper Connect": true,
                             "Wiper Position": 0,
                             "Wire Color": "BRN/WHT"
                         }
@@ -422,7 +470,7 @@
                             "SSS2 TCON Setting": 54,
                             "SSS2 Wiper Setting": 4,
                             "Term. A Connect": true,
-                            "Term. B Connect": false,
+                            "Term. B Connect": true,
                             "Wiper Connect": true,
                             "Wiper Position": 241,
                             "Wire Color": "PNK/BLK"
@@ -495,7 +543,7 @@
                             "Resistance": "100k",
                             "SSS2 TCON Setting": 58,
                             "SSS2 Wiper Setting": 8,
-                            "Term. A Connect": false,
+                            "Term. A Connect": true,
                             "Term. B Connect": true,
                             "Wiper Connect": true,
                             "Wiper Position": 0,
@@ -553,7 +601,7 @@
                     "Name": "Terminal A Voltage for U11 and U12",
                     "Pots": {
                         "U11": {
-                            "Application": "Multiple Applications",
+                            "Application": "Cruise Switch",
                             "ECU Pins": "18-4",
                             "Name": "Potentiometer 11",
                             "Pin": "J24:11",
@@ -561,10 +609,10 @@
                             "Resistance": "10k",
                             "SSS2 TCON Setting": 61,
                             "SSS2 Wiper Setting": 11,
-                            "Term. A Connect": true,
-                            "Term. B Connect": true,
+                            "Term. A Connect": false,
+                            "Term. B Connect": false,
                             "Wiper Connect": true,
-                            "Wiper Position": 122,
+                            "Wiper Position": 0,
                             "Wire Color": "BLU/WHT"
                         },
                         "U12": {
@@ -613,7 +661,7 @@
                             "Resistance": "100k",
                             "SSS2 TCON Setting": 64,
                             "SSS2 Wiper Setting": 14,
-                            "Term. A Connect": false,
+                            "Term. A Connect": true,
                             "Term. B Connect": false,
                             "Wiper Connect": false,
                             "Wiper Position": 0,
@@ -726,16 +774,16 @@
     },
     "Programmed By": "USER NAME",
     "Resistor Box Used": "No",
-    "SHA256 Digest": "c2d686dedcb520389eac5adb7dd243a2a6e5833277928d6e6db4b17b752429af",
+    "SHA256 Digest": "09935103d02313ffe1a002730069982271c204a02149a8cef46220c694da6c46",
     "SSS2 Cable": "SSS2-MBE",
-    "SSS2 Interface Release Date": "03 May 2017",
-    "SSS2 Interface Version": "0.9beta",
+    "SSS2 Interface Release Date": "03 June 2017",
+    "SSS2 Interface Version": "1.0 UNIVERSAL",
     "SSS2 Product Code": "UNIVERSAL",
     "SSS2 Source Address": 250,
-    "Saved Date": "Sunday, 07 May 2017 13:03:05 Central Daylight Time",
+    "Saved Date": "Friday, 09 June 2017 19:34:10 Central Daylight Time",
     "Send SSS2 Component ID": "1",
-    "Serial Number": "SYNER*SSS2-R03*0017*UNIVERSAL",
-    "Software ID": "SSS2*REV03*0.91b*master*18887b06f7f46973e403baf2cbbdc876b832adba",
+    "Serial Number": "SYNER*SSS2-R05*0037*UNIVERSAL",
+    "Software ID": "SSS2*REV05*1.0*master*c3b62b583f1f7b22da9f3ec93ed09addc75a1d1e",
     "Switches": {
         "12V Out 1": {
             "Label": "Connect +12V to Port 27 (J18:10)",
@@ -757,6 +805,11 @@
             "SSS2 setting": 42,
             "State": true
         },
+        "CAN1 Connect": {
+            "Label": "Connect CAN1 (MCPCAN) to J24:3 and J24:4",
+            "SSS2 setting": 91,
+            "State": false
+        },
         "CAN1 or J1708": {
             "Label A": "Connect J1708 to J24:17 and J24:18",
             "Label B": "Connect CAN2 to J24:17 and J24:18",
@@ -767,6 +820,11 @@
             "Label": "Connect CAN2 (FlexCAN1) Termination Resistor (E-CAN)",
             "SSS2 setting": 43,
             "State": true
+        },
+        "CAN2 Connect": {
+            "Label": "Connect CAN2H to J18:16 and CAN2L to J18:15",
+            "SSS2 setting": 40,
+            "State": false
         },
         "Ground Out 1": {
             "Label": "Connect Ground to Port 17 (J18:1)",
@@ -803,16 +861,41 @@
             "SSS2 setting": 68,
             "State": false
         },
+        "PWM3 Connect": {
+            "Label": "Connect PWM3 Output to J18:10",
+            "SSS2 setting": 69,
+            "State": true
+        },
         "PWM3 or 12V": {
             "Label A": "Connect J18:10 to +12VDC",
             "Label B": "Connect PWM3 Output to J18:10",
             "SSS2 setting": 45,
             "State": false
         },
+        "PWM4 Connect": {
+            "Label": "Connect PWM4 Output to J18:1",
+            "SSS2 setting": 70,
+            "State": true
+        },
         "PWM4 or Ground": {
             "Label A": "Connect J18:1 to Ground",
             "Label B": "Connect PWM4 Output to J18:1",
             "SSS2 setting": 47,
+            "State": false
+        },
+        "PWM4_28 Connect": {
+            "Label": "Connect PWM4 Output to J18:12",
+            "SSS2 setting": 86,
+            "State": true
+        },
+        "PWM5 Connect": {
+            "Label": "Connect PWM5 Output to J24:2",
+            "SSS2 setting": 89,
+            "State": false
+        },
+        "PWM6 Connect": {
+            "Label": "Connect PWM6 Output to J24:1",
+            "SSS2 setting": 90,
             "State": false
         },
         "PWMs or CAN2": {
@@ -834,7 +917,7 @@
             "State": false
         }
     },
-    "User Notes": "This configuration file was tested to be fault free using DDDL 6 on a VCU from the Sterling Tractor used in the WREX 2016 Crash Test.",
+    "User Notes": "This configuration file was tested to be fault free using DDDL 6 on a VCU from the Sterling Tractor used in the WREX 2016 Crash Test.\n\nAlso tested for software version 14.26.",
     "Vehicle Make": "Sterling",
     "Vehicle Model": "L8500",
     "Vehicle VIN": "2FWBAVDJ85AN34235",

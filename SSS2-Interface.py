@@ -2,6 +2,7 @@ import tkinter as tk
 from tkinter import filedialog
 from tkinter import ttk
 from tkinter import messagebox
+from tkinter import simpledialog
 import serial
 import serial.tools.list_ports
 import os
@@ -16,14 +17,14 @@ import re
 import getpass
 import webbrowser
 from operator import itemgetter
+import struct
 
 from tkinter.tix import *
 from tkinter.constants import *
 import tkinter.scrolledtext as tkst
+import collections
 
 from SSS2_defaults import *
-
-
             
 class SerialThread(threading.Thread):
     def __init__(self, parent, rx_queue, tx_queue,serial):
@@ -36,21 +37,43 @@ class SerialThread(threading.Thread):
         
     def run(self):
         time.sleep(.1)
+        needsMore = False
         try:
             while self.serial.is_open and self.signal:           
                 if self.tx_queue.qsize():
                     s = self.tx_queue.get_nowait()
                     self.serial.write(bytes(s,'utf-8') + b'\x0A')
-                    time.sleep(.003)
+                    time.sleep(.0015) #ensure the listener can process the commands.
                     print('TX: ', end='')
                     print(s)
                 if self.serial.in_waiting:
                     lines = self.serial.readlines(self.serial.in_waiting)
+                    
                     for line in lines:
-                        self.rx_queue.put(line)
-                        #print('RX: ', end='')
-                        #print(line)
-                time.sleep(.001)
+                        
+                        if line[0:3] == b'CAN': 
+                            canline = line[3:]
+                            if len(canline) == 22:
+                                self.rx_queue.put(self.getCANstring(canline))
+                                canline = b''
+                                needsMore = False
+                                continue
+                            else:
+                                needsMore = True
+                        if needsMore:
+                            canline+=line
+                            if len(canline) == 22:
+                                #print("Complete CAN String")
+                                self.rx_queue.put(self.getCANstring(canline))
+                                canline = b''
+                                needsMore = False
+                                continue
+                            else:
+                                needsMore = True
+                        else:
+                            self.rx_queue.put(line)
+                time.sleep(.001) #add a sleep statement to reduce CPU load for this thread.
+                
         except Exception as e:
             print(e)
             print("Serial Connection Broken. Exiting Thread.")
@@ -60,6 +83,25 @@ class SerialThread(threading.Thread):
         print("Serial Connection Closed.")
         self.serial.__del__()
         self.signal = False
+    def getCANstring(self,databytes):
+        
+        channel = databytes[4]
+        now = struct.unpack('>L',databytes[0:4])[0]
+        fractions = struct.unpack('>L',b'\x00'+databytes[5:8])[0]
+        canID = struct.unpack('>L',databytes[8:12])[0] & 0x1FFFFFFF
+        extended = (databytes[8] & 0x80) >> 7
+        length = databytes[12]
+        
+        line = "CAN{:d} {:d}.{:06d}".format(channel,now,fractions)
+        line+= " {:08X}".format(canID)
+        line+= " {:d}".format(extended)
+        line+= " {:d}".format(length)
+        for d in databytes[13:21]:
+            line+= " {:02X}".format(d)
+        line+= "\n"
+        #print(line,end='')
+        return bytearray(line,'ascii')
+        
         
 
 class setup_serial_connections(tk.Toplevel):
@@ -149,7 +191,6 @@ class setup_serial_connections(tk.Toplevel):
         self.parent.focus_set()
         self.destroy()
 
-    #
     # command hooks
 
     def validate(self):
@@ -161,6 +202,10 @@ class setup_serial_connections(tk.Toplevel):
         else:
             try:
                 comport=(self.port_combo_box.get().split(" "))[0]
+
+                with open("SSS2comPort.txt","w") as comFile:
+                    comFile.write("{}".format(comport))
+                
                 ser = serial.Serial(comport,baudrate=4000000,timeout=0.010,
                                     parity=serial.PARITY_ODD,write_timeout=.010,
                                     xonxoff=False, rtscts=False, dsrdtr=False)
@@ -186,12 +231,23 @@ def all_children (wid) :
 
     return _list
 
+def update_dict(d, u):
+    for k, v in u.items():
+        if isinstance(v, collections.Mapping):
+            default = v.copy()
+            default.clear()
+            r = update_dict(d.get(k, default), v)
+            d[k] = r
+        else:
+            d[k] = v
+    return d
+
 class SSS2(ttk.Frame):
     """The SSS2 gui and functions."""
     def __init__(self, parent, *args, **kwargs):
         self.frame_top = ttk.Frame.__init__(self, parent, *args, **kwargs)
         self.root = parent
-        self.root.geometry('1527x887+0+0')
+        self.root.geometry('1492x770+0+0')
         #self.root.geometry('+0+0')
         self.root.resizable(width=False, height=False)
         self.root.iconbitmap('synerconlogo.ico')
@@ -199,7 +255,7 @@ class SSS2(ttk.Frame):
         self.wiring_dict = get_default_wiring()
         self.root.title('Smart Sensor Simulator Interface')
         self.grid( column=0, row=0, sticky='NSEW') #needed to display
-        self.root.lift()
+        #self.root.lift()
         self.root.rowconfigure(1, weight=1)
         self.root.columnconfigure(0, weight=1)
         self.home_directory = os.path.expanduser('~')+os.sep+"Documents"+os.sep+"SSS2"+os.sep
@@ -214,12 +270,17 @@ class SSS2(ttk.Frame):
         self.autosave_job = None
         self.update_job = None
         self.unique_ID = None
+        self.baudrates = ["250000","500000","666666","125000","1000000","5000","10000","20000","31520","333333","40000","50000","80000","100000","200000"]
         self.can2_baud_value=tk.StringVar(value="250000")
+        self.can1_baud_value=tk.StringVar(value="250000")
         self.j1939_baud_value=tk.StringVar(value="250000")
         self.settings_file_status_string = tk.StringVar(value="Default Settings Loaded")
         self.file_loaded = False
-        self.release_date = "21 May 2017"
-        self.release_version = "0.11beta"
+        self.release_date = "03 June 2017"
+################# Use this for production
+        #self.release_version = "1.0"
+################## Use this for Universal
+        self.release_version = "1.0 UNIVERSAL" 
         self.connection_status_string = tk.StringVar(name='status_string',value="Not Connected.")
         connection_status_string = self.connection_status_string
         self.serial_rx_entry = tk.Entry(self,width=60,name='serial_monitor')
@@ -234,7 +295,8 @@ class SSS2(ttk.Frame):
         
         self.tx_queue = queue.Queue()
         self.rx_queue = queue.Queue()
-       
+
+        
 
         # Button to do something on the right
         self.ignition_key_button =  ttk.Checkbutton(self,name='ignition_key_switch',
@@ -273,11 +335,14 @@ class SSS2(ttk.Frame):
         self.settings_tab = tk.Frame(self.tabs, name='potentiometer_tab')
         self.tabs.add(self.settings_tab, text="Digital Potentiometers") # add tab to Notebook
          
-
+        #Create an additional Tab to interface with the SSS
+        self.extra_tab = tk.Frame(self.tabs, name='extra_tab')
+        self.tabs.add(self.extra_tab, text="Extra Outputs") # add tab to Notebook
+        
         #Create a Voltage out make the adjustments for PWM, DAC, and Regulators
         self.voltage_out_tab = tk.Frame(self.tabs, name='voltage_out_tab')
         self.tabs.add(self.voltage_out_tab, text="Voltage Output") # add tab to Notebook
-
+        
         #Create a Networks Tab to make the adjustments for J1939, CAN and J1708
         self.truck_networks_tab = tk.Frame(self.tabs, name='truck_network_tab')
         self.tabs.add(self.truck_networks_tab, text="Network Message Generator") # add tab to Notebook
@@ -289,6 +354,8 @@ class SSS2(ttk.Frame):
         #Create a Monitor Tab to interface with the SSS
         self.monitor_tab = tk.Frame(self.tabs, name='monitor tab')
         self.tabs.add(self.monitor_tab, text="SSS2 Command Interface") # add tab to Notebook
+
+        
 
         self.tabs.enable_traversal()
         
@@ -339,6 +406,7 @@ class SSS2(ttk.Frame):
         self.received_can2_messages=[]
         self.received_j1708_messages=[]
         self.received_lin_messages=[]
+        self.received_analog_messages=[]
 
         self.settings_monitor_setup()
         self.data_logger()
@@ -400,6 +468,10 @@ class SSS2(ttk.Frame):
         if self.filename is not None:
             self.autosave()
 
+       #Use these messages to determine window size during development.  
+       # print("Window Height: {}".format(self.root.winfo_height()))
+       # print("Window Width: {}".format(self.root.winfo_width()))
+
     def export_wiring(self):
         for group_key in self.settings_dict["Potentiometers"]:
             for pair_key in self.settings_dict["Potentiometers"][group_key]["Pairs"]:
@@ -443,10 +515,7 @@ class SSS2(ttk.Frame):
             self.filename += ".txt"
             self.save_settings_file()
             os.startfile(self.filename, "open")
-            print("Saved and printed "+self.filename)
-            #os.remove(self.filename)
-            #self.filename = original_file
-            #self.save_settings_file()
+            print("Saved and opened "+self.filename)
             
         except Exception as e:
             print(e)
@@ -465,12 +534,18 @@ class SSS2(ttk.Frame):
                                                      initialfile=ifile,
                                                      title=title,
                                                      defaultextension=".SSS2")
-
-        
-        
+      
         try:
             with open(self.filename,'r') as infile:
-                self.settings_dict=json.load(infile)
+                new_settings_dict=json.load(infile)
+
+            if (len(new_settings_dict["Analog Calibration"]) < len(self.settings_dict["Analog Calibration"])):
+                new_settings_dict["Analog Calibration"] = self.settings_dict["Analog Calibration"]
+
+            self.settings_dict["CAN"]={}
+
+            self.settings_dict = update_dict(self.settings_dict,new_settings_dict)
+            
         except Exception as e:
             print(e)
             messagebox.showerror("Loading File Error",
@@ -489,8 +564,9 @@ class SSS2(ttk.Frame):
         
         #self.load_settings_file()
         ok_to_open = False
-        
+############### Use this for Universal       
         if True:
+############### Use this for Production       
         #if newhash==digest_from_file:
             print("Hash digests match.")
             sss2_id = self.settings_dict["SSS2 Product Code"].strip()
@@ -541,7 +617,7 @@ class SSS2(ttk.Frame):
         else:
             self.settings_dict = get_default_settings()    
 
-        
+        self.send_clear_can()
         self.init_tabs()
         
         
@@ -581,9 +657,10 @@ class SSS2(ttk.Frame):
                         ok_to_save = True
                     print("Authenticated. OK to Save")
         else:
-###########################            
-            ok_to_save = False ###Change to False for production
-###############################
+################# Use this for UNIVERSAL     
+            ok_to_save = True ###Change to False for production
+################# Use this for Production
+            #ok_to_save = False 
         if ok_to_save:
             self.settings_dict["SSS2 Interface Release Date"] = self.release_date
             self.settings_dict["SSS2 Interface Version"] = self.release_version
@@ -675,13 +752,13 @@ class SSS2(ttk.Frame):
         if self.lasthash != self.current_hash:
             original_file = self.filename
             try:
-                if self.filename[-14:] == "_AUTOSAVE.SSS2":
+                if self.filename[-14:] == ".SSS2.AUTOSAVE":
                     original_file = self.filename[:-14]
                 else:
-                    self.filename += "_AUTOSAVE.SSS2"
+                    self.filename += ".SSS2.AUTOSAVE"
             except Exception as e:
                 print(e)
-                self.filename += "_AUTOSAVE.SSS2"
+                self.filename += ".SSS2.AUTOSAVE"
             with open(self.filename,'w') as outfile:
                 json.dump(self.settings_dict,outfile,indent=4,sort_keys=True)
             self.filename = original_file
@@ -891,31 +968,31 @@ class SSS2(ttk.Frame):
         
         tk.Label(self.user_frame,text="User Name:").grid(row=2,column=0,sticky=tk.W,pady=5)
         self.user_name_text = tk.StringVar(value = self.settings_dict["Programmed By"])
-        self.user_name = tk.Entry(self.user_frame, textvariable=self.user_name_text ,width=68)
+        self.user_name = tk.Entry(self.user_frame, textvariable=self.user_name_text ,width=60)
         self.user_name.grid(row=2,column=1,sticky=tk.W,padx=5,pady=5)
         
         tk.Label(self.user_frame,text="Company:").grid(row=3,column=0,sticky=tk.W,pady=5)
         self.company_name_text = tk.StringVar(value = self.settings_dict["Company"])
-        self.company_name = tk.Entry(self.user_frame, textvariable=self.company_name_text ,width=68)
+        self.company_name = tk.Entry(self.user_frame, textvariable=self.company_name_text ,width=60)
         self.company_name.grid(row=3,column=1,sticky=tk.W,padx=5,pady=5)
 
         tk.Label(self.user_frame,text="Location:").grid(row=4,column=0,sticky=tk.W,pady=5)
         self.location_name_text = tk.StringVar(value = self.settings_dict["Location"])
-        self.location_name = tk.Entry(self.user_frame, textvariable=self.location_name_text ,width=68)
+        self.location_name = tk.Entry(self.user_frame, textvariable=self.location_name_text ,width=60)
         self.location_name.grid(row=4,column=1,sticky=tk.W,padx=5,pady=5)
         
         tk.Label(self.user_frame,text="Case Number:").grid(row=5,column=0,sticky=tk.W,pady=5)
         self.case_number_text = tk.StringVar(value = self.settings_dict["Case Number"])
-        self.case_number = tk.Entry(self.user_frame, textvariable=self.case_number_text ,width=68)
+        self.case_number = tk.Entry(self.user_frame, textvariable=self.case_number_text ,width=60)
         self.case_number.grid(row=5,column=1,sticky=tk.W,padx=5,pady=5)
         
-        tk.Label(self.user_frame,text="Date of Loss:").grid(row=6,column=0,sticky=tk.W,pady=5)
+        tk.Label(self.user_frame,text="Date:").grid(row=6,column=0,sticky=tk.W,pady=5)
         self.date_of_loss_text = tk.StringVar(value = self.settings_dict["Date of Loss"])
-        self.date_of_loss = tk.Entry(self.user_frame, textvariable=self.date_of_loss_text ,width=68)
+        self.date_of_loss = tk.Entry(self.user_frame, textvariable=self.date_of_loss_text ,width=60)
         self.date_of_loss.grid(row=6,column=1,sticky=tk.W,padx=5)
        
         tk.Label(self.user_frame,text="User Notes:").grid(row=7,column=0,sticky=tk.W)
-        self.case_notes = tkst.ScrolledText(self.user_frame, height=15,width=60,padx=5,pady=4,wrap=tk.WORD)
+        self.case_notes = tkst.ScrolledText(self.user_frame, height=18,width=53,padx=5,pady=4,wrap=tk.WORD)
         self.case_notes.grid(row=8,column=0,sticky=tk.W,padx=5,pady=5,columnspan=2)
         self.case_notes.focus_set()
         self.case_notes.insert(1.0,self.settings_dict["User Notes"].strip())
@@ -923,11 +1000,11 @@ class SSS2(ttk.Frame):
         self.warning_frame = tk.LabelFrame(self.profile_tab, name="warning_frame",
                                                   text="Warnings and Cautions")
         self.warning_frame.grid(row=4,column=0,sticky=tk.N+tk.E+tk.W,columnspan=2,rowspan=1)
-        self.warning_text = tk.Text(self.warning_frame,height=6,wrap=tk.WORD,width=130)
+        self.warning_text = tk.Text(self.warning_frame,height=3,wrap=tk.WORD,width=130)
         self.warning_text.grid(row=0,column=0,sticky=tk.E+tk.W,padx=5,pady=5)
         self.warning_text.insert(tk.END,self.settings_dict["Warnings"])
         self.warning_text.configure(state='disabled')
-
+        
         logo_file = tk.PhotoImage(file="SynerconLogoWithName.gif")
         logo = tk.Label(self.profile_tab,image=logo_file)
         logo.image= logo_file
@@ -935,8 +1012,23 @@ class SSS2(ttk.Frame):
         logo.bind("<Button-1>", self.open_link)
         
         link = tk.Label(self.profile_tab, text="Visit: http://www.synercontechnologies.com/SSS2/", fg="blue", cursor="hand2")
-        link.grid(row=1,column=2,sticky=tk.N)
+        link.grid(row=4,column=2,sticky=tk.S)
         link.bind("<Button-1>", self.open_link)
+
+        angled_photo = tk.PhotoImage(file="sss2angle.gif")
+        new_photo = angled_photo.subsample(2,2)
+        
+        image_label = Label(self.profile_tab,image=new_photo)
+        image_label.image = new_photo
+        image_label.grid(row=1,column=2,sticky="NE",rowspan=2)       
+        
+        button_frame = tk.Frame(self.profile_tab)
+        button_frame.grid(row=3,column=2,rowspan=2)
+        tk.Button(button_frame,text="Open Settings File",command=self.open_settings_file,width = 50).grid(row=0,column=0,pady=2)
+        tk.Button(button_frame,text="Save Settings File",command=self.save_settings_file,width = 50).grid(row=1,column=0,pady=2)
+        tk.Button(button_frame,text="Save Settings File As...",command=self.saveas_settings_file,width = 50).grid(row=2,column=0,pady=2)
+        tk.Button(button_frame,text="Get SSS2 Unique ID",command=self.get_sss2_unique_id,width = 50).grid(row=3,column=0,pady=2)
+        
     def open_link(self,event=None):
         webbrowser.open_new(r"http://www.synercontechnologies.com/SSS2/")
         
@@ -1024,6 +1116,10 @@ class SSS2(ttk.Frame):
         s["PWM2 Connect"]["State"]=self.pwm2_switch.switch_button.instate(['selected'])
         s["PWM3 or 12V"]["State"]=self.pwm3_switch.switch_buttonA.instate(['selected'])
         s["PWM4 or Ground"]["State"]=self.pwm4_switch.switch_buttonA.instate(['selected'])
+        s["CAN1 Connect"]["State"]=self.can1_switch.switch_button.instate(['selected'])
+        s["PWM5 Connect"]["State"]=self.pwm5_switch.switch_button.instate(['selected'])
+        s["PWM6 Connect"]["State"]=self.pwm6_switch.switch_button.instate(['selected'])
+        s["PWM4_28 Connect"]["State"]=self.pwm4_28_switch.switch_button.instate(['selected'])
 
         self.settings_dict["ECU Year"] = self.ecu_year_text.get()
         self.settings_dict["ECU Make"] = self.ecu_make_text.get()
@@ -1058,6 +1154,7 @@ class SSS2(ttk.Frame):
 
         self.settings_dict["CAN Config"]["CAN0 Baudrate"] = self.j1939_baud.get()
         self.settings_dict["CAN Config"]["CAN1 Baudrate"] = self.can2_baud.get()
+        self.settings_dict["CAN Config"]["MCPCAN Baudrate"] = self.can1_baud.get()
 
         self.settings_dict["SSS2 Interface Release Date"] = self.release_date
         self.settings_dict["SSS2 Interface Version"] = self.release_version
@@ -1084,9 +1181,10 @@ class SSS2(ttk.Frame):
         self.tx_queue.put_nowait(commandString)         
 
     def send_clear_can(self):
+        
         for tree_item in self.can_tree.get_children():
             self.can_tree.delete(tree_item)   
-        #self.tx_queue.put_nowait("CLEARCAN,")
+        self.tx_queue.put_nowait("CLEARCAN,")
 
     def send_reload_can(self):
         msg_index=0
@@ -1102,6 +1200,9 @@ class SSS2(ttk.Frame):
         
     def send_can2_baud(self):
         self.tx_queue.put_nowait("B1,{}".format(self.can2_baud_value.get()))
+
+    def send_can1_baud(self):
+        self.tx_queue.put_nowait("BMCP,{}".format(self.can1_baud_value.get()))
         
     def vehicle_networks_settings(self):
 
@@ -1112,40 +1213,55 @@ class SSS2(ttk.Frame):
 
         ttk.Button(self.truck_networks_tab,
                                     text="Transmit all CAN messages", width = 35,
-                                    command=self.send_transmit_can).grid(row=1,
+                                    command=self.send_transmit_can).grid(row=0,
                                                                          column=1,
                                                                          sticky="W",columnspan=3,
                                                                          pady=5,padx=5)
         
         ttk.Button(self.truck_networks_tab, width = 35,
                                     text="Stop Sending all CAN messages",
-                                    command=self.send_stop_can).grid(row=2,
+                                    command=self.send_stop_can).grid(row=1,
                                                                      column=1,
                                                                      sticky="W",columnspan=3,
                                                                      pady=5,padx=5)
         
-        tk.Label(self.truck_networks_tab,text="J1939 Bit Rate:").grid(row=3,column=1,sticky="E")
-        baudrates = ["125000","250000","500000","666000","1000000"]
+        tk.Label(self.truck_networks_tab,text="J1939 Bit Rate:").grid(row=2,column=1,sticky="E")
+        
         self.j1939_baud = ttk.Combobox(self.truck_networks_tab,
                                    textvariable=self.j1939_baud_value,
                                    width=8,
-                                   values=baudrates)
+                                   values=self.baudrates)
         self.j1939_baud.set(self.settings_dict["CAN Config"]["CAN0 Baudrate"])
-        self.j1939_baud.grid(row=3,column=2,sticky="W",pady=5,columnspan=1)
+        self.j1939_baud.grid(row=2,column=2,sticky="W",pady=5,columnspan=1)
         ttk.Button(self.truck_networks_tab, width = 9,
-                                    text="Set",command=self.send_j1939_baud).grid(row=3,
+                                    text="Set",command=self.send_j1939_baud).grid(row=2,
                                                                      column=3,
                                                                      sticky="W",columnspan=1,
                                                                      pady=5,padx=5)
         self.send_j1939_baud()
         
 
+        tk.Label(self.truck_networks_tab,text="CAN1 Bit Rate:").grid(row=3,column=1,sticky="E")
+        
+        self.can1_baud = ttk.Combobox(self.truck_networks_tab,
+                                   textvariable=self.can1_baud_value,
+                                   width=8,
+                                   values=self.baudrates)
+        self.can1_baud.set(self.settings_dict["CAN Config"]["MCPCAN Baudrate"])
+        self.can1_baud.grid(row=3,column=2,sticky="W",pady=5,columnspan=1)
+        ttk.Button(self.truck_networks_tab, width = 9,
+                                    text="Set",command=self.send_can1_baud).grid(row=3,
+                                                                     column=3,
+                                                                     sticky="W",columnspan=1,
+                                                                     pady=5,padx=5)
+        self.send_can1_baud()
+
         tk.Label(self.truck_networks_tab,text="CAN2 Bit Rate:").grid(row=4,column=1,sticky="E")
         
         self.can2_baud = ttk.Combobox(self.truck_networks_tab,
                                    textvariable=self.can2_baud_value,
                                    width=8,
-                                   values=baudrates)
+                                   values=self.baudrates)
         self.can2_baud.set(self.settings_dict["CAN Config"]["CAN1 Baudrate"])
         self.can2_baud.grid(row=4,column=2,sticky="W",pady=5,columnspan=1)
         ttk.Button(self.truck_networks_tab, width = 9,
@@ -1158,17 +1274,18 @@ class SSS2(ttk.Frame):
         logo_file = tk.PhotoImage(file="SynerconLogoWithName300.gif")
         logo = tk.Label(self.truck_networks_tab,image=logo_file)
         logo.image= logo_file
-        logo.grid(row=1,column=4,sticky=tk.W,rowspan=4)
+        logo.grid(row=0,column=4,sticky=tk.E,rowspan=5)
         
         self.can_edit_frame = tk.LabelFrame(self.truck_networks_tab, name="edit_can",text="CAN Message Editor")
-        self.can_edit_frame.grid(row=5,column=1,sticky="EW",columnspan=5,rowspan=1)
+        self.can_edit_frame.grid(row=5,column=1,sticky="EW",columnspan=4,rowspan=1)
         
         tk.Label(self.can_edit_frame,text="Description:").grid(row=0,column=0,sticky="E")
         self.can_name_value = tk.StringVar()
         self.can_name = ttk.Entry(self.can_edit_frame,textvariable=self.can_name_value,width=65)
         self.can_name.grid(row=0,column=1,sticky="W",columnspan=6,pady=5)
-        self.can_name.bind('<Return>',self.modify_can_message)
-        self.can_name.bind('<Tab>',self.modify_can_message)
+        #self.can_name.bind('<Return>',self.modify_can_message)
+        #self.can_name.bind('<Tab>',self.modify_can_message)
+        
 
         tk.Label(self.can_edit_frame,text="Thread:").grid(row=1,column=0,sticky="E")
         self.can_thread_value=tk.StringVar()
@@ -1190,8 +1307,9 @@ class SSS2(ttk.Frame):
         self.can_id_value=tk.StringVar()
         self.can_id = tk.Entry(self.can_edit_frame,textvariable=self.can_id_value,width=12)
         self.can_id.grid(row=2,column=1,sticky="W",pady=5,columnspan=2)
-        self.can_id.bind('<Return>',self.modify_can_message)
-        self.can_id.bind('<Tab>',self.modify_can_message)
+        self.can_name.bind('<Return>',self.modify_can_message)
+        self.can_name.bind('<Tab>',self.modify_can_message)
+        
 
 
         tk.Label(self.can_edit_frame,text="DLC:").grid(row=2,column=2,sticky="E")
@@ -1199,22 +1317,29 @@ class SSS2(ttk.Frame):
         spinbox_values = ["1","2","3","4","5","6","7","8"]
         self.can_dlc = ttk.Combobox(self.can_edit_frame,textvariable=self.can_dlc_value,width=2,values=spinbox_values)
         self.can_dlc.grid(row=2,column=3,sticky="W",pady=5,columnspan=1)
-        self.can_dlc.bind('<Return>',self.modify_can_message)
-        self.can_dlc.bind('<Tab>',self.modify_can_message)
+        self.can_dlc.bind('<<ComboboxSelected>>',self.modify_can_message)
+       
 
         
         self.can_ext_id_state = tk.IntVar(value=1)
-        self.can_ext_id = ttk.Checkbutton(self.can_edit_frame,text="Use Extended (29-bit) ID",variable=self.can_ext_id_state)
+        self.can_ext_id = ttk.Checkbutton(self.can_edit_frame,text="Use Extended (29-bit) ID",
+                                          variable=self.can_ext_id_state,
+                                          command=self.modify_can_message)
         self.can_ext_id.grid(row=2,column=4,sticky="W",padx=10,columnspan=3)
         
         tk.Label(self.can_edit_frame,text="Channel:").grid(row=3,column=0,sticky="E")
         self.can_radio_frame = tk.Frame(self.can_edit_frame)
         self.can_radio_frame.grid(row=3,column=1,sticky="W",columnspan=2,pady=5)
         self.can_channel_value = tk.StringVar(value="0")
-        self.can_channel_0 = ttk.Radiobutton(self.can_radio_frame,value="0",text="J1939",variable=self.can_channel_value)
+        self.can_channel_0 = ttk.Radiobutton(self.can_radio_frame,value="0",text="J1939",variable=self.can_channel_value,
+                                        command=self.modify_can_message)
         self.can_channel_0.grid(row=0,column=0,sticky="E")
-        self.can_channel_0 = ttk.Radiobutton(self.can_radio_frame,value="1",text="CAN2",variable=self.can_channel_value)
+        self.can_channel_0 = ttk.Radiobutton(self.can_radio_frame,value="2",text="CAN1",variable=self.can_channel_value,
+                                        command=self.modify_can_message)
         self.can_channel_0.grid(row=0,column=1,sticky="W")
+        self.can_channel_0 = ttk.Radiobutton(self.can_radio_frame,value="1",text="CAN2",variable=self.can_channel_value,
+                                        command=self.modify_can_message)
+        self.can_channel_0.grid(row=0,column=2,sticky="W")
         
         self.can_send_state = tk.IntVar(value=1)
         self.can_send = ttk.Checkbutton(self.can_edit_frame,
@@ -1229,6 +1354,7 @@ class SSS2(ttk.Frame):
         self.can_period.grid(row=4,column=1,sticky="W",pady=5)
         self.can_period.bind('<Return>',self.modify_can_message)
         self.can_period.bind('<Tab>',self.modify_can_message)
+        
 
 
         tk.Label(self.can_edit_frame,text="  Restart (msec):").grid(row=4,column=2,sticky="E")
@@ -1237,7 +1363,7 @@ class SSS2(ttk.Frame):
         self.can_restart.grid(row=4,column=3,sticky="W",pady=5)
         self.can_restart.bind('<Return>',self.modify_can_message)
         self.can_restart.bind('<Tab>',self.modify_can_message)
-
+        
 
         tk.Label(self.can_edit_frame,text="Total to Send:").grid(row=4,column=4,sticky="E")
         self.can_total_value = tk.StringVar(value="0")
@@ -1245,7 +1371,7 @@ class SSS2(ttk.Frame):
         self.can_total.grid(row=4,column=5,sticky="W")
         self.can_total.bind('<Return>',self.modify_can_message)
         self.can_total.bind('<Tab>',self.modify_can_message)
-
+        
         self.can_data_frame = tk.Frame(self.can_edit_frame)
         self.can_byte_value=[]
         self.can_byte=[]
@@ -1298,7 +1424,7 @@ class SSS2(ttk.Frame):
                   'center','center','center','center','center','center']
         self.display_cols = ["Send","Channel","Period","Restart","Total","Ext","CAN HEX ID","DLC","B1","B2","B3","B4","B5","B6","B7","B8"]
         self.can_tree = ttk.Treeview(self.can0_frame, selectmode = "browse",
-                                     displaycolumns="#all",columns = self.colNames,height=37)
+                                     displaycolumns="#all",columns = self.colNames,height=31)
         
         self.can_tree.grid(row=0,column=0)
 
@@ -1308,7 +1434,6 @@ class SSS2(ttk.Frame):
             self.can_tree.heading(c, anchor = p, text = c)
         self.item_identifier={}
 
-        self.send_clear_can()
         for i in self.can_tree.get_children():
             self.can_tree.delete(i)
         self.new_message = True
@@ -1323,7 +1448,7 @@ class SSS2(ttk.Frame):
             
         self.message_config_frame = tk.LabelFrame(self.truck_networks_tab, name="network Configurations",
                                                   text="Network Configurations")
-        self.message_config_frame.grid(row=6,column=1,sticky="NW",columnspan=4)
+        self.message_config_frame.grid(row=6,column=1,sticky="EW",columnspan=4)
 
         self.lin_to_shield_switch = config_switches(self.message_config_frame,self.tx_queue,
                             self.settings_dict["Switches"],"LIN to SHLD",row=1,col=0)
@@ -1389,8 +1514,11 @@ class SSS2(ttk.Frame):
         self.can_tree.set(tree_item,"Send",state)
         if self.can_channel_value.get() == "0":
             chan = "J1939"
+        elif self.can_channel_value.get() == "2":
+            chan = "CAN1"
         elif self.can_channel_value.get() == "1":
             chan = "CAN2"
+        
         self.can_tree.set(tree_item,"Channel",chan)
         self.can_tree.set(tree_item,"Period",self.can_period_value.get())
         self.can_tree.set(tree_item,"Restart",self.can_restart_value.get())
@@ -1404,6 +1532,8 @@ class SSS2(ttk.Frame):
             self.can_tree.set(tree_item,"Send",state)
             if self.can_channel_value.get() == "0":
                 chan = "J1939"
+            elif self.can_channel_value.get() == "2":
+                chan = "CAN1"
             elif self.can_channel_value.get() == "1":
                 chan = "CAN2"
             self.can_tree.set(tree_item,"Channel",chan)
@@ -1414,7 +1544,11 @@ class SSS2(ttk.Frame):
             
                      
     def create_new_message(self):
+        new_name = simpledialog.askstring("Input", "New CAN Message Name:",parent=self, initialvalue="CAN Message")
+        if new_name is None:
+            return
         self.new_message = True
+        self.can_name_value.set(new_name)
         selection = self.can_tree.selection()
         can_thread_list=[]
         for selection in self.can_tree.get_children(""):
@@ -1453,6 +1587,8 @@ class SSS2(ttk.Frame):
         
     def common_can_message(self,can_thread):
         #new_thread = from serial len(self.settings_dict["CAN"]["Load Preprogrammed"])
+        selection = self.can_tree.selection()
+        can_msg = self.can_tree.item(selection)
         m = ""
         m += self.can_name_value.get()
         m += ","
@@ -1556,10 +1692,12 @@ class SSS2(ttk.Frame):
                 self.can_send_state.set(1)
             else:
                 self.can_send_state.set(0)
-            if vals[4] == "J1939":
-                self.can_channel_value.set("0")
-            else:
+            if vals[4] == "CAN1":
+                self.can_channel_value.set("2")
+            elif vals[4] == "CAN2":
                 self.can_channel_value.set("1")
+            else:
+                self.can_channel_value.set("0")
             self.can_period_value.set(vals[5])
             self.can_restart_value.set(vals[6])
             self.can_total_value.set(vals[7])
@@ -1577,10 +1715,13 @@ class SSS2(ttk.Frame):
         
         num = msg[2].strip()
         sub = msg[3].strip()
-        
+
+        #Switch CAN 1 and 2 becuse they are switched on the Arduino
         if msg[4] == "0":
             channel = "J1939"
-        elif msg[4] == "1":
+        elif msg[4] == "2":
+            channel = "CAN1"
+        elif msg[4] == "1": 
             channel = "CAN2"
         else:
             channel = msg[4].strip()
@@ -1622,7 +1763,10 @@ class SSS2(ttk.Frame):
                 self.can_tree.set(selection,"DLC",dlc)
                 for i in range(8):
                     self.can_tree.set(selection,"B{}".format(i+1),B[i])
-            selection = int(selection[0])
+            try:
+                selection = int(selection[0])
+            except:
+                pass
 
         self.can_tree.selection_set(selection)
          
@@ -1654,7 +1798,7 @@ class SSS2(ttk.Frame):
        
         self.DAC_bank = tk.LabelFrame(self.voltage_out_tab, name="dac_bank",
                                                   text="Voltage Outputs")
-        self.DAC_bank.grid(row=1,column=0,sticky="NW",columnspan=1)
+        self.DAC_bank.grid(row=2,column=0,sticky="NW",columnspan=1)
         self.DAC_bank.grid_rowconfigure(4,weight=2) #Expands blank space under radio buttons.
 
         dac_dict=self.settings_dict["DACs"]
@@ -1667,23 +1811,31 @@ class SSS2(ttk.Frame):
         self.vout2b_switch = config_radio_switches(self.DAC_bank,self.tx_queue,
                             self.settings_dict["Switches"],"Port 15 or 18",rowA=2,colA=0,rowB=3,colB=0)
         
-        self.hvadjout_bank = tk.LabelFrame(self.DAC_bank, name="hvadjout_bank",
+        self.hvadjout_bank = tk.LabelFrame(self.extra_tab, name="hvadjout_bank",
                                                   text="High Current Adjustable Regulator")
-        self.hvadjout_bank.grid(row=2,column=3,sticky="NE",columnspan=1,rowspan=4)
+        self.hvadjout_bank.grid(row=2,column=2,sticky="SW",columnspan=1,rowspan=1)
         self.hvadjout = DAC7678(self.hvadjout_bank,self.tx_queue,
                                 self.settings_dict["HVAdjOut"],
                                 row=0,
                                 col=0,
                                 software_ID = self.sss_software_id_text)
 
+        self.extra_tab.grid_rowconfigure(3,weight=2)                                         
         logo_file = tk.PhotoImage(file="SSS2Pins.gif")
-        logo = tk.Label(self.DAC_bank,image=logo_file)
+        logo = tk.Label(self.extra_tab,image=logo_file)
         logo.image= logo_file
-        logo.grid(row=4,column=0,sticky=tk.W,columnspan=3)
+        logo.grid(row=3,column=2,sticky="SW",columnspan=3,rowspan=1)
+
+        logo_file = tk.PhotoImage(file="SynerconLogoWithName300.gif")
+        logo = tk.Label(self.extra_tab,image=logo_file)
+        logo.image= logo_file
+        logo.grid(row=0,column=3,sticky=tk.W,columnspan=2,rowspan=2)
         
+
+        tk.Label(self.voltage_out_tab,text="The following share a common frequency: PWM1 and PWM2,  PWM3 and PWM4, PWM5 and PWM6. Adjusting one in the group will affect the other.").grid(row=1,column=0)
         self.pwm_bank=tk.LabelFrame(self.voltage_out_tab, name="pwm_bank",
                                                   text="Pulse Width Modulated (PWM) Outputs")
-        self.pwm_bank.grid(row=0,column=0,sticky="NW",columnspan=1)
+        self.pwm_bank.grid(row=0,column=0,sticky="SE",columnspan=1)
 
         self.pwm1_switch = config_switches(self.pwm_bank,self.tx_queue,
                             self.settings_dict["Switches"],"PWM1 Connect",row=1,col=0)
@@ -1694,7 +1846,13 @@ class SSS2(ttk.Frame):
         
         self.pwm4_switch = config_radio_switches(self.pwm_bank,self.tx_queue,
                             self.settings_dict["Switches"],"PWM4 or Ground",rowA=1,colA=3,rowB=2,colB=3)
-        
+        self.pwm4_28_switch = config_switches(self.pwm_bank,self.tx_queue,
+                            self.settings_dict["Switches"],"PWM4_28 Connect",row=3,col=3)
+        self.pwm5_switch = config_switches(self.pwm_bank,self.tx_queue,
+                            self.settings_dict["Switches"],"PWM5 Connect",row=1,col=4)
+        self.pwm6_switch = config_switches(self.pwm_bank,self.tx_queue,
+                            self.settings_dict["Switches"],"PWM6 Connect",row=1,col=5)
+                
         self.pwm12_switch = config_radio_switches(self.pwm_bank,self.tx_queue,
                             self.settings_dict["Switches"],"PWMs or CAN2",rowA=2,colA=0,rowB=3,colB=0)
         self.pwm_objects={}
@@ -1705,11 +1863,11 @@ class SSS2(ttk.Frame):
             col_index+=1
             
     def data_logger(self):
+
+
+        self.can1_switch = config_switches(self.data_logger_tab,self.tx_queue,
+                            self.settings_dict["Switches"],"CAN1 Connect",row=2,col=1)
         
-        #self.data_logger_tab.grid_rowconfigure(5,weight=2) #Expands blank space under radio buttons.
-        #self.data_logger_tab.grid_columnconfigure(0,weight=1) #Expands blank space 
-        #self.data_logger_tab.grid_columnconfigure(1,weight=1) #Expands blank space 
-        #self.data_logger_tab.grid_columnconfigure(2,weight=1) #Expands blank space 
         self.data_logger_tab.grid_columnconfigure(3,weight=2) #Expands blank space 
 
         buffer_size_frame = tk.Frame(self.data_logger_tab)
@@ -1727,11 +1885,10 @@ class SSS2(ttk.Frame):
         self.j1939_frame.grid(row=1,column=0,sticky='NSEW')
 
         tk.Label(self.j1939_frame,text="J1939 Bit Rate:").grid(row=1,column=0,sticky="E")
-        baudrates = ["125000","250000","500000","666000","1000000"]
         self.j1939_baud = ttk.Combobox(self.j1939_frame,
                                    textvariable=self.j1939_baud_value,
                                    width=8,
-                                   values=baudrates)
+                                   values=self.baudrates)
         self.j1939_baud.grid(row=1,column=1,sticky="W",pady=5,columnspan=1)
         ttk.Button(self.j1939_frame, width = 9,
                                     text="Set",command=self.send_j1939_baud).grid(row=1,
@@ -1739,8 +1896,6 @@ class SSS2(ttk.Frame):
                                                                      sticky="W",columnspan=1,
                                                                      pady=5,padx=5)
         
-
-       
 
         self.stream_can0_box =  ttk.Checkbutton(self.j1939_frame,
                                     text="Stream CAN0 (J1939)",
@@ -1757,7 +1912,7 @@ class SSS2(ttk.Frame):
         colNames = ["Period","DLC","B0","B1","B2","B3","B4","B5","B6","B7","Count"]
         colPos = ['center','center','center','center','center','center','center','center','center','center','center']
         
-        self.j1939_tree = ttk.Treeview(self.j1939_frame, selectmode = "browse",columns=colNames, displaycolumns="#all", height=31)
+        self.j1939_tree = ttk.Treeview(self.j1939_frame, selectmode = "browse",columns=colNames, displaycolumns="#all", height=25)
         self.j1939_tree.heading("#0", anchor = tk.E, text = "CAN ID")
         self.j1939_tree.column("#0",width=75)
         for c,w,p in zip(colNames,colWidths,colPos):
@@ -1770,14 +1925,53 @@ class SSS2(ttk.Frame):
         self.j1939_unique_messages = {}
         self.j1939_prior_messages = {}
 
+        self.can1_frame = tk.LabelFrame(self.data_logger_tab, text="CAN1 Messages")
+        self.can1_frame.grid(row=1,column=1,sticky='NSEW')
+
+        tk.Label(self.can1_frame,text="CAN1 Bit Rate:").grid(row=1,column=0,sticky="E")
+        self.can1_baud = ttk.Combobox(self.can1_frame,
+                                   textvariable=self.can1_baud_value,
+                                   width=8,
+                                   values=self.baudrates)
+        self.can1_baud.grid(row=1,column=1,sticky="W",pady=5,columnspan=1)
+        ttk.Button(self.can1_frame, width = 9,
+                                    text="Set",command=self.send_can1_baud).grid(row=1,
+                                                                     column=2,
+                                                                     sticky="W",columnspan=1,
+                                                                     pady=5,padx=5)
+
+        self.stream_can1_box =  ttk.Checkbutton(self.can1_frame,
+                                    name="stream CAN1 (MCPCAN)",
+                                    text="Stream CAN1 (MCPCAN)",
+                                    command=self.send_stream_can1)
+        self.stream_can1_box.grid(row=0,column=0,sticky="W")
+        self.stream_can1_box.state(['!alternate']) #Clears Check Box
+
+        tk.Button(self.can1_frame,text="Clear Buffer", command=self.clear_can1_buffer).grid(row=0,column=1,pady=5,sticky=tk.N+tk.W)
+        tk.Button(self.can1_frame,text="Save Buffer", command=self.save_can1_buffer).grid(row=0,column=2,pady=5,sticky=tk.N+tk.W)
+        tk.Button(self.can1_frame,text="Save Buffer As...", command=self.save_can1_buffer_as).grid(row=0,column=3,pady=5,sticky=tk.N+tk.W)
+    
+        self.can1_tree = ttk.Treeview(self.can1_frame, selectmode = "browse",columns=colNames, displaycolumns="#all", height=25)
+        self.can1_tree.heading("#0", anchor = tk.E, text = "CAN ID")
+        self.can1_tree.column("#0",width=75)
+        for c,w,p in zip(colNames,colWidths,colPos):
+            self.can1_tree.column(c, anchor = p, stretch = False, width = w)
+            self.can1_tree.heading(c, anchor = p, text = c)
+        self.can1_tree.grid(row=2,column=0,columnspan=4,sticky=tk.S+tk.W)
+        self.can1_frame.columnconfigure(3, weight=1)
+        self.can1_frame.rowconfigure(2, weight=1)
+        self.can1_unique_messages = {}
+        self.can1_prior_messages = {}
+
+
         self.can2_frame = tk.LabelFrame(self.data_logger_tab, text="CAN2 Messages")
-        self.can2_frame.grid(row=1,column=1,sticky='NSEW')
+        self.can2_frame.grid(row=1,column=2,sticky='NSEW')
 
         tk.Label(self.can2_frame,text="CAN2 Bit Rate:").grid(row=1,column=0,sticky="E")
         self.can2_baud = ttk.Combobox(self.can2_frame,
                                    textvariable=self.can2_baud_value,
                                    width=8,
-                                   values=baudrates)
+                                   values=self.baudrates)
         self.can2_baud.grid(row=1,column=1,sticky="W",pady=5,columnspan=1)
         ttk.Button(self.can2_frame, width = 9,
                                     text="Set",command=self.send_can2_baud).grid(row=1,
@@ -1785,18 +1979,18 @@ class SSS2(ttk.Frame):
                                                                      sticky="W",columnspan=1,
                                                                      pady=5,padx=5)
 
-        self.stream_can1_box =  ttk.Checkbutton(self.can2_frame,
+        self.stream_can2_box =  ttk.Checkbutton(self.can2_frame,
                                     name="stream CAN2 (E-CAN)",
                                     text="Stream CAN2 (PTCAN)",
-                                    command=self.send_stream_can1)
-        self.stream_can1_box.grid(row=0,column=0,sticky="W")
-        self.stream_can1_box.state(['!alternate']) #Clears Check Box
+                                    command=self.send_stream_can2)
+        self.stream_can2_box.grid(row=0,column=0,sticky="W")
+        self.stream_can2_box.state(['!alternate']) #Clears Check Box
 
         tk.Button(self.can2_frame,text="Clear Buffer", command=self.clear_can2_buffer).grid(row=0,column=1,pady=5,sticky=tk.N+tk.W)
         tk.Button(self.can2_frame,text="Save Buffer", command=self.save_can2_buffer).grid(row=0,column=2,pady=5,sticky=tk.N+tk.W)
         tk.Button(self.can2_frame,text="Save Buffer As...", command=self.save_can2_buffer_as).grid(row=0,column=3,pady=5,sticky=tk.N+tk.W)
     
-        self.can2_tree = ttk.Treeview(self.can2_frame, selectmode = "browse",columns=colNames, displaycolumns="#all", height=31)
+        self.can2_tree = ttk.Treeview(self.can2_frame, selectmode = "browse",columns=colNames, displaycolumns="#all", height=25)
         self.can2_tree.heading("#0", anchor = tk.E, text = "CAN ID")
         self.can2_tree.column("#0",width=75)
         for c,w,p in zip(colNames,colWidths,colPos):
@@ -1807,10 +2001,9 @@ class SSS2(ttk.Frame):
         self.can2_frame.rowconfigure(2, weight=1)
         self.can2_unique_messages = {}
         self.can2_prior_messages = {}
-        
 
-        self.j1708_frame = tk.LabelFrame(self.data_logger_tab, text="J1708 Messages")
-        self.j1708_frame.grid(row=1,column=2,sticky='NSEW')
+        self.j1708_frame = tk.LabelFrame(self.extra_tab, text="J1708 Messages")
+        self.j1708_frame.grid(row=0,column=0,sticky='NSEW',rowspan=4)
 
 
         self.stream_j1708_box =  ttk.Checkbutton(self.j1708_frame,
@@ -1825,7 +2018,7 @@ class SSS2(ttk.Frame):
         tk.Button(self.j1708_frame,text="Save Buffer As...", command=self.save_j1708_buffer_as).grid(row=1,column=2,pady=5,padx=1,sticky=tk.N+tk.W)
     
 
-        self.j1708_tree = ttk.Treeview(self.j1708_frame,  height=31)
+        self.j1708_tree = ttk.Treeview(self.j1708_frame,  height=27)
         self.j1708_tree.grid(row=3,column=0,sticky=tk.S+tk.W,columnspan=4)
         self.j1708_frame.columnconfigure(3, weight=1)
         self.j1708_frame.rowconfigure(2, weight=1)
@@ -1835,8 +2028,8 @@ class SSS2(ttk.Frame):
 
         
 
-        self.lin_frame = tk.LabelFrame(self.data_logger_tab, text="LIN Messages")
-        self.lin_frame.grid(row=1,column=3,sticky='NSEW')
+        self.lin_frame = tk.LabelFrame(self.extra_tab, text="LIN Messages")
+        self.lin_frame.grid(row=0,column=1,sticky='NSEW',rowspan=4)
 
 
         self.stream_lin_box =  ttk.Checkbutton(self.lin_frame,
@@ -1857,7 +2050,7 @@ class SSS2(ttk.Frame):
         tk.Button(self.lin_frame,text="Save As...", command=self.save_lin_buffer_as).grid(row=1,column=2,pady=5,padx=1,sticky=tk.N+tk.W)
     
 
-        self.lin_tree = ttk.Treeview(self.lin_frame,  height=31)
+        self.lin_tree = ttk.Treeview(self.lin_frame,  height=27)
         self.lin_tree.grid(row=3,column=0,sticky=tk.S+tk.W,columnspan=4)
         self.lin_frame.columnconfigure(3, weight=1)
         self.lin_frame.rowconfigure(2, weight=1)
@@ -1916,7 +2109,7 @@ class SSS2(ttk.Frame):
         
         
         self.settings_frame = tk.LabelFrame(self.monitor_tab, text="SSS2 Settings")
-        self.settings_frame.grid(row=0,column=0,sticky='EW')
+        self.settings_frame.grid(row=0,column=0,sticky='EW',rowspan=2)
 
         tk.Button(self.settings_frame,text="List SSS2 Settings",
                     command=self.send_list_settings).grid(row=0,column=0,sticky="W",padx=5,pady=5)
@@ -1924,7 +2117,7 @@ class SSS2(ttk.Frame):
         #            command=self.save_transcript).grid(row=0,column=1,sticky="W",padx=5,pady=5)
         
         tk.Label(self.settings_frame,text="Command:").grid(row=0,column=2, sticky="E",pady=5)
-        self.serial_TX_message = ttk.Entry(self.settings_frame,width=60)
+        self.serial_TX_message = ttk.Entry(self.settings_frame,width=55)
         self.serial_TX_message.grid(row=0,column = 3,sticky="EW")
         self.serial_TX_message.bind('<Return>',self.send_arbitrary_serial_message)
         self.serial_TX_message.bind('<Up>',self.recall_command_up)
@@ -1932,13 +2125,14 @@ class SSS2(ttk.Frame):
         self.sent_serial_messages=[]
         self.sent_serial_messages_index=0
         
-        self.settings_text = tkst.ScrolledText(self.settings_frame,wrap=tk.NONE,width=150,height=45)
+        self.settings_text = tkst.ScrolledText(self.settings_frame,wrap=tk.NONE,width=130,height=35)
         self.settings_text.grid(row=1,column=0,sticky="NSEW",columnspan=4)
    
         self.settings_frame.grid_columnconfigure(3, weight=1)
 
         self.analog_frame = tk.LabelFrame(self.monitor_tab, text="Analog Voltage Readings")
         self.analog_frame.grid(row=0,column=3,sticky='NSEW')
+        self.analog_frame.grid_columnconfigure(3, weight=1)
         
         self.stream_A21_box =  ttk.Checkbutton(self.analog_frame,
                                     name='stream_A21',
@@ -1954,11 +2148,12 @@ class SSS2(ttk.Frame):
 
         
         
-        colWidths = [45,45,45,45,45,45]
-        colNames = ["J24:10","J24:11","J24:12","J24:13","J24:14","J24:15"]
+        colWidths = [65,65,65,65,65,65]
+        #colNames = ["J24:10","J24:9","J24:8","J18:13","J18:14","J24:7"]
+        colNames = ["J24:10","J24:9","J24:8","J18:13"]
         colPos = ['center','center','center','center','center','center']
-        self.analog_tree = ttk.Treeview(self.analog_frame, columns=colNames, displaycolumns="J24:10", height=30)
-        self.analog_tree.grid(row=4,column=0,sticky=tk.W,columnspan=3)
+        self.analog_tree = ttk.Treeview(self.analog_frame, columns=colNames, height=20)
+        self.analog_tree.grid(row=4,column=0,sticky=tk.W,columnspan=4)
 
         self.analog_tree.heading("#0", anchor = 'center', text = "Time")
         self.analog_tree.column("#0",width=65)
@@ -1969,6 +2164,44 @@ class SSS2(ttk.Frame):
 
         self.clear_analog_buffer()
 
+        self.calibration_frame = tk.LabelFrame(self.monitor_tab, text="Quadratic Voltage Calibrations")
+        self.calibration_frame.grid(row=1,column=3,sticky='NSEW')
+        col=1
+        for name in colNames:
+            tk.Label(self.calibration_frame,text=name).grid(row=0,column=col)
+            col+=1
+
+        tk.Label(self.calibration_frame,text="a2").grid(row=1,column=0)
+        tk.Label(self.calibration_frame,text="a1").grid(row=2,column=0)
+        tk.Label(self.calibration_frame,text="a0").grid(row=3,column=0)
+            
+        self.calibration_variable=[]
+        self.calibration_entries=[]
+        for i in range(len(self.settings_dict["Analog Calibration"])): #Rows
+            self.calibration_variable.append([])
+            self.calibration_entries.append([])
+            
+            for j in range(len(self.settings_dict["Analog Calibration"][i])): #Columns
+                if j==4:
+                    break
+                self.calibration_variable[i].append(tk.StringVar(value="{}".format(self.settings_dict["Analog Calibration"][i][j])))
+                self.calibration_entries[i].append(tk.Entry(self.calibration_frame, width=11,textvariable = self.calibration_variable[i][j]))
+                self.calibration_entries[i][j].grid(row=i+1, column=j+1)
+                self.calibration_entries[i][j].bind("<Tab>",self.adjust_calibrations)
+                self.calibration_entries[i][j].bind("<Return>",self.adjust_calibrations)
+              
+    def adjust_calibrations(self,event=None):
+        for i in range(len(self.settings_dict["Analog Calibration"])): #Rows
+            for j in range(len(self.settings_dict["Analog Calibration"][i])): #Columns
+                try:
+                    self.settings_dict["Analog Calibration"][i][j] = float(self.calibration_variable[i][j].get())
+                    self.calibration_entries[i][j]['bg']='white'
+                except Exception as e:
+                    print(e)
+                    self.calibration_entries[i][j]['bg']='red'
+                    self.root.bell()
+                    
+    
     def check_SSS2_connection(self):
         sss2_id = self.settings_dict["SSS2 Product Code"].strip()
         command_string = "OK,{}".format(sss2_id)
@@ -1988,8 +2221,16 @@ class SSS2(ttk.Frame):
             
         
     def connect_to_serial(self):
-        connection_dialog = setup_serial_connections(self)
-        self.serial = connection_dialog.result
+        try:
+            with open("SSS2comPort.txt","r") as comFile:
+                comport = comFile.readline().strip()
+            self.serial = serial.Serial(comport,baudrate=4000000,timeout=0.010,
+                                    parity=serial.PARITY_ODD,write_timeout=.010,
+                                    xonxoff=False, rtscts=False, dsrdtr=False)
+        except:
+            connection_dialog = setup_serial_connections(self)
+            self.serial = connection_dialog.result
+            
         print(self.serial)
         if self.serial: 
             if self.serial is not None:
@@ -2019,7 +2260,7 @@ class SSS2(ttk.Frame):
                         return True
         
         
-            self.thread.signal = False
+            #self.thread.signal = False
         except:
             pass
         self.connection_status_string.set('USB to Serial Connection Unavailable. Please install drivers and plug in the SSS2.')
@@ -2054,6 +2295,13 @@ class SSS2(ttk.Frame):
         else:
             commandString = "C1,0"
         self.tx_queue.put_nowait(commandString)
+
+    def send_stream_can2(self):
+        if self.stream_can2_box.instate(['selected']):
+            commandString = "C2,1"
+        else:
+            commandString = "C2,0"
+        self.tx_queue.put_nowait(commandString)
             
     def send_list_settings(self):
         commandString = "LS,"
@@ -2075,11 +2323,16 @@ class SSS2(ttk.Frame):
         print("Saved {}".format(data_file_name))
         self.file_status_string.set("Saved log file to "+data_file_name)
 
-    def write_analog_log_file(self,data_file_name):
+    def write_analog_log_file(self,data_file_name,message_list):
         with open(data_file_name,'w') as f:
-            f.write("Time (sec),J24:10 (Volts)\n")
-            for tree_item in self.can2_tree.get_children():
-                f.write(",".join([tree_item]+self.can2_tree(tree_item)["values"])+"\n")
+            f.write("Analog Input Voltage Readings.\n")
+            f.write("Units for time are seconds.\n")
+            f.write("Units for Ports are Volts.\n")
+            f.write("Voltage Readings on J24:7 require additional interior pins installed on the Teensy 3.6. See the schematics on Github for more details.\n")
+            #f.write("Time,J24:10,J24:9,J24:8,J18:13,J18:14,J24:7\n")
+            f.write("Time,J24:10,J24:9,J24:8,J18:13\n")
+            for line in message_list:
+                f.write(",".join(line)+"\n")
         print("Saved {}".format(data_file_name))
         self.file_status_string.set("Saved log file to "+data_file_name)
         
@@ -2115,8 +2368,22 @@ class SSS2(ttk.Frame):
                                            title=title,
                                            defaultextension=".csv")
         
-        self.write_can_log_file(data_file_name,received_can1_messages)
+        self.write_can_log_file(data_file_name,received_can2_messages)
         self.clear_can2_buffer()
+
+    def save_can1_buffer_as(self):
+        types = [('Comma Separated Values', '*.csv')]
+        idir = self.home_directory
+        ifile = "SSS2_CAN1_Data_Log_{}.csv".format(time.strftime("%Y-%m-%d_%H%M%S", time.localtime()))
+        title='Save CAN1 Log File'
+        data_file_name = filedialog.asksaveasfilename( filetypes=types,
+                                           initialdir=idir,
+                                           initialfile=ifile,
+                                           title=title,
+                                           defaultextension=".csv")
+        
+        self.write_can_log_file(data_file_name,received_can1_messages)
+        self.clear_can1_buffer()
         
     def save_j1708_buffer_as(self):
         types = [('Comma Separated Values', '*.csv')]
@@ -2168,12 +2435,19 @@ class SSS2(ttk.Frame):
         self.write_can_log_file(data_file_name,self.received_can0_messages)
         self.clear_j1939_buffer()
         
+    def save_can1_buffer(self):
+        if os.path.exists(self.home_directory):
+            data_file_name=self.home_directory + "SSS2_CAN1_Data_Log_{}.csv".format(time.strftime("%Y-%m-%d_%H%M%S", time.localtime()))
+        else:
+            self.save_can1_buffer_as()
+        self.write_can_log_file(data_file_name,self.received_can1_messages)
+        self.clear_can1_buffer()
     def save_can2_buffer(self):
         if os.path.exists(self.home_directory):
             data_file_name=self.home_directory + "SSS2_CAN2_Data_Log_{}.csv".format(time.strftime("%Y-%m-%d_%H%M%S", time.localtime()))
         else:
             self.save_can2_buffer_as()
-        self.write_can_log_file(data_file_name,self.received_can1_messages)
+        self.write_can_log_file(data_file_name,self.received_can2_messages)
         self.clear_can2_buffer()
    
     def save_j1708_buffer(self):
@@ -2201,7 +2475,7 @@ class SSS2(ttk.Frame):
             data_file_name=self.home_directory + "SSS2_Analog_Data_Log_{}.csv".format(time.strftime("%Y-%m-%d_%H%M%S", time.localtime()))
         else:
             self.save_analog_buffer_as()
-        self.write_analog_log_file(data_file_name)
+        self.write_analog_log_file(data_file_name,self.received_analog_messages)
         print("Saved {}".format(data_file_name))
         self.file_status_string.set("Saved log file to "+data_file_name)
         self.clear_analog_buffer()
@@ -2214,8 +2488,16 @@ class SSS2(ttk.Frame):
             self.j1939_tree.delete(tree_item)  
         self.j1939_tree.tag_configure('dataRow',background='white')
         
-    def clear_can2_buffer(self):
+    def clear_can1_buffer(self):
         self.received_can1_messages=[]
+        self.can1_prior_messages={}
+        self.can1_unique_messages={}
+        for tree_item in self.can1_tree.get_children():
+            self.can1_tree.delete(tree_item)  
+        self.can1_tree.tag_configure('dataRow',background='white')
+        
+    def clear_can2_buffer(self):
+        self.received_can2_messages=[]
         self.can2_prior_messages={}
         self.can2_unique_messages={}
         for tree_item in self.can2_tree.get_children():
@@ -2275,7 +2557,7 @@ class SSS2(ttk.Frame):
                                 self.j1939_tree.insert("",tk.END,iid=CANdata[2],text = CANdata[2],values=[None,CANdata[4]]+CANdata[5:13]+[1],tags=('dataRow',))
                             self.j1939_tree.see(CANdata[2])
                             self.j1939_tree.tag_configure('dataRow',background='white')
-                        except Execption as e:
+                        except Exception as e:
                             print(e)
                             self.j1939_tree.tag_configure('dataRow',background='orange')
                     else:
@@ -2286,6 +2568,36 @@ class SSS2(ttk.Frame):
                     if len(self.received_can1_messages) < limit:
                         try:
                             self.received_can1_messages.append(CANdata)
+                            if CANdata[2] in self.can1_prior_messages:
+                                self.can1_prior_messages[CANdata[2]]=self.can1_unique_messages[CANdata[2]]
+                                self.can1_unique_messages[CANdata[2]]={"Timestamp":CANdata[1],"DLC":CANdata[4],"data":CANdata[5:],"count":self.can1_prior_messages[CANdata[2]]["count"]+1}
+                                period = float(self.can1_unique_messages[CANdata[2]]["Timestamp"]) - float(self.can1_prior_messages[CANdata[2]]["Timestamp"])
+                            else:
+                                self.can1_prior_messages[CANdata[2]]={"Timestamp":CANdata[1],"DLC":CANdata[4],"data":CANdata[5:13],"count":1}
+                                self.can1_unique_messages[CANdata[2]]={"Timestamp":CANdata[1],"DLC":CANdata[4],"data":CANdata[5:13],"count":1}
+                                
+                                period = None
+                            if self.can1_tree.exists(CANdata[2]):
+                                self.can1_tree.set(CANdata[2],"Period","{:5f}".format(period))
+                                self.can1_tree.set(CANdata[2],"DLC",CANdata[4])
+                                self.can1_tree.set(CANdata[2],"Count",self.can1_unique_messages[CANdata[2]]["count"])
+                                for b in range(8):
+                                    self.can1_tree.set(CANdata[2],"B{}".format(b),CANdata[5+b])
+                            else: 
+                                self.can1_tree.insert("",tk.END,iid=CANdata[2],text = CANdata[2],values=[None,CANdata[4]]+CANdata[5:13]+[1],tags=('dataRow',))
+                            self.can1_tree.see(CANdata[2])
+                            self.can1_tree.tag_configure('dataRow',background='white')
+                        except Exception as e:
+                            print(e)
+                            self.can1_tree.tag_configure('dataRow',background='orange')
+                    else:
+                        self.can1_tree.tag_configure('dataRow',background='orange')
+                     
+                elif new_serial_line[0:4]==b'CAN2':
+                    CANdata = new_serial_line.decode('ascii',"ignore").strip().split()
+                    if len(self.received_can2_messages) < limit:
+                        try:
+                            self.received_can2_messages.append(CANdata)
                             if CANdata[2] in self.can2_prior_messages:
                                 self.can2_prior_messages[CANdata[2]]=self.can2_unique_messages[CANdata[2]]
                                 self.can2_unique_messages[CANdata[2]]={"Timestamp":CANdata[1],"DLC":CANdata[4],"data":CANdata[5:],"count":self.can2_prior_messages[CANdata[2]]["count"]+1}
@@ -2325,19 +2637,21 @@ class SSS2(ttk.Frame):
                 elif new_serial_line[0:6]==b'ANALOG':
                     self.analog_count += 1
                     if self.analog_count < limit:
-                        analog_data = new_serial_line[7:].decode('ascii',"ignore").strip()
-                        analog_time="{:>0.3f}".format(float(analog_data.split(":")[0])/1000)
-                        print(analog_data)
-                        analog_raw=analog_data.split(":")[1].split(',')
+                        analog_data = new_serial_line[7:].decode('ascii',"ignore").strip().split()
+                        #print(analog_data)
+                        analog_time="{:>0.3f}".format(float(analog_data[0])/1000)
                         analog_list = []
-                        
-                        for i in range(len(analog_raw)):
-                            analog_list.append("{:>0.3f}".format(self.settings_dict["Analog Calibration"][i][0]*float(analog_raw[i])*float(analog_raw[i])
-                                                           + self.settings_dict["Analog Calibration"][i][1]*float(analog_raw[i])
-                                                           + self.settings_dict["Analog Calibration"][i][2]))
+                        for i in range(len(self.settings_dict["Analog Calibration"][0])):
+                            if i==4:
+                                break
+                            analog_data.append(0) #makes sure data streams have values
+                            analog_list.append("{:>0.3f}".format(self.settings_dict["Analog Calibration"][0][i]*float(analog_data[i+1])*float(analog_data[i+1])
+                                                           + self.settings_dict["Analog Calibration"][1][i]*float(analog_data[i+1])
+                                                           + self.settings_dict["Analog Calibration"][2][i]))
                         latest = self.analog_tree.insert("",tk.END,text = analog_time ,values=analog_list,tags=('dataRow',))
                         self.analog_tree.see(latest)
                         self.analog_tree.tag_configure('dataRow',background='white')
+                        self.received_analog_messages.append([analog_time]+analog_list[:len(self.settings_dict["Analog Calibration"][0])])
                     else:
                         self.analog_tree.tag_configure('dataRow',background='orange')
                    
@@ -2365,7 +2679,7 @@ class SSS2(ttk.Frame):
                     self.ignition_key_button.state(['!selected'])
                 else:
                     self.file_OK_received.set(True)
-                if new_serial_line[0:4]!=b'CAN0' and new_serial_line[0:4]!=b'CAN1' and new_serial_line[0:5]!=b'J1708' and new_serial_line[0:6]!=b'ANALOG' and new_serial_line[0:4]!=b'LIN ':
+                if new_serial_line[0:4]!=b'CAN0' and new_serial_line[0:4]!=b'CAN1' and new_serial_line[0:4]!=b'CAN2' and new_serial_line[0:5]!=b'J1708' and new_serial_line[0:6]!=b'ANALOG' and new_serial_line[0:4]!=b'LIN ':
                     self.serial_rx_entry.delete(0,tk.END)
                     self.serial_rx_entry.insert(0, new_serial_line.decode('ascii',"ignore"))
                     self.settings_text.insert(tk.END,new_serial_line.decode('ascii',"ignore"))
@@ -2381,34 +2695,28 @@ class SSS2(ttk.Frame):
         pot_dict=self.settings_dict["Potentiometers"]
         for bank_key in sorted(pot_dict.keys()):
             if bank_key == "Others":
-                self.pot_bank[bank_key] = pot_bank(self.settings_tab,self.tx_queue,pot_dict,bank_key,row=row_index,col=1,colspan=1)
+                self.pot_bank[bank_key] = pot_bank(self.extra_tab,self.tx_queue,pot_dict,bank_key,row=0,col=2,colspan=1)
             else:
-                self.pot_bank[bank_key] = pot_bank(self.settings_tab,self.tx_queue,pot_dict,bank_key,row=row_index,col=1,colspan=3)
+                self.pot_bank[bank_key] = pot_bank(self.settings_tab,self.tx_queue,pot_dict,bank_key,row=row_index,col=0,colspan=4)
             row_index += 1
  
-        self.settings_tab.grid_columnconfigure(1,weight=2)
-        self.switch_frame = tk.Frame(self.settings_tab, name='switch frame');
-        self.switch_frame.grid(row=2,rowspan=1,column=1, columnspan=1,sticky="NE")
+        self.settings_tab.grid_columnconfigure(0,weight=1)
+        self.settings_tab.grid_columnconfigure(1,weight=1)
+        self.settings_tab.grid_columnconfigure(2,weight=1)
+        self.settings_tab.grid_columnconfigure(3,weight=1)
+               
+        self.twelve2_switch = config_switches(self.settings_tab,self.tx_queue,
+                            self.settings_dict["Switches"],"12V Out 2",row=2,col=1)
+        self.ground2_switch = config_switches(self.settings_tab,self.tx_queue,
+                            self.settings_dict["Switches"],"Ground Out 2",row=3,col=1)
 
-        
-        self.twelve2_switch = config_switches(self.switch_frame,self.tx_queue,
-                            self.settings_dict["Switches"],"12V Out 2",row=0,col=0)
-        self.ground2_switch = config_switches(self.switch_frame,self.tx_queue,
-                            self.settings_dict["Switches"],"Ground Out 2",row=1,col=0)
-        
-        
-        angled_photo = tk.PhotoImage(file="sss2angle.gif")
-        new_photo = angled_photo.subsample(2,2)
-        
-        image_label = Label(self.settings_tab,image=new_photo)
-        image_label.image = new_photo
-        image_label.grid(row=2,column=2,sticky=tk.E)
+                
 
     def send_ignition_key_command(self,event=None):
         commandString = "50,0"    
         if self.ignition_key_button.instate(['selected']):
             self.root.bell()
-            if messagebox.askyesno("Turn Key Switch On","Do you have the desired settings and would you like to turn on the key switch?"):
+            if messagebox.askyesno("Turn Key Switch On","Have you loaded or configured the desired settings?\n Would you like to turn on the key switch?"):
                 commandString = "50,1"
         self.tx_queue.put_nowait(commandString)
      
@@ -2774,7 +3082,8 @@ class DAC7678(SSS2):
                 dac_raw_setting = int(19.985*x - 37.522) ##Special for Rev5
             else:
                 dac_raw_setting = int(4.2646*x - 16.788) ##Special for Rev3
-            
+            if dac_raw_setting < 0:
+               dac_raw_setting = 0 
         else:
             slope = 4095/(self.high-self.low)
             dac_raw_setting = int(slope*(x - self.low))
@@ -2805,6 +3114,7 @@ class pwm_out(SSS2):
         self.label = self.settings_dict["Name"]+" ("+self.connector+")"
         self.name = self.label.lower()
         self.setting_num = self.settings_dict["SSS2 setting"]
+        self.freq_setting_num = self.settings_dict["SSS2 freq setting"]
         self.setup_pwm_widget()
         
     def setup_pwm_widget(self):
@@ -2816,7 +3126,7 @@ class pwm_out(SSS2):
                                         from_ = 0,
                                         to = 100,
                                         digits = 1, resolution = 0.1,
-                                        orient = tk.HORIZONTAL, length = 200,
+                                        orient = tk.HORIZONTAL, length = 90,
                                         sliderlength = 10, showvalue = 0, 
                                         label = "Duty Cycle (%)",
                                         name = self.name+'_duty_cycle',
@@ -2832,7 +3142,7 @@ class pwm_out(SSS2):
         self.set_pwm_duty_cycle_slider()
         
         self.wiper_position_button = ttk.Button(self.pwm_frame,text="Set Duty Cycle",
-                                                width=15,
+                                                width=14,
                                             command = self.set_pwm_duty_cycle_slider)
         self.wiper_position_button.grid(row=0,column = 2,sticky="SW",columnspan=1)
 
@@ -2841,10 +3151,10 @@ class pwm_out(SSS2):
                                         from_ = self.settings_dict["Lowest Frequency"],
                                         to = self.settings_dict["Highest Frequency"],
                                         digits = 1,
-                                        resolution = (self.settings_dict["Highest Frequency"] -
-                                                      self.settings_dict["Lowest Frequency"])/200,
-                                        orient = tk.HORIZONTAL, length = 200,
-                                        sliderlength = 10, showvalue = 0, 
+                                        resolution = 0.1,#(self.settings_dict["Highest Frequency"] -
+                                                      #self.settings_dict["Lowest Frequency"])/200,
+                                        orient = tk.HORIZONTAL, length = 90,
+                                        sliderlength = 14, showvalue = 0, 
                                         label = "Frequency (Hz)",
                                         name = self.name+'_frequency',
                                         command = self.set_pwm_frequency)
@@ -2874,7 +3184,7 @@ class pwm_out(SSS2):
         
         slope = 1
         pwm_raw_setting = int(slope*(float(self.pwm_frequency_value.get())))
-        commandString = "{},{}".format(self.setting_num+48,pwm_raw_setting)
+        commandString = "{},{}".format(self.freq_setting_num,pwm_raw_setting)
         self.tx_queue.put_nowait(commandString)
         
 
@@ -2894,6 +3204,7 @@ class pwm_out(SSS2):
         self.pwm_frequency_value['foreground'] = "black"
         try:
             self.pwm_frequency_slider.set(float(entry_value))
+            self.set_pwm_frequency()
         except Exception as e:
             print(e)
             self.root.bell()
@@ -2904,6 +3215,7 @@ class pwm_out(SSS2):
         self.pwm_duty_cycle_value['foreground'] = "black"
         try:
             self.pwm_duty_cycle_slider.set(float(entry_value))
+            self.set_pwm_duty_cycle()
         except Exception as e:
             print(e)
             self.root.bell()
