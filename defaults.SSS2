@@ -221,7 +221,7 @@
     "Engine Configuration": "CONFIGURATION",
     "Engine Model": "MODEL",
     "Engine Serial Number": "SERIAL NUMBER",
-    "File Name": "",
+    "File Name": "defaults.SSS2",
     "HVAdjOut": {
         "Alt. Pin": null,
         "Alt. Pin Connect": false,
@@ -242,8 +242,8 @@
         "Wire Color": "TAN"
     },
     "Location": "ADDRESS, CITY, STATE, ZIP",
-    "Original Creation Date": "21 April 2017",
-    "Original File SHA": "Current Settings Not Saved.",
+    "Original Creation Date": "Saturday, 10 June 2017 08:45:29 Central Daylight Time",
+    "Original File SHA": "c967831f29e0f0a9e54d78a5693a57438dca7854cac5b5bba5c7ff83627a7b3c",
     "PWMs": {
         "PWM1": {
             "Alt. Pin": "J18:15",
@@ -759,19 +759,21 @@
     },
     "Programmed By": "USER NAME",
     "Resistor Box Used": "Yes",
+    "SHA256 Digest": "c967831f29e0f0a9e54d78a5693a57438dca7854cac5b5bba5c7ff83627a7b3c",
     "SSS2 Cable": " ",
-    "SSS2 Interface Release Date": "File Not Saved",
-    "SSS2 Interface Version": "File Not Saved",
+    "SSS2 Interface Release Date": "03 June 2017",
+    "SSS2 Interface Version": "1.0 UNIVERSAL",
     "SSS2 Product Code": "UNIVERSAL",
     "SSS2 Source Address": 250,
-    "Saved Date": "NOT SAVED",
+    "Saved Date": "Saturday, 10 June 2017 08:45:39 Central Daylight Time",
     "Send SSS2 Component ID": "1",
+    "Serial Number": "SYNER*SSS2-R03*XXXX*UNIVERSAL",
     "Software ID": "SOFTWARE ID",
     "Switches": {
         "12V Out 1": {
             "Label": "Connect +12V to Port 27 (J18:10)",
             "SSS2 setting": 45,
-            "State": false
+            "State": true
         },
         "12V Out 2": {
             "Label": "Connect +12V to Port 11 (J24:11)",
@@ -812,7 +814,7 @@
         "Ground Out 1": {
             "Label": "Connect Ground to Port 17 (J18:1)",
             "SSS2 setting": 47,
-            "State": false
+            "State": true
         },
         "Ground Out 2": {
             "Label": "Connect Ground to Port 12 (J24:12)",

@@ -25,6 +25,9 @@ import tkinter.scrolledtext as tkst
 import collections
 
 from SSS2_defaults import *
+
+UNIVERSAL = False
+
             
 class SerialThread(threading.Thread):
     def __init__(self, parent, rx_queue, tx_queue,serial):
@@ -42,10 +45,11 @@ class SerialThread(threading.Thread):
             while self.serial.is_open and self.signal:           
                 if self.tx_queue.qsize():
                     s = self.tx_queue.get_nowait()
-                    self.serial.write(bytes(s,'utf-8') + b'\x0A')
-                    time.sleep(.0015) #ensure the listener can process the commands.
                     print('TX: ', end='')
                     print(s)
+                    self.serial.write(bytes(s,'utf-8') + b'\x0A')
+                    time.sleep(.003) #ensure the listener can process the commands.
+                    
                 if self.serial.in_waiting:
                     lines = self.serial.readlines(self.serial.in_waiting)
                     
@@ -206,8 +210,8 @@ class setup_serial_connections(tk.Toplevel):
                 with open("SSS2comPort.txt","w") as comFile:
                     comFile.write("{}".format(comport))
                 
-                ser = serial.Serial(comport,baudrate=4000000,timeout=0.010,
-                                    parity=serial.PARITY_ODD,write_timeout=.010,
+                ser = serial.Serial(comport,baudrate=4000000,timeout=0.01,
+                                    parity=serial.PARITY_ODD,write_timeout=0.01,
                                     xonxoff=False, rtscts=False, dsrdtr=False)
                 self.result = ser
                 return True
@@ -277,10 +281,10 @@ class SSS2(ttk.Frame):
         self.settings_file_status_string = tk.StringVar(value="Default Settings Loaded")
         self.file_loaded = False
         self.release_date = "03 June 2017"
-################# Use this for production
-        #self.release_version = "1.0"
-################## Use this for Universal
-        self.release_version = "1.0 UNIVERSAL" 
+        if UNIVERSAL:
+            self.release_version = "1.0 UNIVERSAL"
+        else:
+            self.release_version = "1.0"
         self.connection_status_string = tk.StringVar(name='status_string',value="Not Connected.")
         connection_status_string = self.connection_status_string
         self.serial_rx_entry = tk.Entry(self,width=60,name='serial_monitor')
@@ -562,13 +566,10 @@ class SSS2(ttk.Frame):
         print("newhash:          ",end='')
         print(newhash)
         
-        #self.load_settings_file()
         ok_to_open = False
-############### Use this for Universal       
-        if True:
-############### Use this for Production       
-        #if newhash==digest_from_file:
-            print("Hash digests match.")
+   
+        if newhash==digest_from_file or UNIVERSAL:
+            print("Hash system OK.")
             sss2_id = self.settings_dict["SSS2 Product Code"].strip()
             if  sss2_id == "UNIVERSAL":
                 ok_to_open = True
@@ -646,7 +647,6 @@ class SSS2(ttk.Frame):
         
         ok_to_save = False
         sss2_id = self.sss2_product_code_text.get().strip()
-        ###Take out this Conditional for production
         if not sss2_id == "UNIVERSAL":
                 if self.serial is not None:
                     command_string = "OK,{}".format(sss2_id.strip())
@@ -657,10 +657,11 @@ class SSS2(ttk.Frame):
                         ok_to_save = True
                     print("Authenticated. OK to Save")
         else:
-################# Use this for UNIVERSAL     
-            ok_to_save = True ###Change to False for production
-################# Use this for Production
-            #ok_to_save = False 
+            if UNIVERSAL:
+                ok_to_save = True ###Change to False for production
+            else:
+                ##### Use this for Production
+                ok_to_save = False 
         if ok_to_save:
             self.settings_dict["SSS2 Interface Release Date"] = self.release_date
             self.settings_dict["SSS2 Interface Version"] = self.release_version
@@ -723,6 +724,7 @@ class SSS2(ttk.Frame):
         sss_software_ID = self.settings_dict.pop("Software ID",None)
         sss_component_ID = self.settings_dict.pop("Component ID",None)
         sss_component_ID = self.settings_dict.pop("Serial Number",None)
+        sss_interface_version = self.settings_dict.pop("SSS2 Interface Version",None)
         
         temp_settings_dict = pformat(self.settings_dict)
         new_hash = str(hashlib.sha256(bytes(temp_settings_dict,'utf-8')).hexdigest())
@@ -734,6 +736,7 @@ class SSS2(ttk.Frame):
         self.settings_dict["Component ID"] =sss_component_ID
         self.settings_dict["Software ID"] = sss_software_ID
         self.settings_dict["Serial Number"] = sss_component_ID
+        self.settings_dict["SSS2 Interface Version"] = sss_interface_version
 
         if self.settings_dict["Original File SHA"] ==  "Current Settings Not Saved.":
             self.modified_entry_string.set("Default Settings")
@@ -2222,10 +2225,12 @@ class SSS2(ttk.Frame):
         
     def connect_to_serial(self):
         try:
+            print("Automatically connecting to SSS2.")
+            self.connection_status_string.set("SSS2 connecting automatically.")
             with open("SSS2comPort.txt","r") as comFile:
                 comport = comFile.readline().strip()
-            self.serial = serial.Serial(comport,baudrate=4000000,timeout=0.010,
-                                    parity=serial.PARITY_ODD,write_timeout=.010,
+            self.serial = serial.Serial(comport,baudrate=4000000,timeout=0.01,
+                                    parity=serial.PARITY_ODD,write_timeout=0.01,
                                     xonxoff=False, rtscts=False, dsrdtr=False)
         except:
             connection_dialog = setup_serial_connections(self)
@@ -2260,9 +2265,10 @@ class SSS2(ttk.Frame):
                         return True
         
         
-            #self.thread.signal = False
+            self.thread.signal = False
         except:
             pass
+        self.thread.signal = False
         self.connection_status_string.set('USB to Serial Connection Unavailable. Please install drivers and plug in the SSS2.')
         self.serial_rx_entry['bg']='red'
         if self.serial: 

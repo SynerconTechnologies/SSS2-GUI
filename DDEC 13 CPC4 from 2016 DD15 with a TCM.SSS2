@@ -132,7 +132,7 @@
     },
     "Case Number": "CASE IDENTIFIER",
     "Company": "COMPANY NAME",
-    "Component ID": "SYNER*SSS2-R05*0037*UNIVERSAL",
+    "Component ID": "SYNER,SSS2-R05*0024*UNIVERSAL",
     "DACs": {
         "Vout1": {
             "Alt. Pin": "J24:15",
@@ -317,8 +317,8 @@
         "Wire Color": "Tan"
     },
     "Location": "ADDRESS, CITY, STATE, ZIP",
-    "Original Creation Date": "Friday, 09 June 2017 19:33:47 Central Daylight Time",
-    "Original File SHA": "4d0e6ef874847916a4491cfc2e631f95e33cfb5838860fab4403209e6fae5dc1",
+    "Original Creation Date": "Saturday, 10 June 2017 10:32:16 Central Daylight Time",
+    "Original File SHA": "4c4c582c708290bbdf57d7ddde793a4f1fc27dddcf01272ccb6d56d1a9164cb4",
     "PWMs": {
         "PWM1": {
             "Alt. Pin": "J18:15",
@@ -834,15 +834,15 @@
     },
     "Programmed By": "USER NAME",
     "Resistor Box Used": "No",
-    "SHA256 Digest": "4d0e6ef874847916a4491cfc2e631f95e33cfb5838860fab4403209e6fae5dc1",
+    "SHA256 Digest": "4c4c582c708290bbdf57d7ddde793a4f1fc27dddcf01272ccb6d56d1a9164cb4",
     "SSS2 Cable": "SSS2-DDEC10",
     "SSS2 Interface Release Date": "03 June 2017",
     "SSS2 Interface Version": "1.0 UNIVERSAL",
     "SSS2 Product Code": "UNIVERSAL",
     "SSS2 Source Address": 250,
-    "Saved Date": "Friday, 09 June 2017 19:33:49 Central Daylight Time",
+    "Saved Date": "Saturday, 10 June 2017 10:32:21 Central Daylight Time",
     "Send SSS2 Component ID": "1",
-    "Serial Number": "SYNER*SSS2-R05*0037*UNIVERSAL",
+    "Serial Number": "SYNER,SSS2-R05*0024*UNIVERSAL",
     "Software ID": "SSS2*REV05*1.0*master*c3b62b583f1f7b22da9f3ec93ed09addc75a1d1e",
     "Switches": {
         "12V Out 1": {

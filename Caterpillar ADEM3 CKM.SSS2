@@ -63,7 +63,7 @@
     },
     "Case Number": "CASE IDENTIFIER",
     "Company": "COMPANY NAME",
-    "Component ID": "SYNER*SSS2-R05*0037*UNIVERSAL",
+    "Component ID": "SYNER,SSS2-R05*0024*UNIVERSAL",
     "DACs": {
         "Vout1": {
             "Alt. Pin": "J24:15",
@@ -248,8 +248,8 @@
         "Wire Color": "TAN"
     },
     "Location": "ADDRESS, CITY, STATE, ZIP",
-    "Original Creation Date": "Friday, 09 June 2017 19:32:31 Central Daylight Time",
-    "Original File SHA": "c975435e4c0ee95ab9f995ad7d1c1015ee3ccddcdddd69c78787da350b4dc1ce",
+    "Original Creation Date": "Saturday, 10 June 2017 10:30:18 Central Daylight Time",
+    "Original File SHA": "fb8c1bcdaf414c3be5e65c89e5bd6b95245dd8c61ee6077869f0d1dbe4f1d948",
     "PWMs": {
         "PWM1": {
             "Alt. Pin": "J18:15",
@@ -765,15 +765,15 @@
     },
     "Programmed By": "USER NAME",
     "Resistor Box Used": "No",
-    "SHA256 Digest": "c975435e4c0ee95ab9f995ad7d1c1015ee3ccddcdddd69c78787da350b4dc1ce",
+    "SHA256 Digest": "fb8c1bcdaf414c3be5e65c89e5bd6b95245dd8c61ee6077869f0d1dbe4f1d948",
     "SSS2 Cable": "SSS2-ADEM3",
     "SSS2 Interface Release Date": "03 June 2017",
     "SSS2 Interface Version": "1.0 UNIVERSAL",
     "SSS2 Product Code": "UNIVERSAL",
     "SSS2 Source Address": 250,
-    "Saved Date": "Friday, 09 June 2017 19:32:33 Central Daylight Time",
+    "Saved Date": "Saturday, 10 June 2017 10:30:23 Central Daylight Time",
     "Send SSS2 Component ID": "1",
-    "Serial Number": "SYNER*SSS2-R05*0037*UNIVERSAL",
+    "Serial Number": "SYNER,SSS2-R05*0024*UNIVERSAL",
     "Software ID": "SSS2*REV05*1.0*master*c3b62b583f1f7b22da9f3ec93ed09addc75a1d1e",
     "Switches": {
         "12V Out 1": {
@@ -908,7 +908,7 @@
             "State": false
         }
     },
-    "User Notes": "ECM from IPTM Special Problems 2015 crash conference in Clearwater Beach Florida.",
+    "User Notes": "ECM from IPTM Special Problems 2015 crash conference in Clearwater Beach Florida involving a school bus into the side of a transit bus.",
     "Vehicle Make": "Thomasbuilt",
     "Vehicle Model": "School Bus",
     "Vehicle VIN": "4UZAAXAK32CJ34136",
