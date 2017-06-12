@@ -26,7 +26,7 @@ import collections
 
 from SSS2_defaults import *
 
-UNIVERSAL = False
+UNIVERSAL = True
 
             
 class SerialThread(threading.Thread):
@@ -282,9 +282,9 @@ class SSS2(ttk.Frame):
         self.file_loaded = False
         self.release_date = "03 June 2017"
         if UNIVERSAL:
-            self.release_version = "1.0 UNIVERSAL"
+            self.release_version = "1.0.1 UNIVERSAL"
         else:
-            self.release_version = "1.0"
+            self.release_version = "1.0.1"
         self.connection_status_string = tk.StringVar(name='status_string',value="Not Connected.")
         connection_status_string = self.connection_status_string
         self.serial_rx_entry = tk.Entry(self,width=60,name='serial_monitor')
@@ -2268,7 +2268,6 @@ class SSS2(ttk.Frame):
             self.thread.signal = False
         except:
             pass
-        self.thread.signal = False
         self.connection_status_string.set('USB to Serial Connection Unavailable. Please install drivers and plug in the SSS2.')
         self.serial_rx_entry['bg']='red'
         if self.serial: 
