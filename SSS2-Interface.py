@@ -41,14 +41,15 @@ class SerialThread(threading.Thread):
     def run(self):
         time.sleep(.1)
         needsMore = False
+        previous_time = time.time()
         try:
             while self.serial.is_open and self.signal:           
-                if self.tx_queue.qsize():
+                if self.tx_queue.qsize() and (time.time() - previous_time > 0.020): #ensure the listener can process the commands by waiting
+                    previous_time = time.time()
                     s = self.tx_queue.get_nowait()
                     print('TX: ', end='')
                     print(s)
                     self.serial.write(bytes(s,'utf-8') + b'\x0A')
-                    time.sleep(.003) #ensure the listener can process the commands.
                     
                 if self.serial.in_waiting:
                     lines = self.serial.readlines(self.serial.in_waiting)
@@ -210,8 +211,8 @@ class setup_serial_connections(tk.Toplevel):
                 with open("SSS2comPort.txt","w") as comFile:
                     comFile.write("{}".format(comport))
                 
-                ser = serial.Serial(comport,baudrate=4000000,timeout=0.01,
-                                    parity=serial.PARITY_ODD,write_timeout=0.01,
+                ser = serial.Serial(comport,baudrate=4000000,timeout=0.1,
+                                    parity=serial.PARITY_ODD,write_timeout=0.1,
                                     xonxoff=False, rtscts=False, dsrdtr=False)
                 self.result = ser
                 return True
@@ -379,7 +380,7 @@ class SSS2(ttk.Frame):
         self.menu_file.add_separator()
         self.menu_file.add_command(label='Refresh', command=self.init_tabs, accelerator="Ctrl+R")
         self.menu_file.add_separator()
-        self.menu_file.add_command(label='Exit', command=self.root.quit, accelerator="Ctrl+Q")
+        self.menu_file.add_command(label='Exit', command=self.on_quit, accelerator="Ctrl+Q")
         self.menu_connection.add_command(label='Select COM Port',
                                          command=self.connect_to_serial)
         self.menu_connection.add_separator()
@@ -758,10 +759,10 @@ class SSS2(ttk.Frame):
                 if self.filename[-14:] == ".SSS2.AUTOSAVE":
                     original_file = self.filename[:-14]
                 else:
-                    self.filename += ".SSS2.AUTOSAVE"
+                    self.filename += ".AUTOSAVE"
             except Exception as e:
                 print(e)
-                self.filename += ".SSS2.AUTOSAVE"
+                self.filename += ".AUTOSAVE"
             with open(self.filename,'w') as outfile:
                 json.dump(self.settings_dict,outfile,indent=4,sort_keys=True)
             self.filename = original_file
@@ -1474,7 +1475,6 @@ class SSS2(ttk.Frame):
         selection = self.can_tree.selection()
         self.common_can_message(can_thread)
         self.sync_tables()
-        self.send_single_frame()
         
     def delete_can_message(self):
         selection = self.can_tree.selection()
@@ -1780,11 +1780,12 @@ class SSS2(ttk.Frame):
             self.can_send_state.set(1)
         else:
             self.can_send_state.set(0)
+        self.fill_can_box()
 
-        self.send_single_frame()
         self.settings_dict["CAN"]["{:>3d}.{:03d}".format(int(index),int(sub))] = message_string 
         commandString = "SM,"+message_string
         self.tx_queue.put_nowait(commandString)   
+        self.send_single_frame()
         
     def find_next_iid(self):
         iid_list=[0]
@@ -3264,15 +3265,15 @@ class ecu_application(SSS2):
         self.ecu_app.grid(row=1,column=0,columnspan=4,sticky=tk.E+tk.W)
 
 def destroyer():
+    mainwindow.tx_queue.put_nowait("50,0")
+    time.sleep(.3)
     try:
-        mainwindow.tx_queue.put_nowait("50,0")
-        time.sleep(.3)
-        mainwindow.serial.close()
-    except Exception as e:
-        print(e)
+        mainwindow.thread.signal = False
+    except:
+        pass
     root.quit()
     root.destroy()
-    sys.exit()
+    #sys.exit()
 
         
 if __name__ == '__main__':
@@ -3281,5 +3282,5 @@ if __name__ == '__main__':
     mainwindow = SSS2(root,name='sss2')
     root.protocol("WM_DELETE_WINDOW",destroyer)
     root.mainloop()
-    destroyer()
+    #destroyer()
     
