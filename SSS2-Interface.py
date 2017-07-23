@@ -26,7 +26,7 @@ import collections
 
 from SSS2_defaults import *
 
-UNIVERSAL = True
+UNIVERSAL = False
 
             
 class SerialThread(threading.Thread):
@@ -281,11 +281,11 @@ class SSS2(ttk.Frame):
         self.j1939_baud_value=tk.StringVar(value="250000")
         self.settings_file_status_string = tk.StringVar(value="Default Settings Loaded")
         self.file_loaded = False
-        self.release_date = "03 June 2017"
+        self.release_date = "22 July 2017"
         if UNIVERSAL:
-            self.release_version = "1.0.1 UNIVERSAL"
+            self.release_version = "1.0.2 UNIVERSAL"
         else:
-            self.release_version = "1.0.1"
+            self.release_version = "1.0.2"
         self.connection_status_string = tk.StringVar(name='status_string',value="Not Connected.")
         connection_status_string = self.connection_status_string
         self.serial_rx_entry = tk.Entry(self,width=60,name='serial_monitor')
