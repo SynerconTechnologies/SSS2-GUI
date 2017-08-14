@@ -27,7 +27,7 @@ import collections
 from SSS2_defaults import *
 
 #### CHANGE THIS to False FOR PRODUCTION #####
-UNIVERSAL = True
+UNIVERSAL = False
 
             
 class SerialThread(threading.Thread):

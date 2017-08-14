@@ -67,7 +67,7 @@
     },
     "CAN Config": {
         "Buffer Size": 1000000,
-        "CAN0 Baudrate": "250000",
+        "CAN0 Baudrate": "500000",
         "CAN1 Baudrate": "500000",
         "MCPCAN Baudrate": "250000"
     },
@@ -230,14 +230,14 @@
     },
     "Date of Loss": "DATE",
     "ECU Component ID": "COMPONENT IDENTIFICATION",
-    "ECU Make": "MAKE",
-    "ECU Model": "MODEL",
-    "ECU Software Version": "SOFTWARE VERSION",
-    "ECU Year": "YEAR",
-    "Engine Configuration": "CONFIGURATION",
+    "ECU Make": "Cummins",
+    "ECU Model": "CM2350",
+    "ECU Software Version": "EB90154.08",
+    "ECU Year": "2017",
+    "Engine Configuration": "ECM/PDD Code: EB90154.08",
     "Engine Model": "MODEL",
     "Engine Serial Number": "SERIAL NUMBER",
-    "File Name": "Cummins CM870.SSS2",
+    "File Name": "Cummins CM2350 Vehicle Connector Only.SSS2",
     "HVAdjOut": {
         "Alt. Pin": null,
         "Alt. Pin Connect": false,
@@ -258,8 +258,8 @@
         "Wire Color": "TAN"
     },
     "Location": "ADDRESS, CITY, STATE, ZIP",
-    "Original Creation Date": "Saturday, 12 August 2017 11:17:38 Central Daylight Time",
-    "Original File SHA": "430aa147abd261860fa78b4886c56037d3a55191f9f69fa5de57629788abebcb",
+    "Original Creation Date": "Sunday, 13 August 2017 21:50:14 Central Daylight Time",
+    "Original File SHA": "9d317fbbf43d5fb58c6a27758527047f631a9b38580c3669e7a11288a053a1b1",
     "PWMs": {
         "PWM1": {
             "Alt. Pin": "J18:15",
@@ -374,7 +374,7 @@
             "SSS2 pin setting": 70,
             "SSS2 setting": 87,
             "Show Frequency": true,
-            "Wire Color": "PPL/WHT"
+            "Wire Color": "BRN/WHT"
         },
         "PWM6": {
             "Alt. Pin": "",
@@ -774,14 +774,14 @@
         }
     },
     "Programmed By": "USER NAME",
-    "Resistor Box Used": "Yes",
-    "SHA256 Digest": "430aa147abd261860fa78b4886c56037d3a55191f9f69fa5de57629788abebcb",
-    "SSS2 Cable": " ",
+    "Resistor Box Used": "No",
+    "SHA256 Digest": "9d317fbbf43d5fb58c6a27758527047f631a9b38580c3669e7a11288a053a1b1",
+    "SSS2 Cable": "SSS2-CM2350",
     "SSS2 Interface Release Date": "12 August 2017",
     "SSS2 Interface Version": "1.0.3 UNIVERSAL",
     "SSS2 Product Code": "UNIVERSAL",
     "SSS2 Source Address": 250,
-    "Saved Date": "Saturday, 12 August 2017 11:17:37 Central Daylight Time",
+    "Saved Date": "Sunday, 13 August 2017 21:50:13 Central Daylight Time",
     "Send SSS2 Component ID": "1",
     "Serial Number": "SYNER*SSS2-R05*0034*UNIVERSAL",
     "Software ID": "SSS2*REV05*1.0*master*c3b62b583f1f7b22da9f3ec93ed09addc75a1d1e",
@@ -918,10 +918,10 @@
             "State": false
         }
     },
-    "User Notes": "USER ENTERED NOTES",
-    "Vehicle Make": "MAKE",
-    "Vehicle Model": "MODEL",
-    "Vehicle VIN": "VEHICLE IDENTIFICATION NUMBER",
-    "Vehicle Year": "YEAR",
+    "User Notes": "ECM/PDD Code: EB90154.07",
+    "Vehicle Make": "",
+    "Vehicle Model": "",
+    "Vehicle VIN": "",
+    "Vehicle Year": "",
     "Warnings": "Using the Smart Sensor Simulator 2 cannot guarantee a fault free environment for all electronic control units. If the elimination of fault codes is critical, then the user is encouraged to test the SSS2 settings with an exemplar module and adjust the settings accordingly. Only properly trained experts should use this software and product."
 }

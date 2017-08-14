@@ -3,26 +3,32 @@
     "Analog Calibration": [
         [
             8.42e-06,
-            8.42e-06,
-            8.42e-06,
-            8.42e-06,
-            8.42e-06,
-            8.42e-06
+            0.0086833,
+            0.03378
         ],
         [
+            8.42e-06,
             0.0086833,
-            0.0086833,
-            0.0086833,
-            0.0086833,
-            0.0086833,
-            0.0086833
+            0.03378
         ],
         [
-            0.03378,
-            0.03378,
-            0.03378,
-            0.03378,
-            0.03378,
+            8.42e-06,
+            0.0086833,
+            0.03378
+        ],
+        [
+            8.42e-06,
+            0.0086833,
+            0.03378
+        ],
+        [
+            8.42e-06,
+            0.0086833,
+            0.03378
+        ],
+        [
+            8.42e-06,
+            0.0086833,
             0.03378
         ]
     ],
@@ -242,8 +248,8 @@
         "Wire Color": "TAN"
     },
     "Location": "ADDRESS, CITY, STATE, ZIP",
-    "Original Creation Date": "Sunday, 13 August 2017 19:03:16 Central Daylight Time",
-    "Original File SHA": "f1e95b6bd36896706f2ec3340aa9f8492d9a2b387bd4fa8c85ee563ca358b122",
+    "Original Creation Date": "Sunday, 13 August 2017 21:50:12 Central Daylight Time",
+    "Original File SHA": "32aca9241de583140b1b910bd5092c912d8998f97cfe3c916d12717c489acf20",
     "PWMs": {
         "PWM1": {
             "Alt. Pin": "J18:15",
@@ -540,7 +546,7 @@
                 }
             },
             "SSS2 Setting": 73,
-            "Terminal A Connection": true
+            "Terminal A Connection": false
         },
         "Group B": {
             "Label": "Potentiometers 9 though 16",
@@ -759,13 +765,13 @@
     },
     "Programmed By": "USER NAME",
     "Resistor Box Used": "No",
-    "SHA256 Digest": "f1e95b6bd36896706f2ec3340aa9f8492d9a2b387bd4fa8c85ee563ca358b122",
+    "SHA256 Digest": "32aca9241de583140b1b910bd5092c912d8998f97cfe3c916d12717c489acf20",
     "SSS2 Cable": "SSS2-CM2350",
     "SSS2 Interface Release Date": "12 August 2017",
     "SSS2 Interface Version": "1.0.3 UNIVERSAL",
     "SSS2 Product Code": "UNIVERSAL",
     "SSS2 Source Address": 250,
-    "Saved Date": "Sunday, 13 August 2017 19:30:17 Central Daylight Time",
+    "Saved Date": "Sunday, 13 August 2017 21:50:11 Central Daylight Time",
     "Send SSS2 Component ID": "1",
     "Serial Number": "SYNER*SSS2-R05*0034*UNIVERSAL",
     "Software ID": "SSS2*REV05*1.0*master*c3b62b583f1f7b22da9f3ec93ed09addc75a1d1e",

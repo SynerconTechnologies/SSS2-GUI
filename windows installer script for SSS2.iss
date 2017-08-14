@@ -2,7 +2,7 @@
 
 [Setup]
 AppName=SSS2-Interface
-AppVersion=1.0.2
+AppVersion=1.0.3
 DefaultDirName={pf}\SSS2
 DefaultGroupName=SSS2
 Compression=lzma2
