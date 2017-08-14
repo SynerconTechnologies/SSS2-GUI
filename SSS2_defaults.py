@@ -207,7 +207,7 @@ def get_default_settings():
     g=p["Group B"]
     g["Terminal A Connection"]=True
     g["SSS2 Setting"] = 74
-    g["Label"]="Potentiometers 9 though 19"
+    g["Label"]="Potentiometers 9 though 16"
     g["Pairs"]={"U09U10":{},"U11U12":{},"U13U14":{},"U15U16":{}}
     
     pair = g["Pairs"]["U09U10"]
@@ -685,7 +685,7 @@ def get_default_settings():
     d["Application"]="Application Description"
     d["Port"]= "17"
     d["Pin"]= "J24:2"
-    d["Wire Color"]="PPL/WHT"
+    d["Wire Color"]="BRN/WHT"
     d["Pin Connect"]=True
     d["SSS2 pin setting"] = 70
     d["Alt. Port"]=None
@@ -734,7 +734,7 @@ def get_default_settings():
     d["Name"] ="High Current Regulator"
     d["Application"]="Application Description"
     d["SSS2 setting"] = 49
-    d["Highest Voltage"] = 11.5
+    d["Highest Voltage"] = 11.0
     d["Amplitude"]=0
 
     

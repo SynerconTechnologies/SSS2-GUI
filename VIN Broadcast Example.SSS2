@@ -3,57 +3,41 @@
     "Analog Calibration": [
         [
             8.42e-06,
-            0.0086833,
-            0.03378
+            8.42e-06,
+            8.42e-06,
+            8.42e-06,
+            8.42e-06,
+            8.42e-06
         ],
         [
-            8.42e-06,
             0.0086833,
-            0.03378
+            0.0086833,
+            0.0086833,
+            0.0086833,
+            0.0086833,
+            0.0086833
         ],
         [
-            8.42e-06,
-            0.0086833,
-            0.03378
-        ],
-        [
-            8.42e-06,
-            0.0086833,
-            0.03378
-        ],
-        [
-            8.42e-06,
-            0.0086833,
-            0.03378
-        ],
-        [
-            8.42e-06,
-            0.0086833,
+            0.03378,
+            0.03378,
+            0.03378,
+            0.03378,
+            0.03378,
             0.03378
         ]
     ],
     "CAN": {
-        "  1.000": "DDEC MCM 01,1,1,0,1,10,   0,0,1, 8FF0001,8, 0, 0, 0, 0, 0, 0, 0, 0,No",
+        "  1.000": "DDEC MCM 01,1,1,0,0,10,0,0,1, 8FF0001,8,00,00,00,00,00,00,00,00,No",
         "  2.000": "DDEC TCM 01,2,1,0,1,10,   0,0,1, CF00203,8, 0, 0, 0, 0, 0, 0, 0, 0,No",
         "  3.000": "DDEC TCM 02,3,1,0,1,10,   0,0,1, 8FF0303,8, 0, 0, 0, 0, 0, 0, 0, 0,No",
         "  4.000": "DDEC TCM 03,4,1,0,1,100,   0,0,1,18F00503,8, 0, 0, 0, 0, 0, 0, 0, 0,No",
-        "  5.000": "HRW from Brake Controller,5,1,0,0,20,0,0,1, CFE6E0B,8, 0, 0, 0, 0, 0, 0, 0, 0,No",
-        "  6.000": "EBC1 from Cab Controller, 6,1,0,0, 100,0,0,1,18F00131,8, 0, 0, 0, 0, 0, 0, 0, 0,Yes",
-        "  7.000": "EBC1 from Brake Controller, 7,1,0,0, 100,0,0,1,18F0010B,8, 0, 0, 0, 0, 0, 0, 0, 0,Yes",
-        "  8.000": "CCVS1 from Instrument Cluster, 8,1,0,0, 100,0,0,1,18FEF117,8, 0, 0, 0, 0, 0, 0, 0, 0,Yes",
-        "  9.000": "CCVS1 from Cab Display 1, 9,1,0,0,100,0,0,1,18FEF128,8, 0, 0, 0, 0, 0, 0, 0, 0,Yes",
-        " 10.000": "CCVS1 from Body Controller, 10,1,0,0,100,0,0,1,18FEF121,8, 0, 0, 0, 0, 0, 0, 0, 0,Yes",
-        " 11.000": "CCVS1 from Cab Controller,11,1,0,0,100,0,0,1,18FEF131,8, 0, 0, 0, 0, 0, 0, 0, 0,Yes",
-        " 12.000": "CM1 from Instrument Cluster,12,1,0,0,100,   0,0,1,18E00017,8, 0, 0, 0, 0, 0, 0, 0, 0,Yes",
-        " 13.000": "CM1 from Climate Control 1,13,1,0,0,100,   0,0,1,18E00019,8, 0, 0, 0, 0, 0, 0, 0, 0,Yes",
-        " 14.000": "CM1 from Body Controller,14,1,0,0,100,   0,0,1,18E00021,8, 0, 0, 0, 0, 0, 0, 0, 0,Yes",
-        " 15.000": "CM1 from Cab Display,15,1,0,0,100,   0,0,1,18E00028,8, 0, 0, 0, 0, 0, 0, 0, 0,Yes",
-        " 16.000": "CM1 from Cab Controller,16,1,0,0,100,   0,0,1,18E00031,8, 0, 0, 0, 0, 0, 0, 0, 0,Yes",
-        " 17.000": "PTO from Instrument Cluster,17,1,0,0, 100,   0,0,1,18FEF017,8, 0, 0, 0, 0, 0, 0, 0, 0,Yes",
-        " 18.000": "PTO from Body Controller,18,1,0,0,100,   0,0,1,18FEF021,8, 0, 0, 0, 0, 0, 0, 0, 0,Yes",
-        " 19.000": "PTO from Cab Display,19,1,0,0, 100,   0,0,1,18FEF028,8, 0, 0, 0, 0, 0, 0, 0, 0,Yes",
-        " 20.000": "PTO from Cab Controller,20,1,0,0, 100,   0,0,1,18FEF031,8, 0, 0, 0, 0, 0, 0, 0, 0,Yes",
-        " 21.000": "AMB from Body Controller,21,1,0,0,1000,   0,0,1,18FEF521,8, 0, 0, 0, 0, 0, 0, 0, 0,Yes"
+        "  5.000": "HRW from Brake Controller,5,1,0,0,20,0,0,1, CFE6E0B,8,00,00,00,00,00,00,00,00,Yes",
+        "  6.000": "EBC1 from Cab Controller,6,1,0,0,100,0,0,1,18F00131,8,00,00,00,00,00,00,00,00,Yes",
+        "  7.000": "EBC1 from Brake Controller,7,1,0,0,100,0,0,1,18F0010B,8,00,00,00,00,00,00,00,00,Yes",
+        "  8.000": "VIN Broadcast,8,4,0,0,5,5000,12,1,18ECFF01,8,20,11,00,03,FF,EC,FE,00,Yes",
+        "  8.001": "VIN Broadcast,8,4,1,0,5,5000,12,1,18EBFF01,8,01,31,32,33,34,35,36,37,Yes",
+        "  8.002": "VIN Broadcast,8,4,2,0,5,1000,3,1,18EBFF01,8,02,38,39,3A,3B,3C,3D,3E,Yes",
+        "  8.003": "VIN Broadcast,8,4,3,0,5,5000,0,1,18EBFF01,8,03,3F,40,41,FF,FF,FF,FF,Yes"
     },
     "CAN Config": {
         "Buffer Size": 1000000,
@@ -227,7 +211,7 @@
     "Engine Configuration": "CONFIGURATION",
     "Engine Model": "MODEL",
     "Engine Serial Number": "SERIAL NUMBER",
-    "File Name": "defaults.SSS2",
+    "File Name": "VIN Broadcast Example.SSS2",
     "HVAdjOut": {
         "Alt. Pin": null,
         "Alt. Pin Connect": false,
@@ -248,8 +232,8 @@
         "Wire Color": "TAN"
     },
     "Location": "ADDRESS, CITY, STATE, ZIP",
-    "Original Creation Date": "Saturday, 12 August 2017 11:17:47 Central Daylight Time",
-    "Original File SHA": "5e0b86358dc16f86771e86ed735066c59fd15177b8b7577584ff8d6ae08649ed",
+    "Original Creation Date": "Sunday, 13 August 2017 09:05:22 Central Daylight Time",
+    "Original File SHA": "5dc5d322664603d99d277d4d0effe3583223406174ce5a8a32557698a8dd7ab5",
     "PWMs": {
         "PWM1": {
             "Alt. Pin": "J18:15",
@@ -364,7 +348,7 @@
             "SSS2 pin setting": 70,
             "SSS2 setting": 87,
             "Show Frequency": true,
-            "Wire Color": "PPL/WHT"
+            "Wire Color": "BRN/WHT"
         },
         "PWM6": {
             "Alt. Pin": "",
@@ -546,7 +530,7 @@
                 }
             },
             "SSS2 Setting": 73,
-            "Terminal A Connection": false
+            "Terminal A Connection": true
         },
         "Group B": {
             "Label": "Potentiometers 9 though 16",
@@ -765,13 +749,13 @@
     },
     "Programmed By": "USER NAME",
     "Resistor Box Used": "Yes",
-    "SHA256 Digest": "5e0b86358dc16f86771e86ed735066c59fd15177b8b7577584ff8d6ae08649ed",
+    "SHA256 Digest": "5dc5d322664603d99d277d4d0effe3583223406174ce5a8a32557698a8dd7ab5",
     "SSS2 Cable": " ",
     "SSS2 Interface Release Date": "12 August 2017",
     "SSS2 Interface Version": "1.0.3 UNIVERSAL",
     "SSS2 Product Code": "UNIVERSAL",
     "SSS2 Source Address": 250,
-    "Saved Date": "Saturday, 12 August 2017 11:17:46 Central Daylight Time",
+    "Saved Date": "Sunday, 13 August 2017 11:07:27 Central Daylight Time",
     "Send SSS2 Component ID": "1",
     "Serial Number": "SYNER*SSS2-R05*0034*UNIVERSAL",
     "Software ID": "SSS2*REV05*1.0*master*c3b62b583f1f7b22da9f3ec93ed09addc75a1d1e",
@@ -908,7 +892,7 @@
             "State": false
         }
     },
-    "User Notes": "USER ENTERED NOTES",
+    "User Notes": "An Example of using the SSS2 to broadcast a VIN using the J1939 Transport Layer.",
     "Vehicle Make": "MAKE",
     "Vehicle Model": "MODEL",
     "Vehicle VIN": "VEHICLE IDENTIFICATION NUMBER",

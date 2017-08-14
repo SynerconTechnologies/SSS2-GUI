@@ -26,7 +26,8 @@ import collections
 
 from SSS2_defaults import *
 
-UNIVERSAL = False
+#### CHANGE THIS to False FOR PRODUCTION #####
+UNIVERSAL = True
 
             
 class SerialThread(threading.Thread):
@@ -44,7 +45,7 @@ class SerialThread(threading.Thread):
         previous_time = time.time()
         try:
             while self.serial.is_open and self.signal:           
-                if self.tx_queue.qsize() and (time.time() - previous_time > 0.020): #ensure the listener can process the commands by waiting
+                if self.tx_queue.qsize() and (time.time() - previous_time > 0.015): #ensure the listener can process the commands by waiting
                     previous_time = time.time()
                     s = self.tx_queue.get_nowait()
                     print('TX: ', end='')
@@ -77,7 +78,7 @@ class SerialThread(threading.Thread):
                                 needsMore = True
                         else:
                             self.rx_queue.put(line)
-                time.sleep(.001) #add a sleep statement to reduce CPU load for this thread.
+                time.sleep(.002) #add a sleep statement to reduce CPU load for this thread.
                 
         except Exception as e:
             print(e)
@@ -263,9 +264,12 @@ class SSS2(ttk.Frame):
         #self.root.lift()
         self.root.rowconfigure(1, weight=1)
         self.root.columnconfigure(0, weight=1)
-        self.home_directory = os.path.expanduser('~')+os.sep+"Documents"+os.sep+"SSS2"+os.sep
-        if not os.path.exists(self.home_directory):
-            self.home_directory = os.path.expanduser('~')+os.sep
+        if UNIVERSAL:
+            self.home_directory = os.getcwd()
+        else:
+            self.home_directory = os.path.expanduser('~')+os.sep+"Documents"+os.sep+"SSS2"+os.sep
+            if not os.path.exists(self.home_directory):
+                self.home_directory = os.path.expanduser('~')+os.sep
         os.path.normpath(self.home_directory)
         self.filename = None
         self.lasthash = None
@@ -281,11 +285,11 @@ class SSS2(ttk.Frame):
         self.j1939_baud_value=tk.StringVar(value="250000")
         self.settings_file_status_string = tk.StringVar(value="Default Settings Loaded")
         self.file_loaded = False
-        self.release_date = "22 July 2017"
+        self.release_date = "12 August 2017"
         if UNIVERSAL:
-            self.release_version = "1.0.2 UNIVERSAL"
+            self.release_version = "1.0.3 UNIVERSAL"
         else:
-            self.release_version = "1.0.2"
+            self.release_version = "1.0.3"
         self.connection_status_string = tk.StringVar(name='status_string',value="Not Connected.")
         connection_status_string = self.connection_status_string
         self.serial_rx_entry = tk.Entry(self,width=60,name='serial_monitor')
@@ -388,6 +392,9 @@ class SSS2(ttk.Frame):
                                          command=self.get_sss2_unique_id)
         self.menu_tools.add_command(label='Export Wiring Table',
                                          command=self.export_wiring)
+        if UNIVERSAL:
+            self.menu_tools.add_command(label='Update Settings Files',
+                                         command=self.update_settings_files)
         
         self.menubar.add_cascade(menu=self.menu_file, label='File')
         self.menubar.add_cascade(menu=self.menu_connection, label='Connection')
@@ -412,10 +419,8 @@ class SSS2(ttk.Frame):
         self.received_j1708_messages=[]
         self.received_lin_messages=[]
         self.received_analog_messages=[]
-
-        self.settings_monitor_setup()
         self.data_logger()
-        self.potentiometer_settings()
+        self.settings_monitor_setup()
         self.connect_to_serial()
         self.process_serial()
         self.tx_queue.put_nowait("Time,{:d}".format( int( time.time() - time.timezone + time.daylight*3600 )))
@@ -438,12 +443,11 @@ class SSS2(ttk.Frame):
             child.destroy()
         for child in self.truck_networks_tab.winfo_children():
             child.destroy()
+        for child in self.extra_tab.winfo_children():
+            child.destroy()
 
-        self.send_stream_A21()
-        self.send_stream_can0()
-        self.send_stream_can1()
-        self.send_stream_j1708()
-
+        
+        self.data_logger()
         
         self.potentiometer_settings() #put this after the serial connections
 
@@ -452,12 +456,18 @@ class SSS2(ttk.Frame):
         self.vehicle_networks_settings()
 
         self.profile_settings()
-
+        
+        self.tabs.select(self.extra_tab)
         self.tabs.select(self.data_logger_tab)
         self.tabs.select(self.truck_networks_tab)
         self.tabs.select(self.voltage_out_tab)
         self.tabs.select(self.settings_tab)
         self.tabs.select(self.profile_tab)
+
+        self.send_stream_A21()
+        self.send_stream_can0()
+        self.send_stream_can1()
+        self.send_stream_j1708()
 
         self.clear_j1939_buffer()
         self.clear_can2_buffer()
@@ -476,7 +486,59 @@ class SSS2(ttk.Frame):
        #Use these messages to determine window size during development.  
        # print("Window Height: {}".format(self.root.winfo_height()))
        # print("Window Width: {}".format(self.root.winfo_width()))
+       
+    def update_settings_files(self):
+        for file in next(os.walk(os.getcwd()))[2]:
+            if file[-4:]=="SSS2":
+                print("Opening {}".format(file))
+                with open(file,'r') as infile:
+                    new_settings_dict=json.load(infile)
 
+                if (len(new_settings_dict["Analog Calibration"]) < len(self.settings_dict["Analog Calibration"])):
+                    new_settings_dict["Analog Calibration"] = self.settings_dict["Analog Calibration"]
+
+                self.settings_dict["CAN"]={}
+
+                self.settings_dict = update_dict(self.settings_dict,new_settings_dict)
+                self.settings_dict["SSS2 Product Code"] = "UNIVERSAL"
+                self.file_status_string.set("Opened "+file)
+                self.settings_file_status_string.set(os.path.basename(file))
+                self.settings_dict["SHA256 Digest"]=self.get_settings_hash()
+                self.settings_dict["SSS2 Interface Release Date"] = self.release_date
+                self.settings_dict["SSS2 Interface Version"] = self.release_version
+
+                ##Update all settings files with the default range
+                self.settings_dict["HVAdjOut"]["Highest Voltage"] = 11.0
+                self.settings_dict["HVAdjOut"]["Lowest Voltage"]= 1.9
+
+                self.settings_dict["PWMs"]["PWM1"]["Lowest Frequency"]= 245
+                self.settings_dict["PWMs"]["PWM2"]["Lowest Frequency"]= 245
+
+                self.settings_dict["Potentiometers"]["Group B"]["Label"]="Potentiometers 9 though 16"
+
+
+                self.interface_date.set(self.release_date)
+                self.interface_release.set(self.release_version)
+                
+                self.file_status_string.set("Saved "+file)
+                self.settings_file_status_string.set(os.path.basename(file))
+                
+                self.sss2_product_code['bg']='white'
+
+                self.saved_date_text.set(time.strftime("%A, %d %B %Y %H:%M:%S %Z", time.localtime()))
+                self.update_dict()
+
+                self.init_tabs()
+                
+                self.settings_dict["SHA256 Digest"]=self.get_settings_hash()
+                self.settings_dict["Original File SHA"]=self.settings_dict["SHA256 Digest"]
+                
+
+                 
+                with open(file,'w') as outfile:
+                    json.dump(self.settings_dict,outfile,indent=4,sort_keys=True)
+                print("Saved {}".format(file))
+                
     def export_wiring(self):
         for group_key in self.settings_dict["Potentiometers"]:
             for pair_key in self.settings_dict["Potentiometers"][group_key]["Pairs"]:
@@ -659,9 +721,8 @@ class SSS2(ttk.Frame):
                     print("Authenticated. OK to Save")
         else:
             if UNIVERSAL:
-                ok_to_save = True ###Change to False for production
+                ok_to_save = True 
             else:
-                ##### Use this for Production
                 ok_to_save = False 
         if ok_to_save:
             self.settings_dict["SSS2 Interface Release Date"] = self.release_date
@@ -726,6 +787,7 @@ class SSS2(ttk.Frame):
         sss_component_ID = self.settings_dict.pop("Component ID",None)
         sss_component_ID = self.settings_dict.pop("Serial Number",None)
         sss_interface_version = self.settings_dict.pop("SSS2 Interface Version",None)
+        sss_interface_date = self.settings_dict.pop("SSS2 Interface Release Date",None)
         
         temp_settings_dict = pformat(self.settings_dict)
         new_hash = str(hashlib.sha256(bytes(temp_settings_dict,'utf-8')).hexdigest())
@@ -738,6 +800,7 @@ class SSS2(ttk.Frame):
         self.settings_dict["Software ID"] = sss_software_ID
         self.settings_dict["Serial Number"] = sss_component_ID
         self.settings_dict["SSS2 Interface Version"] = sss_interface_version
+        self.settings_dict["SSS2 Interface Release Date"] = sss_interface_date
 
         if self.settings_dict["Original File SHA"] ==  "Current Settings Not Saved.":
             self.modified_entry_string.set("Default Settings")
@@ -1287,8 +1350,7 @@ class SSS2(ttk.Frame):
         self.can_name_value = tk.StringVar()
         self.can_name = ttk.Entry(self.can_edit_frame,textvariable=self.can_name_value,width=65)
         self.can_name.grid(row=0,column=1,sticky="W",columnspan=6,pady=5)
-        #self.can_name.bind('<Return>',self.modify_can_message)
-        #self.can_name.bind('<Tab>',self.modify_can_message)
+        self.can_name.configure(state = 'disabled')
         
 
         tk.Label(self.can_edit_frame,text="Thread:").grid(row=1,column=0,sticky="E")
@@ -1311,8 +1373,8 @@ class SSS2(ttk.Frame):
         self.can_id_value=tk.StringVar()
         self.can_id = tk.Entry(self.can_edit_frame,textvariable=self.can_id_value,width=12)
         self.can_id.grid(row=2,column=1,sticky="W",pady=5,columnspan=2)
-        self.can_name.bind('<Return>',self.modify_can_message)
-        self.can_name.bind('<Tab>',self.modify_can_message)
+        self.can_id.bind('<Return>',self.modify_can_message)
+        self.can_id.bind('<Tab>',self.modify_can_message)
         
 
 
@@ -1322,7 +1384,9 @@ class SSS2(ttk.Frame):
         self.can_dlc = ttk.Combobox(self.can_edit_frame,textvariable=self.can_dlc_value,width=2,values=spinbox_values)
         self.can_dlc.grid(row=2,column=3,sticky="W",pady=5,columnspan=1)
         self.can_dlc.bind('<<ComboboxSelected>>',self.modify_can_message)
-       
+        self.can_dlc.bind('<Return>',self.modify_can_message)
+        self.can_dlc.bind('<Tab>',self.modify_can_message)
+        
 
         
         self.can_ext_id_state = tk.IntVar(value=1)
@@ -1551,7 +1615,9 @@ class SSS2(ttk.Frame):
         if new_name is None:
             return
         self.new_message = True
+        self.can_name.configure(state = 'normal')
         self.can_name_value.set(new_name)
+        self.can_name.configure(state = 'disabled')
         selection = self.can_tree.selection()
         can_thread_list=[]
         for selection in self.can_tree.get_children(""):
@@ -1659,7 +1725,9 @@ class SSS2(ttk.Frame):
 
         for i in range(8):
             try:
-                m += "{:02X},".format(abs(int(self.can_byte_value[i].get(),16) & 0xFF))
+                byte_char = "{:02X},".format(abs(int(self.can_byte_value[i].get(),16) & 0xFF))
+                m += byte_char
+                self.can_byte_value[i].set(byte_char)
                 self.can_byte[i]['bg']='white'
             except Exception as e:
                 print(e)
@@ -1687,7 +1755,9 @@ class SSS2(ttk.Frame):
             self.can_thread_value.set(vals[0])
             self.can_count_value.set(vals[1])
             self.can_sub_value.set(vals[2])
+            self.can_name.configure(state = 'normal')
             self.can_name_value.set(can_msg['text'])
+            self.can_name.configure(state = 'disabled')
             self.can_id_value.set(vals[9])
             self.can_dlc_value.set(vals[10])
             self.can_ext_id_state.set(vals[8])
@@ -1865,7 +1935,8 @@ class SSS2(ttk.Frame):
         for key in sorted(pwm_dict.keys()):
             self.pwm_objects[key] = pwm_out(self.pwm_bank,self.tx_queue, pwm_dict[key], row=0, col=col_index)
             col_index+=1
-            
+        
+        
     def data_logger(self):
 
 
@@ -2236,7 +2307,12 @@ class SSS2(ttk.Frame):
         except:
             connection_dialog = setup_serial_connections(self)
             self.serial = connection_dialog.result
-            
+
+        print("Clearing TX Queue...", end = '')
+        while not self.tx_queue.empty():
+            dummy = self.tx_queue.get()
+        print("done.")
+        
         print(self.serial)
         if self.serial: 
             if self.serial is not None:
@@ -2683,6 +2759,38 @@ class SSS2(ttk.Frame):
                     self.ignition_key_button.state(['selected'])
                 elif new_serial_line[0:8]==b'SET 50,0':
                     self.ignition_key_button.state(['!selected'])
+                elif new_serial_line[0:7]==b'SET 83,': #PWM3
+                    freq = self.pwm_objects["PWM3"].pwm_frequency_value.get()
+                    self.pwm_objects["PWM4"].pwm_frequency_value.delete(0,tk.END)
+                    self.pwm_objects["PWM4"].pwm_frequency_value.insert(0,freq)
+                    self.pwm_objects["PWM4"].pwm_frequency_slider.set(float(freq))
+                elif new_serial_line[0:7]==b'SET 84,': #PWM4
+                    freq = self.pwm_objects["PWM4"].pwm_frequency_value.get()
+                    self.pwm_objects["PWM3"].pwm_frequency_value.delete(0,tk.END)
+                    self.pwm_objects["PWM3"].pwm_frequency_value.insert(0,freq)
+                    self.pwm_objects["PWM3"].pwm_frequency_slider.set(float(freq))
+                elif new_serial_line[0:7]==b'SET 81,': #PWM1
+                    freq = self.pwm_objects["PWM1"].pwm_frequency_value.get()
+                    self.pwm_objects["PWM2"].pwm_frequency_value.delete(0,tk.END)
+                    self.pwm_objects["PWM2"].pwm_frequency_value.insert(0,freq)
+                    self.pwm_objects["PWM2"].pwm_frequency_slider.set(float(freq))
+                elif new_serial_line[0:7]==b'SET 82,': #PWM2
+                    freq = self.pwm_objects["PWM2"].pwm_frequency_value.get()
+                    self.pwm_objects["PWM1"].pwm_frequency_value.delete(0,tk.END)
+                    self.pwm_objects["PWM1"].pwm_frequency_value.insert(0,freq)
+                    self.pwm_objects["PWM1"].pwm_frequency_slider.set(float(freq))
+                elif new_serial_line[0:7]==b'SET 85,': #PWM5 and 6
+                    self.pwm_objects["PWM6"].pwm_frequency_slider.configure(state='normal')
+                    self.pwm_objects["PWM6"].pwm_frequency_value.configure(state='normal')
+                    freq = self.pwm_objects["PWM5"].pwm_frequency_value.get()
+                    self.pwm_objects["PWM5"].pwm_frequency_value.delete(0,tk.END)
+                    self.pwm_objects["PWM5"].pwm_frequency_value.insert(0,freq)
+                    self.pwm_objects["PWM5"].pwm_frequency_slider.set(float(freq))
+                    self.pwm_objects["PWM6"].pwm_frequency_value.delete(0,tk.END)
+                    self.pwm_objects["PWM6"].pwm_frequency_value.insert(0,freq)
+                    self.pwm_objects["PWM6"].pwm_frequency_slider.set(float(freq))
+                    self.pwm_objects["PWM6"].pwm_frequency_slider.configure(state='disabled')
+                    self.pwm_objects["PWM6"].pwm_frequency_value.configure(state='disabled')
                 else:
                     self.file_OK_received.set(True)
                 if new_serial_line[0:4]!=b'CAN0' and new_serial_line[0:4]!=b'CAN1' and new_serial_line[0:4]!=b'CAN2' and new_serial_line[0:5]!=b'J1708' and new_serial_line[0:6]!=b'ANALOG' and new_serial_line[0:4]!=b'LIN ':
@@ -3084,10 +3192,10 @@ class DAC7678(SSS2):
         self.dac_mean_position_value.insert(0,self.dac_mean_slider.get()/100)
         x=float(self.dac_mean_position_value.get())
         if self.setting_num == 49:
-            if 'REV05' in self.sss_software_id_text.get():
-                dac_raw_setting = int(19.985*x - 37.522) ##Special for Rev5
-            else:
+            if 'REV03' in self.sss_software_id_text.get():
                 dac_raw_setting = int(4.2646*x - 16.788) ##Special for Rev3
+            else:
+                dac_raw_setting = int(19.985*x - 37.522) ##Special for Rev5
             if dac_raw_setting < 0:
                dac_raw_setting = 0 
         else:
