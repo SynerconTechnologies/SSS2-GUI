@@ -1,7 +1,11 @@
 # A Graphical User Interface for the Smart Sensor Simulator 2
-A Python tkinter GUI for the SSS2 that sends and recieves serial commands to the SSS2 over USB
+A Python tkinter GUI for the SSS2 that sends and recieves serial commands to the SSS2 over USB.
 
-## Building a Windows Executable
+## Working With Building Cables
+The SSS2 Interface App must be run in Python 3.4. The file SSS2-Interface.py should be opened with Python 3.4 to run. If you are developing files for the different cables, please be sure to set the Universal Flag to True (```UNIVERSAL = True```).
+Be sure to commit and Sync all new files to Githup after each development.
+
+## Installing the correct files
 1. Install Python 3.4 ```https://www.python.org/downloads/release/python-343/```
    1. Open a command prompt by typing `cmd` in the Windows start menu.
    2. Upgrade pip: ```py -3.4 -m pip install --upgrade pip```
@@ -10,17 +14,26 @@ A Python tkinter GUI for the SSS2 that sends and recieves serial commands to the
 2. Install the Teensy USB drivers from https://www.pjrc.com/teensy/serial_install.exe
 3. Download Github Desktop from https://desktop.github.com/
 4. Clone this repository in Github Desktop to work on it.
-5. Set the Universal Flag to True (```UNIVERSAL = True```) for preparing files.
-6. Open each SSS2 file and resave.
-7. Copy all updated SSS2 files into this directory.
-5. Change the Universal Flag to False (```UNIVERSAL = False```) for a production release.
+
+## Building a Windows Executable
+1. Be sure all updated SSS2 files are in the SSS2-GUI directory. This is the default setting when the UNIVERSAL is True.
+5. From the Tools Menu, run Update Settings Files. This ensures all the files are saved with the latest verison and hash values. 
+7. Change the Universal Flag to False (```UNIVERSAL = False```) for a production release.
 5. Package the Python sources into an executable using ```py -3.4 createExecutable.py py2exe```
-6. Copy all graphics files into the newly created dist and build directories.
+6. Be sure all graphics files are copied into the newly created dist and build directories. This is only needed if new graphics were installed or this is the first build on your computer. 
 7. Use Inno windows installer to create a single executable file. http://www.jrsoftware.org/isdl.php#qsp
    1. Open the `windows installer script for SSS2.iss` file.
    2. Compile it.
    3. Find the executable in Documents/SSS2
-   4. Rename the executable with the version number and post it to the web.
-8. Set the Universal Flag to True (```UNIVERSAL = True```) 
-9. Repeat the executable creation and installer. Be sure to append the word UNIVERSAL
-10. Copy files to Dropbox.
+   4. Rename the executable with the version number.
+   5. Send the executable to a zip file.
+   6. Drag all the .SSS2 files into SSS2settings.zip and replace all files inside.
+   7. Upload the exe file, and both zip files to the web.
+     1. Use WinSCP or equivalent to log into mallory.synercontechnologies.com
+     2. Navigate to `/var/www/synercontechnologies.com/files` and drop the files there.
+7. Log into the website and update the release information with the latest version. 
+   1. Write up a list of product improvements since the last release.
+   2. Explain what new SSS2 files are available. 
+8. Add a version number in Github.
+8. Set the Universal Flag to True (```UNIVERSAL = True```) to continue work.
+9. Commit and Sync to Github
