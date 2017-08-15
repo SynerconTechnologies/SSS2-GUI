@@ -7,7 +7,7 @@ def get_default_settings():
     settings["1: Message to User"]="This file is used to store settings for the SSS2.The SSS2 can be adjusted to match different ECUs. It is your responsibility to ensure the adjustments match the  application. Using the Smart Sensor Simulator 2 cannot guarantee a fault free environment for all electronic control units. If the elimination of fault codes is critical, then the user is encouraged to test the SSS2 settings with an exemplar module and adjust the settings accordingly. Only properly trained experts should use this software and product. This file should only be modified within the SSS2 Interface application."
     settings["Original File SHA"]="Current Settings Not Saved."
     settings["SSS2 Product Code"]="UNIVERSAL"
-    settings["Component ID"] = "SYNER*SSS2-R03*XXXX*UNIVERSAL"
+    settings["Component ID"] = "SYNER*SSS2-R05*XXXX*UNIVERSAL"
     settings["Software ID"]="SOFTWARE ID"
     settings["SSS2 Source Address"] = 0xFA
     settings["ECU Year"] = "YEAR"

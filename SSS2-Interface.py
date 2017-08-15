@@ -29,7 +29,7 @@ from SSS2_defaults import *
 #### CHANGE THIS to False FOR PRODUCTION #####
 UNIVERSAL = False
 
-            
+           
 class SerialThread(threading.Thread):
     def __init__(self, parent, rx_queue, tx_queue,serial):
         self.root = parent
@@ -38,6 +38,8 @@ class SerialThread(threading.Thread):
         self.tx_queue = tx_queue
         self.serial=serial
         self.signal = True
+        self.receivetime = time.time()
+        self.sendtime = time.time()
         
     def run(self):
         time.sleep(.1)
@@ -51,10 +53,11 @@ class SerialThread(threading.Thread):
                     print('TX: ', end='')
                     print(s)
                     self.serial.write(bytes(s,'utf-8') + b'\x0A')
+                    self.sendtime = time.time()
                     
                 if self.serial.in_waiting:
                     lines = self.serial.readlines(self.serial.in_waiting)
-                    
+                    self.receivetime = time.time()
                     for line in lines:
                         
                         if line[0:3] == b'CAN': 
@@ -79,6 +82,8 @@ class SerialThread(threading.Thread):
                         else:
                             self.rx_queue.put(line)
                 time.sleep(.002) #add a sleep statement to reduce CPU load for this thread.
+                if abs(self.receivetime - self.sendtime) > 2.5:
+                    self.signal = False
                 
         except Exception as e:
             print(e)
@@ -173,7 +178,7 @@ class setup_serial_connections(tk.Toplevel):
         self.port_combo_box['values'] = comPorts[::-1]
         self.port_combo_box.current(0)
 
-        self.after(4000,self.populate_combo_box)
+        #self.after(4000,self.populate_combo_box)
         
     # standard button semantics
 
@@ -271,6 +276,7 @@ class SSS2(ttk.Frame):
             if not os.path.exists(self.home_directory):
                 self.home_directory = os.path.expanduser('~')+os.sep
         os.path.normpath(self.home_directory)
+        self.receivetime = 0
         self.filename = None
         self.lasthash = None
         self.file_authenticated = False
@@ -285,11 +291,11 @@ class SSS2(ttk.Frame):
         self.j1939_baud_value=tk.StringVar(value="250000")
         self.settings_file_status_string = tk.StringVar(value="Default Settings Loaded")
         self.file_loaded = False
-        self.release_date = "12 August 2017"
+        self.release_date = "14 August 2017"
         if UNIVERSAL:
-            self.release_version = "1.0.3 UNIVERSAL"
+            self.release_version = "1.0.4 UNIVERSAL"
         else:
-            self.release_version = "1.0.3"
+            self.release_version = "1.0.4"
         self.connection_status_string = tk.StringVar(name='status_string',value="Not Connected.")
         connection_status_string = self.connection_status_string
         self.serial_rx_entry = tk.Entry(self,width=60,name='serial_monitor')
@@ -410,7 +416,8 @@ class SSS2(ttk.Frame):
         self.bind_all("<Control-p>",self.print_settings_file)
         
         self.root.config(menu=self.menubar)
-
+        
+        
         self.serial_connected = False
         self.serial_rx_byte_list = []
         self.received_can0_messages=[]
@@ -421,12 +428,14 @@ class SSS2(ttk.Frame):
         self.received_analog_messages=[]
         self.data_logger()
         self.settings_monitor_setup()
-        self.connect_to_serial()
+        self.connect_to_serial(auto=True)
         self.process_serial()
         self.tx_queue.put_nowait("Time,{:d}".format( int( time.time() - time.timezone + time.daylight*3600 )))
-        self.init_tabs()
+        #self.init_tabs()
         
     def init_tabs(self,event=None):
+        
+        
         self.tx_queue.put_nowait("50,0")
         time.sleep(.25)
         
@@ -482,7 +491,8 @@ class SSS2(ttk.Frame):
         self.update_sha()
         if self.filename is not None:
             self.autosave()
-
+            
+        
        #Use these messages to determine window size during development.  
        # print("Window Height: {}".format(self.root.winfo_height()))
        # print("Window Width: {}".format(self.root.winfo_width()))
@@ -492,18 +502,12 @@ class SSS2(ttk.Frame):
             if file[-4:]=="SSS2":
                 print("Opening {}".format(file))
                 with open(file,'r') as infile:
-                    new_settings_dict=json.load(infile)
-
-                if (len(new_settings_dict["Analog Calibration"]) < len(self.settings_dict["Analog Calibration"])):
-                    new_settings_dict["Analog Calibration"] = self.settings_dict["Analog Calibration"]
-
-                self.settings_dict["CAN"]={}
-
-                self.settings_dict = update_dict(self.settings_dict,new_settings_dict)
-                self.settings_dict["SSS2 Product Code"] = "UNIVERSAL"
+                    self.settings_dict=json.load(infile)
                 self.file_status_string.set("Opened "+file)
                 self.settings_file_status_string.set(os.path.basename(file))
-                self.settings_dict["SHA256 Digest"]=self.get_settings_hash()
+
+                self.settings_dict["SSS2 Product Code"] = "UNIVERSAL"
+                
                 self.settings_dict["SSS2 Interface Release Date"] = self.release_date
                 self.settings_dict["SSS2 Interface Version"] = self.release_version
 
@@ -513,24 +517,21 @@ class SSS2(ttk.Frame):
 
                 self.settings_dict["PWMs"]["PWM1"]["Lowest Frequency"]= 245
                 self.settings_dict["PWMs"]["PWM2"]["Lowest Frequency"]= 245
+                self.settings_dict["PWMs"]["PWM1"]["Frequency"]= 245
+                self.settings_dict["PWMs"]["PWM2"]["Frequency"]= 245
 
                 self.settings_dict["Potentiometers"]["Group B"]["Label"]="Potentiometers 9 though 16"
+                self.settings_dict["Component ID"]= "SYNER*SSS2-R05*XXXX*UNIVERSAL"
 
-
-                self.interface_date.set(self.release_date)
-                self.interface_release.set(self.release_version)
                 
-                self.file_status_string.set("Saved "+file)
-                self.settings_file_status_string.set(os.path.basename(file))
+                
                 
                 self.sss2_product_code['bg']='white'
 
-                self.saved_date_text.set(time.strftime("%A, %d %B %Y %H:%M:%S %Z", time.localtime()))
-                self.update_dict()
-
-                self.init_tabs()
+                #self.saved_date_text.set(time.strftime("%A, %d %B %Y %H:%M:%S %Z", time.localtime()))
                 
                 self.settings_dict["SHA256 Digest"]=self.get_settings_hash()
+                
                 self.settings_dict["Original File SHA"]=self.settings_dict["SHA256 Digest"]
                 
 
@@ -538,6 +539,8 @@ class SSS2(ttk.Frame):
                 with open(file,'w') as outfile:
                     json.dump(self.settings_dict,outfile,indent=4,sort_keys=True)
                 print("Saved {}".format(file))
+                self.file_status_string.set("Saved "+file)
+                self.settings_file_status_string.set(file)
                 
     def export_wiring(self):
         for group_key in self.settings_dict["Potentiometers"]:
@@ -656,7 +659,7 @@ class SSS2(ttk.Frame):
                             self.sss2_product_code['bg']='white'
                     else:
                         messagebox.showerror("SSS2 Needed to Open File",
-                           "Please connect the Smart Sensor Simulator 2 with USB to open a file. User saved files are spcific to each SSS2 unit.")
+                           "Please connect the Smart Sensor Simulator 2 with USB to open a file. User saved files are specific to each SSS2 unit.")
                         self.connect_to_serial()
 
 
@@ -779,27 +782,27 @@ class SSS2(ttk.Frame):
         
          
         
-        self.settings_dict.pop("SHA256 Digest",None)
-        self.settings_dict.pop("Original File SHA",None)
-        self.settings_dict.pop("Original Creation Date",None)
-        self.settings_dict.pop("Saved Date",None)
-        sss_software_ID = self.settings_dict.pop("Software ID",None)
-        sss_component_ID = self.settings_dict.pop("Component ID",None)
-        sss_component_ID = self.settings_dict.pop("Serial Number",None)
-        sss_interface_version = self.settings_dict.pop("SSS2 Interface Version",None)
-        sss_interface_date = self.settings_dict.pop("SSS2 Interface Release Date",None)
+        new_hash               = self.settings_dict.pop("SHA256 Digest",None)
+        digest_from_file       = self.settings_dict.pop("Original File SHA",None)
+        load_date              = self.settings_dict.pop("Original Creation Date",None)
+        save_date              = self.settings_dict.pop("Saved Date",None)
+        sss_software_ID        = self.settings_dict.pop("Software ID",None)
+        sss_component_ID       = self.settings_dict.pop("Component ID",None)
+        sss_serial_ID          = self.settings_dict.pop("Serial Number",None)
+        sss_interface_version  = self.settings_dict.pop("SSS2 Interface Version",None)
+        sss_interface_date     = self.settings_dict.pop("SSS2 Interface Release Date",None)
         
         temp_settings_dict = pformat(self.settings_dict)
         new_hash = str(hashlib.sha256(bytes(temp_settings_dict,'utf-8')).hexdigest())
         
-        self.settings_dict["SHA256 Digest"] = new_hash
-        self.settings_dict["Original File SHA"] = digest_from_file
-        self.settings_dict["Original Creation Date"] = load_date
-        self.settings_dict["Saved Date"]=save_date
-        self.settings_dict["Component ID"] =sss_component_ID
-        self.settings_dict["Software ID"] = sss_software_ID
-        self.settings_dict["Serial Number"] = sss_component_ID
-        self.settings_dict["SSS2 Interface Version"] = sss_interface_version
+        self.settings_dict["SHA256 Digest"]               = new_hash
+        self.settings_dict["Original File SHA"]           = digest_from_file
+        self.settings_dict["Original Creation Date"]      = load_date
+        self.settings_dict["Saved Date"]                  = save_date
+        self.settings_dict["Component ID"]                = sss_component_ID
+        self.settings_dict["Software ID"]                 = sss_software_ID
+        self.settings_dict["Serial Number"]               = sss_serial_ID
+        self.settings_dict["SSS2 Interface Version"]      = sss_interface_version
         self.settings_dict["SSS2 Interface Release Date"] = sss_interface_date
 
         if self.settings_dict["Original File SHA"] ==  "Current Settings Not Saved.":
@@ -2276,38 +2279,24 @@ class SSS2(ttk.Frame):
                     self.calibration_entries[i][j]['bg']='red'
                     self.root.bell()
                     
-    
-    def check_SSS2_connection(self):
-        sss2_id = self.settings_dict["SSS2 Product Code"].strip()
-        command_string = "OK,{}".format(sss2_id)
-        self.tx_queue.put_nowait(command_string)
-        n=0
-        while (self.file_OK_received.get() == False) and n < 100 :
-            time.sleep(.01)
-            n+=1
-        if self.file_OK_received.get() == True:
-            self.file_OK_received.set(False)
-            return True
+        
+    def connect_to_serial(self,auto=False):
+        if auto:
+            try:
+                print("Automatically connecting to SSS2.")
+                self.connection_status_string.set("SSS2 connecting automatically.")
+                with open("SSS2comPort.txt","r") as comFile:
+                    comport = comFile.readline().strip()
+                self.serial = serial.Serial(comport,baudrate=4000000,timeout=0.01,
+                                        parity=serial.PARITY_ODD,write_timeout=0.01,
+                                        xonxoff=False, rtscts=False, dsrdtr=False)
+            except:
+                connection_dialog = setup_serial_connections(self)
+                self.serial = connection_dialog.result
         else:
-            messagebox.showwarning("Valid SSS2",
-                "There is not a valid unique ID from the SSS2. There might be something wrong with the USB/Serial connection.")
-            return False
-        
-            
-        
-    def connect_to_serial(self):
-        try:
-            print("Automatically connecting to SSS2.")
-            self.connection_status_string.set("SSS2 connecting automatically.")
-            with open("SSS2comPort.txt","r") as comFile:
-                comport = comFile.readline().strip()
-            self.serial = serial.Serial(comport,baudrate=4000000,timeout=0.01,
-                                    parity=serial.PARITY_ODD,write_timeout=0.01,
-                                    xonxoff=False, rtscts=False, dsrdtr=False)
-        except:
             connection_dialog = setup_serial_connections(self)
             self.serial = connection_dialog.result
-
+            
         print("Clearing TX Queue...", end = '')
         while not self.tx_queue.empty():
             dummy = self.tx_queue.get()
@@ -2323,40 +2312,45 @@ class SSS2(ttk.Frame):
                     self.thread.daemon = True
                     self.thread.start()
                     print("Started Serial Thread.")
-                    return
-       
+                    self.init_tabs()
+                    self.check_serial_connection()
+        else:
+            self.throw_serial_error()
+
+    def throw_serial_error(self):
         messagebox.showerror("SSS2 Serial Connection Error",
-                              "The SSS2 serial connection is not present. Please connect the SSS2. You may have to restart the program if the connectrion continues to fail." )                
-        
-    def check_serial_connection(self,event = None):
-        try:
-            if self.thread.signal:
-                available_comports = setup_serial_connections.find_serial_ports(self)
-                for port in available_comports:
-                    if self.serial.port in port.split():
-                        
-                        self.serial_connected = self.check_SSS2_connection
-                        
-                        self.connection_status_string.set('SSS2 Connected on '+self.serial.port)
-                        self.serial_rx_entry['bg']='white'
-                        return True
-        
-        
-            self.thread.signal = False
-        except:
-            pass
+                              "The SSS2 serial connection is not present on the selected COM port. Please connect the SSS2 to the correct USB to Serial connection. You may have to restart the program and the SSS2 if the connection continues to fail." )                
         self.connection_status_string.set('USB to Serial Connection Unavailable. Please install drivers and plug in the SSS2.')
         self.serial_rx_entry['bg']='red'
-        if self.serial: 
-            if self.serial is not None:
-                self.connect_to_serial()
-            else:
-                self.serial.close()
-        self.serial = None
-        return False
-    
-        self.after(2000,self.check_serial_connection())
+        for tbs in range(1,7):
+            self.tabs.tab(tbs, state="disabled")
+        self.ignition_key_button.state(['!selected'])
+        self.ignition_key_button.state(['disabled'])
         
+
+    def check_serial_connection(self,event = None):
+        if self.thread.signal:
+            sss2_id = self.settings_dict["SSS2 Product Code"].strip()
+            command_string = "OK,{}".format(sss2_id)
+            self.tx_queue.put_nowait(command_string)
+            self.connection_status_string.set('SSS2 Connected on '+self.serial.port)
+            self.serial_rx_entry['bg']='white'
+            for tbs in range(7):
+                self.tabs.tab(tbs, state="normal")
+            self.ignition_key_button.state(['!disabled'])
+            #self.ignition_key_button.configure(state = "normal")
+            
+
+        else:
+            self.throw_serial_error()
+            self.file_OK_received.set(False)
+            self.wait_variable(self.file_OK_received)       
+            self.file_OK_received.set(False)
+            
+
+        self.after(2000,self.check_serial_connection)
+        
+    
     def send_arbitrary_serial_message(self,event = None):
         commandString = self.serial_TX_message.get()
         self.tx_queue.put_nowait(commandString)
@@ -2611,8 +2605,9 @@ class SSS2(ttk.Frame):
         except:
             limit = 100000
             self.j1939_size['bg']='red'
-        if self.check_serial_connection():
-            while self.rx_queue.qsize():
+        
+        while self.rx_queue.qsize():
+                self.receivetime = time.time()
                 new_serial_line = self.rx_queue.get_nowait()
                 if new_serial_line[0:4]==b'CAN0':
                     CANdata = new_serial_line.decode('ascii',"ignore").strip().split()
@@ -2740,9 +2735,11 @@ class SSS2(ttk.Frame):
                 elif new_serial_line[:16]==b'OK:Authenticated':
                     self.file_authenticated = True
                     self.file_OK_received.set(True)
+                    
                 elif new_serial_line[0:9]==b'OK:Denied':
                     self.file_authenticated = False
                     self.file_OK_received.set(True)
+                    
                 elif new_serial_line[0:23]==b'INFO SSS2 Component ID:':
                     temp_data = str(new_serial_line,'utf-8').split(':')
                     self.sss_component_id_text.set(temp_data[1].strip())
@@ -2793,7 +2790,7 @@ class SSS2(ttk.Frame):
                     self.pwm_objects["PWM6"].pwm_frequency_value.configure(state='disabled')
                 else:
                     self.file_OK_received.set(True)
-                if new_serial_line[0:4]!=b'CAN0' and new_serial_line[0:4]!=b'CAN1' and new_serial_line[0:4]!=b'CAN2' and new_serial_line[0:5]!=b'J1708' and new_serial_line[0:6]!=b'ANALOG' and new_serial_line[0:4]!=b'LIN ':
+                if new_serial_line[0:4]!=b'CAN0' and new_serial_line[0:4]!=b'CAN1' and new_serial_line[0:4]!=b'CAN2' and new_serial_line[0:5]!=b'J1708' and new_serial_line[0:6]!=b'ANALOG' and new_serial_line[0:4]!=b'LIN ' and new_serial_line[0:2]!=b'OK':
                     self.serial_rx_entry.delete(0,tk.END)
                     self.serial_rx_entry.insert(0, new_serial_line.decode('ascii',"ignore"))
                     self.settings_text.insert(tk.END,new_serial_line.decode('ascii',"ignore"))
