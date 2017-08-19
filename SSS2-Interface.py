@@ -27,7 +27,7 @@ import collections
 from SSS2_defaults import *
 
 #### CHANGE THIS to False FOR PRODUCTION #####
-UNIVERSAL = False
+UNIVERSAL = True
 release_date = "16 August 2017"
 release_version = "1.0.5"
 
@@ -402,10 +402,6 @@ class SSS2(ttk.Frame):
         self.menu_tools.add_separator()
         self.menu_tools.add_command(label='Version Information',
                                          command=self.current_version)
-        
-        if UNIVERSAL:
-            self.menu_tools.add_command(label='Update Settings Files',
-                                         command=self.update_settings_files)
         
         self.menubar.add_cascade(menu=self.menu_file, label='File')
         self.menubar.add_cascade(menu=self.menu_connection, label='Connection')
