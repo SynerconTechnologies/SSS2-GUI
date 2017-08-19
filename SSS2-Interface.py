@@ -83,7 +83,7 @@ class SerialThread(threading.Thread):
                         else:
                             self.rx_queue.put(line)
                 time.sleep(.002) #add a sleep statement to reduce CPU load for this thread.
-                if abs(self.receivetime - self.sendtime) > 2.5:
+                if abs(self.receivetime - self.sendtime) >5:
                     self.signal = False
                 
         except Exception as e:
