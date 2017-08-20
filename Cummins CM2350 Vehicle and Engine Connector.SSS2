@@ -54,7 +54,7 @@
         " 19.000": "PTO from Cab Display,19,1,0,0, 100,   0,0,1,18FEF028,8, 0, 0, 0, 0, 0, 0, 0, 0,Yes",
         " 20.000": "PTO from Cab Controller,20,1,0,0, 100,   0,0,1,18FEF031,8, 0, 0, 0, 0, 0, 0, 0, 0,Yes",
         " 21.000": "AMB from Body Controller,21,1,0,0,1000,   0,0,1,18FEF521,8, 0, 0, 0, 0, 0, 0, 0, 0,Yes",
-        " 22.000": "VGT Status,22,1,0,1,25,0,0,1,18FFC502,8,11,FF,FF,4F,08,FF,FF,FF,Yes"
+        " 22.000": "VGT Status,22,1,0,1,25,0,0,1,18FFC502,8,00,00,00,00,00,00,00,00,Yes"
     },
     "CAN Config": {
         "Buffer Size": 1000000,
@@ -228,7 +228,7 @@
     "Engine Configuration": "ECM/PDD Code: EB90154.08",
     "Engine Model": "MODEL",
     "Engine Serial Number": "ISL9 CM2350 L101/L108/L109/L123B",
-    "File Name": "Cummins CM2350 Vehicle Connector Only.SSS2",
+    "File Name": "Cummins CM2350 Vehicle and Engine Connector.SSS2",
     "HVAdjOut": {
         "Alt. Pin": null,
         "Alt. Pin Connect": false,
@@ -250,7 +250,7 @@
     },
     "Location": "ADDRESS, CITY, STATE, ZIP",
     "Original Creation Date": "Sunday, 20 August 2017 05:15:32 Central Daylight Time",
-    "Original File SHA": "194fe5778071c9d0a042f8360b695ea364e7b3d9f1dc7b2b6709270257ddad4f",
+    "Original File SHA": "99297afd79c4559163279d57a55ddf9a3ca84df96eb332c5df2db1577bc5fa3d",
     "PWMs": {
         "PWM1": {
             "Alt. Pin": "J18:15",
@@ -766,13 +766,13 @@
     },
     "Programmed By": "USER NAME",
     "Resistor Box Used": "No",
-    "SHA256 Digest": "194fe5778071c9d0a042f8360b695ea364e7b3d9f1dc7b2b6709270257ddad4f",
+    "SHA256 Digest": "99297afd79c4559163279d57a55ddf9a3ca84df96eb332c5df2db1577bc5fa3d",
     "SSS2 Cable": "SSS2-CM2350",
     "SSS2 Interface Release Date": "16 August 2017",
     "SSS2 Interface Version": "1.0.5 UNIVERSAL",
     "SSS2 Product Code": "UNIVERSAL",
     "SSS2 Source Address": 250,
-    "Saved Date": "Sunday, 20 August 2017 05:19:15 Central Daylight Time",
+    "Saved Date": "Sunday, 20 August 2017 06:00:16 Central Daylight Time",
     "Send SSS2 Component ID": "1",
     "Serial Number": "SYNER*SSS2-R05*0034*UNIVERSAL",
     "Software ID": "SSS2*REV05*1.0*master*c3b62b583f1f7b22da9f3ec93ed09addc75a1d1e",

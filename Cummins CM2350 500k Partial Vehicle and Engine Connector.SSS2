@@ -54,7 +54,11 @@
         " 19.000": "PTO from Cab Display,19,1,0,0, 100,   0,0,1,18FEF028,8, 0, 0, 0, 0, 0, 0, 0, 0,Yes",
         " 20.000": "PTO from Cab Controller,20,1,0,0, 100,   0,0,1,18FEF031,8, 0, 0, 0, 0, 0, 0, 0, 0,Yes",
         " 21.000": "AMB from Body Controller,21,1,0,0,1000,   0,0,1,18FEF521,8, 0, 0, 0, 0, 0, 0, 0, 0,Yes",
-        " 22.000": "VGT Status,22,1,0,1,25,0,0,1,18FFC502,8,11,FF,FF,4F,08,FF,FF,FF,Yes"
+        " 22.000": "VGT Status,22,1,0,1,20,0,0,1,18FFC502,8,00,00,00,00,00,00,00,00,Yes",
+        " 23.000": "Stop Broadcast,23,2,0,0,1,5000,0,1,18DFFFF9,8,00,00,3F,0F,FF,FF,FF,FF,Yes",
+        " 23.001": "Stop Broadcast,23,2,1,0,5000,1,0,1,18DFFFF9,8,FF,FF,FF,0F,FF,FF,FF,FF,Yes",
+        " 24.000": "Address Claimed from VGT,24,1,0,1,500,0,10,1,18EEFF02,8,BD,82,A4,12,00,85,00,00,Yes",
+        " 25.000": "VGT Response,25,1,0,1,5000,0,20,1,18FF0B02,8,82,6A,DF,9A,FC,01,8E,00,Yes"
     },
     "CAN Config": {
         "Buffer Size": 1000000,
@@ -70,9 +74,9 @@
             "Alt. Pin": "J24:15",
             "Alt. Pin Connect": false,
             "Amplitude": 0,
-            "Application": "Engine Fuel Pump Pressurizing Assembly",
-            "Average Voltage": 0.0,
-            "ECU Pins": "J1:11",
+            "Application": "Engine Coolant Sensor 1",
+            "Average Voltage": 0.9,
+            "ECU Pins": "J2:35",
             "Frequency": 0,
             "Highest Voltage": 5,
             "Lowest Voltage": 0,
@@ -89,9 +93,9 @@
             "Alt. Pin": "J24:10",
             "Alt. Pin Connect": false,
             "Amplitude": 0,
-            "Application": "Aftertreatment 1 DEF Dosing Valve",
-            "Average Voltage": 0.0,
-            "ECU Pins": "J2:53",
+            "Application": "Fuel Rail Pressure 1 Measured ",
+            "Average Voltage": 1.0,
+            "ECU Pins": "J1:59",
             "Frequency": 0,
             "Highest Voltage": 5,
             "Lowest Voltage": 0,
@@ -108,9 +112,9 @@
             "Alt. Pin": null,
             "Alt. Pin Connect": false,
             "Amplitude": 0,
-            "Application": "DEF Return Valve",
-            "Average Voltage": 0.0,
-            "ECU Pins": "J2:81",
+            "Application": "Fuel Rail Pressure 2 Rationality Sensor",
+            "Average Voltage": 3.98,
+            "ECU Pins": "J1:42",
             "Frequency": 0,
             "Highest Voltage": 5,
             "Lowest Voltage": 0,
@@ -220,15 +224,15 @@
         }
     },
     "Date of Loss": "DATE",
-    "ECU Component ID": "CMMNS^6L u13D089*0000000",
+    "ECU Component ID": "CMMNS*6L u13D089*6100300",
     "ECU Make": "Cummins",
-    "ECU Model": "CM2350",
-    "ECU Software Version": "EB90154.08",
+    "ECU Model": "CM2350A",
+    "ECU Software Version": "ECM Code: EB90154.08, Calibration Software Phase: 15464609",
     "ECU Year": "2017",
-    "Engine Configuration": "ECM/PDD Code: EB90154.08",
+    "Engine Configuration": "ISL L101/L108/L109/L123B 6L u13D089",
     "Engine Model": "MODEL",
-    "Engine Serial Number": "ISL9 CM2350 L101/L108/L109/L123B",
-    "File Name": "Cummins CM2350 Vehicle Connector Only.SSS2",
+    "Engine Serial Number": "0",
+    "File Name": "Cummins CM2350 500k Partial Vehicle and Engine Connector.SSS2",
     "HVAdjOut": {
         "Alt. Pin": null,
         "Alt. Pin Connect": false,
@@ -249,8 +253,8 @@
         "Wire Color": "TAN"
     },
     "Location": "ADDRESS, CITY, STATE, ZIP",
-    "Original Creation Date": "Sunday, 20 August 2017 05:15:32 Central Daylight Time",
-    "Original File SHA": "194fe5778071c9d0a042f8360b695ea364e7b3d9f1dc7b2b6709270257ddad4f",
+    "Original Creation Date": "Sunday, 20 August 2017 12:11:51 Central Daylight Time",
+    "Original File SHA": "00dc1ad4b7ddd6875de09c84bec1e6a29d6fa476308792c633e41ff8b6c8f626",
     "PWMs": {
         "PWM1": {
             "Alt. Pin": "J18:15",
@@ -302,9 +306,9 @@
             "Alt. Pin": "",
             "Alt. Pin Connect": null,
             "Alt. Port": null,
-            "Application": "Rail pressure 1",
-            "Duty Cycle": 40,
-            "ECU Pins": "J1:59",
+            "Application": "Coolant Level 2",
+            "Duty Cycle": 12,
+            "ECU Pins": "J2:34",
             "Frequency": 5000,
             "Highest Frequency": 5000,
             "Highest Voltage": 5,
@@ -325,9 +329,9 @@
             "Alt. Pin": "",
             "Alt. Pin Connect": null,
             "Alt. Port": null,
-            "Application": "DEF Line Heater 3 and 2",
+            "Application": "DEF Line Heater 3",
             "Duty Cycle": 0,
-            "ECU Pins": "J1:40 & 39",
+            "ECU Pins": "J2:40",
             "Frequency": 5000,
             "Highest Frequency": 5000,
             "Highest Voltage": 5,
@@ -412,7 +416,7 @@
                             "Term. A Connect": false,
                             "Term. B Connect": false,
                             "Wiper Connect": false,
-                            "Wiper Position": 0,
+                            "Wiper Position": 20,
                             "Wire Color": "PPL/WHT"
                         },
                         "U2": {
@@ -427,7 +431,7 @@
                             "Term. A Connect": false,
                             "Term. B Connect": false,
                             "Wiper Connect": false,
-                            "Wiper Position": 0,
+                            "Wiper Position": 10,
                             "Wire Color": "BRN/WHT"
                         }
                     },
@@ -475,8 +479,8 @@
                     "Name": "Terminal A Voltage for U5 and U6",
                     "Pots": {
                         "U5": {
-                            "Application": "Ambient Air Temperature FLT",
-                            "ECU Pins": "J2:62",
+                            "Application": "Starter Lockout",
+                            "ECU Pins": "J2:83",
                             "Name": "Potentiometer 5",
                             "Pin": "J24:5",
                             "Port": "5",
@@ -486,7 +490,7 @@
                             "Term. A Connect": false,
                             "Term. B Connect": true,
                             "Wiper Connect": true,
-                            "Wiper Position": 255,
+                            "Wiper Position": 119,
                             "Wire Color": "Blue"
                         },
                         "U6": {
@@ -567,22 +571,22 @@
                             "Term. A Connect": true,
                             "Term. B Connect": true,
                             "Wiper Connect": true,
-                            "Wiper Position": 9,
+                            "Wiper Position": 78,
                             "Wire Color": "RED/WHT"
                         },
                         "U10": {
-                            "Application": "Engine Coolant Level Sensor 2",
-                            "ECU Pins": "J2:35",
+                            "Application": "Engine Oil Temperature",
+                            "ECU Pins": "J1:90",
                             "Name": "Potentiometer 10",
                             "Pin": "J24:10",
                             "Port": "10",
                             "Resistance": "100k",
                             "SSS2 TCON Setting": 60,
                             "SSS2 Wiper Setting": 10,
-                            "Term. A Connect": true,
+                            "Term. A Connect": false,
                             "Term. B Connect": true,
                             "Wiper Connect": true,
-                            "Wiper Position": 0,
+                            "Wiper Position": 255,
                             "Wire Color": "RED/BLK"
                         }
                     },
@@ -604,22 +608,22 @@
                             "Term. A Connect": true,
                             "Term. B Connect": true,
                             "Wiper Connect": true,
-                            "Wiper Position": 110,
+                            "Wiper Position": 43,
                             "Wire Color": "BLU/WHT"
                         },
                         "U12": {
-                            "Application": "Engine Coolant Level Sensor 1",
-                            "ECU Pins": "J2:34",
+                            "Application": "Fuel Level",
+                            "ECU Pins": "J1:41",
                             "Name": "Potentiometer 12",
                             "Pin": "J24:12",
                             "Port": "12",
                             "Resistance": "100k",
                             "SSS2 TCON Setting": 62,
                             "SSS2 Wiper Setting": 12,
-                            "Term. A Connect": true,
+                            "Term. A Connect": false,
                             "Term. B Connect": true,
                             "Wiper Connect": true,
-                            "Wiper Position": 0,
+                            "Wiper Position": 9,
                             "Wire Color": "TAN/BLK"
                         }
                     },
@@ -645,8 +649,8 @@
                             "Wire Color": "Brown"
                         },
                         "U14": {
-                            "Application": "Injector metering Rail 2",
-                            "ECU Pins": "J1:42",
+                            "Application": "Barometric Pressure",
+                            "ECU Pins": "J1:44",
                             "Name": "Potentiometer 14",
                             "Pin": "J24:14",
                             "Port": "14",
@@ -656,7 +660,7 @@
                             "Term. A Connect": true,
                             "Term. B Connect": true,
                             "Wiper Connect": true,
-                            "Wiper Position": 33,
+                            "Wiper Position": 52,
                             "Wire Color": "BLK/WHT"
                         }
                     },
@@ -719,10 +723,10 @@
                             "Resistance": "100k",
                             "SSS2 TCON Setting": 78,
                             "SSS2 Wiper Setting": 75,
-                            "Term. A Connect": false,
+                            "Term. A Connect": true,
                             "Term. B Connect": true,
                             "Wiper Connect": true,
-                            "Wiper Position": 255,
+                            "Wiper Position": 226,
                             "Wire Color": "TAN/BLK"
                         },
                         "U36": {
@@ -741,18 +745,18 @@
                             "Wire Color": "BROWN"
                         },
                         "U37": {
-                            "Application": "Barometric Pressure",
-                            "ECU Pins": "J1:44",
+                            "Application": "Ambient Air Temperature",
+                            "ECU Pins": "J2:65",
                             "Name": "Port 30 Potentiometer",
                             "Pin": "J18:14",
                             "Port": "30",
                             "Resistance": "100k",
                             "SSS2 TCON Setting": 80,
                             "SSS2 Wiper Setting": 77,
-                            "Term. A Connect": true,
+                            "Term. A Connect": false,
                             "Term. B Connect": true,
                             "Wiper Connect": true,
-                            "Wiper Position": 50,
+                            "Wiper Position": 255,
                             "Wire Color": "GRN/WHT"
                         }
                     },
@@ -766,13 +770,13 @@
     },
     "Programmed By": "USER NAME",
     "Resistor Box Used": "No",
-    "SHA256 Digest": "194fe5778071c9d0a042f8360b695ea364e7b3d9f1dc7b2b6709270257ddad4f",
+    "SHA256 Digest": "00dc1ad4b7ddd6875de09c84bec1e6a29d6fa476308792c633e41ff8b6c8f626",
     "SSS2 Cable": "SSS2-CM2350",
     "SSS2 Interface Release Date": "16 August 2017",
     "SSS2 Interface Version": "1.0.5 UNIVERSAL",
     "SSS2 Product Code": "UNIVERSAL",
     "SSS2 Source Address": 250,
-    "Saved Date": "Sunday, 20 August 2017 05:19:15 Central Daylight Time",
+    "Saved Date": "Sunday, 20 August 2017 12:26:16 Central Daylight Time",
     "Send SSS2 Component ID": "1",
     "Serial Number": "SYNER*SSS2-R05*0034*UNIVERSAL",
     "Software ID": "SSS2*REV05*1.0*master*c3b62b583f1f7b22da9f3ec93ed09addc75a1d1e",
@@ -806,7 +810,7 @@
             "Label A": "Connect J1708 to J24:17 and J24:18",
             "Label B": "Connect CAN2 to J24:17 and J24:18",
             "SSS2 setting": 39,
-            "State": true
+            "State": false
         },
         "CAN2": {
             "Label": "Connect CAN2 (FlexCAN1) Termination Resistor (E-CAN)",
@@ -878,7 +882,7 @@
         "PWM4_28 Connect": {
             "Label": "Connect PWM4 Output to J18:12",
             "SSS2 setting": 86,
-            "State": true
+            "State": false
         },
         "PWM5 Connect": {
             "Label": "Connect PWM5 Output to J24:2",
@@ -909,7 +913,7 @@
             "State": false
         }
     },
-    "User Notes": "ECM/PDD Code: EB90154.08\nAdvertised Power at RPM: 451 hp\nAdvertised Power RPM: 2100 RPM\nControl Parts List: 4611\nFuel Code: FP93692\nGoverned Speed: 2200 RPM\nPeak Torque at RPM: 1250 ft*lb\nPeak Torque RPM: 1400 RPM\nECM Name: CM2350A\nECM Part Number: 4358814\nECM Serial Number: 6100300\nEngine Make: CMMNS\nEngine Model: 6L u13D0890000000\n\nThis was a blank ECU and not installed in a vehicle.",
+    "User Notes": "ECM/PDD Code: EB90154.08\nAdvertised Power at RPM: 451 hp\nAdvertised Power RPM: 2100 RPM\nControl Parts List: 4611\nFuel Code: FP93692\nGoverned Speed: 2200 RPM\nPeak Torque at RPM: 1250 ft*lb\nPeak Torque RPM: 1400 RPM\nECM Name: CM2350A\nECM Part Number: 4358814\nECM Serial Number: 1T2350A06100300\nEngine Make: CMMNS\nEngine Model: 6L u13D0890000000\n\nThis was a blank ECU and not installed in a vehicle.\n\nThis settings file is not fault free.",
     "Vehicle Make": "",
     "Vehicle Model": "",
     "Vehicle VIN": "",

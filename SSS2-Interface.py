@@ -27,7 +27,7 @@ import collections
 from SSS2_defaults import *
 
 #### CHANGE THIS to False FOR PRODUCTION #####
-UNIVERSAL = False
+UNIVERSAL = True
 release_date = "16 August 2017"
 release_version = "1.0.5"
 
@@ -83,7 +83,7 @@ class SerialThread(threading.Thread):
                         else:
                             self.rx_queue.put(line)
                 time.sleep(.002) #add a sleep statement to reduce CPU load for this thread.
-                if abs(self.receivetime - self.sendtime) > 2.5:
+                if abs(self.receivetime - self.sendtime) > 3.5:
                     self.signal = False
                 
         except Exception as e:
@@ -272,6 +272,7 @@ class SSS2(ttk.Frame):
         self.root.columnconfigure(0, weight=1)
         if UNIVERSAL:
             self.home_directory = os.getcwd()
+            self.home_directory+os.sep
         else:
             self.home_directory = os.path.expanduser('~')+os.sep+"Documents"+os.sep+"SSS2"+os.sep
             if not os.path.exists(self.home_directory):
@@ -402,10 +403,6 @@ class SSS2(ttk.Frame):
         self.menu_tools.add_separator()
         self.menu_tools.add_command(label='Version Information',
                                          command=self.current_version)
-        
-        if UNIVERSAL:
-            self.menu_tools.add_command(label='Update Settings Files',
-                                         command=self.update_settings_files)
         
         self.menubar.add_cascade(menu=self.menu_file, label='File')
         self.menubar.add_cascade(menu=self.menu_connection, label='Connection')
@@ -2396,7 +2393,7 @@ class SSS2(ttk.Frame):
                                            initialfile=ifile,
                                            title=title,
                                            defaultextension=".csv")
-        self.write_can_log_file(data_file_name,received_can0_messages)
+        self.write_can_log_file(data_file_name,self.received_can0_messages)
         self.clear_j1939_buffer()
         
     def save_can2_buffer_as(self):
@@ -2410,7 +2407,7 @@ class SSS2(ttk.Frame):
                                            title=title,
                                            defaultextension=".csv")
         
-        self.write_can_log_file(data_file_name,received_can2_messages)
+        self.write_can_log_file(data_file_name,self.received_can2_messages)
         self.clear_can2_buffer()
 
     def save_can1_buffer_as(self):
@@ -2424,7 +2421,7 @@ class SSS2(ttk.Frame):
                                            title=title,
                                            defaultextension=".csv")
         
-        self.write_can_log_file(data_file_name,received_can1_messages)
+        self.write_can_log_file(data_file_name,self.received_can1_messages)
         self.clear_can1_buffer()
         
     def save_j1708_buffer_as(self):
