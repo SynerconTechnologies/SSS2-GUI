@@ -257,8 +257,8 @@
         "Wire Color": "TAN"
     },
     "Location": "ADDRESS, CITY, STATE, ZIP",
-    "Original Creation Date": "Sunday, 20 August 2017 20:56:23 Central Daylight Time",
-    "Original File SHA": "8b6c71a536cd7bd2c227b3559051ea220209b69a4de438670a1648df01c0cd60",
+    "Original Creation Date": "Monday, 21 August 2017 00:18:54 Central Daylight Time",
+    "Original File SHA": "9853226e728c641f46a713b16cccfbd4a85822711965b645d7d279128899bc5a",
     "PWMs": {
         "PWM1": {
             "Alt. Pin": "J18:15",
@@ -356,9 +356,9 @@
             "Alt. Pin": "",
             "Alt. Pin Connect": null,
             "Alt. Port": null,
-            "Application": "Application Description",
+            "Application": "",
             "Duty Cycle": 50,
-            "ECU Pins": "ECU Pins",
+            "ECU Pins": "",
             "Frequency": 200,
             "Highest Frequency": 5000,
             "Highest Voltage": 5,
@@ -373,15 +373,15 @@
             "SSS2 pin setting": 70,
             "SSS2 setting": 87,
             "Show Frequency": true,
-            "Wire Color": "PPL/WHT"
+            "Wire Color": ""
         },
         "PWM6": {
             "Alt. Pin": "",
             "Alt. Pin Connect": null,
             "Alt. Port": null,
-            "Application": "Application Description",
+            "Application": "",
             "Duty Cycle": 50,
-            "ECU Pins": "ECU Pins",
+            "ECU Pins": "",
             "Frequency": 200,
             "Highest Frequency": 5000,
             "Highest Voltage": 5,
@@ -396,7 +396,7 @@
             "SSS2 pin setting": 70,
             "SSS2 setting": 88,
             "Show Frequency": true,
-            "Wire Color": "PPL/WHT"
+            "Wire Color": ""
         }
     },
     "Potentiometers": {
@@ -774,13 +774,13 @@
     },
     "Programmed By": "USER NAME",
     "Resistor Box Used": "No",
-    "SHA256 Digest": "8b6c71a536cd7bd2c227b3559051ea220209b69a4de438670a1648df01c0cd60",
+    "SHA256 Digest": "9853226e728c641f46a713b16cccfbd4a85822711965b645d7d279128899bc5a",
     "SSS2 Cable": "SSS2-DDEC6",
     "SSS2 Interface Release Date": "16 August 2017",
     "SSS2 Interface Version": "1.0.5 UNIVERSAL",
     "SSS2 Product Code": "UNIVERSAL",
     "SSS2 Source Address": 250,
-    "Saved Date": "Sunday, 20 August 2017 21:32:21 Central Daylight Time",
+    "Saved Date": "Monday, 21 August 2017 00:20:01 Central Daylight Time",
     "Send SSS2 Component ID": "1",
     "Serial Number": "SYNER*SSS2-R05*0034*UNIVERSAL",
     "Software ID": "SSS2*REV05*1.0*master*c3b62b583f1f7b22da9f3ec93ed09addc75a1d1e",
