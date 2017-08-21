@@ -228,15 +228,15 @@
         }
     },
     "Date of Loss": "DATE",
-    "ECU Component ID": "",
+    "ECU Component ID": "472N07*S0022977*----------*",
     "ECU Make": "Detroit Diesel",
-    "ECU Model": "DDEC-IV (DD13)",
-    "ECU Software Version": "R04_03_000a ",
+    "ECU Model": "CPC2",
+    "ECU Software Version": "R05_03_000a",
     "ECU Year": "2010",
-    "Engine Configuration": "",
+    "Engine Configuration": "DD15",
     "Engine Model": "MODEL",
-    "Engine Serial Number": "06R1003832 ",
-    "File Name": "DDEC 6.SSS2",
+    "Engine Serial Number": "472901S0022977 ",
+    "File Name": "CPC2 Only - DD15 - 2010 Freightliner Cascadia.SSS2",
     "HVAdjOut": {
         "Alt. Pin": null,
         "Alt. Pin Connect": false,
@@ -258,7 +258,7 @@
     },
     "Location": "ADDRESS, CITY, STATE, ZIP",
     "Original Creation Date": "Sunday, 20 August 2017 20:56:23 Central Daylight Time",
-    "Original File SHA": "c024edfe6506a577e8a5ce6e3cab5ef36ebdf9629f28974598ff425aff7fd3f9",
+    "Original File SHA": "8b6c71a536cd7bd2c227b3559051ea220209b69a4de438670a1648df01c0cd60",
     "PWMs": {
         "PWM1": {
             "Alt. Pin": "J18:15",
@@ -774,13 +774,13 @@
     },
     "Programmed By": "USER NAME",
     "Resistor Box Used": "No",
-    "SHA256 Digest": "c024edfe6506a577e8a5ce6e3cab5ef36ebdf9629f28974598ff425aff7fd3f9",
+    "SHA256 Digest": "8b6c71a536cd7bd2c227b3559051ea220209b69a4de438670a1648df01c0cd60",
     "SSS2 Cable": "SSS2-DDEC6",
     "SSS2 Interface Release Date": "16 August 2017",
     "SSS2 Interface Version": "1.0.5 UNIVERSAL",
     "SSS2 Product Code": "UNIVERSAL",
     "SSS2 Source Address": 250,
-    "Saved Date": "Sunday, 20 August 2017 21:24:55 Central Daylight Time",
+    "Saved Date": "Sunday, 20 August 2017 21:32:21 Central Daylight Time",
     "Send SSS2 Component ID": "1",
     "Serial Number": "SYNER*SSS2-R05*0034*UNIVERSAL",
     "Software ID": "SSS2*REV05*1.0*master*c3b62b583f1f7b22da9f3ec93ed09addc75a1d1e",
@@ -917,10 +917,10 @@
             "State": false
         }
     },
-    "User Notes": "Device Configuration  \nSoftware Mode   Running in Application  \nDevice Information  \nSoftware Version   R05_03_000a  \nDiagnostic Version   21  \nECU Serial Number   09.0174.00234  \nECU Part Number   A003 446 03 02 ZGS 001 \nHardware Part Number   A002 446 76 02 ZGS 001 \nSoftware Part Number   A017 448 48 02 ZGS 001 \nSoftware Date   6/21/2010 11:00:00 AM Central Daylight Time  \nReal Time Clock   8/20/2017 8:54:48 PM Central Daylight Time  \nVehicle Identification  \nVIN   1FUJGLDR9ALAR7785  \nEngine Serial Number   472901S0022977  \nOdometer   1026051.0 miles",
+    "User Notes": "Software Version   R05_03_000a  \nDiagnostic Version   21  \nECU Serial Number   09.0174.00234  \nECU Part Number   A003 446 03 02 ZGS 001 \nHardware Part Number   A002 446 76 02 ZGS 001 \nSoftware Part Number   A017 448 48 02 ZGS 001 \nSoftware Date   6/21/2010 11:00:00 AM Central Daylight Time  \nReal Time Clock   8/20/2017 8:54:48 PM Central Daylight Time  \nVehicle Identification  \nVIN   1FUJGLDR9ALAR7785  \nEngine Serial Number   472901S0022977  \nOdometer   1026051.0 miles \n\nThis unit was tested to be fault free.",
     "Vehicle Make": "Freightliner",
     "Vehicle Model": "Cascadia",
-    "Vehicle VIN": "1FUJGBDV1ALAR4676",
-    "Vehicle Year": "2005",
+    "Vehicle VIN": "1FUJGLDR9ALAR7785",
+    "Vehicle Year": "2010",
     "Warnings": "Using the Smart Sensor Simulator 2 cannot guarantee a fault free environment for all electronic control units. If the elimination of fault codes is critical, then the user is encouraged to test the SSS2 settings with an exemplar module and adjust the settings accordingly. Only properly trained experts should use this software and product."
 }
