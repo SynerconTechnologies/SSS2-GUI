@@ -53,12 +53,13 @@
         " 18.000": "PTO from Body Controller,18,1,0,0,100,   0,0,1,18FEF021,8, 0, 0, 0, 0, 0, 0, 0, 0,Yes",
         " 19.000": "PTO from Cab Display,19,1,0,0, 100,   0,0,1,18FEF028,8, 0, 0, 0, 0, 0, 0, 0, 0,Yes",
         " 20.000": "PTO from Cab Controller,20,1,0,0, 100,   0,0,1,18FEF031,8, 0, 0, 0, 0, 0, 0, 0, 0,Yes",
-        " 21.000": "AMB from Body Controller,21,1,0,0,1000,   0,0,1,18FEF521,8, 0, 0, 0, 0, 0, 0, 0, 0,Yes"
+        " 21.000": "AMB from Body Controller,21,1,0,0,1000,   0,0,1,18FEF521,8, 0, 0, 0, 0, 0, 0, 0, 0,Yes",
+        " 22.000": "VGT Status,22,1,0,1,25,0,0,1,18FFC502,8,11,FF,FF,4F,08,FF,FF,FF,Yes"
     },
     "CAN Config": {
         "Buffer Size": 1000000,
         "CAN0 Baudrate": "500000",
-        "CAN1 Baudrate": "500000",
+        "CAN1 Baudrate": "250000",
         "MCPCAN Baudrate": "250000"
     },
     "Case Number": "CASE IDENTIFIER",
@@ -248,8 +249,8 @@
         "Wire Color": "TAN"
     },
     "Location": "ADDRESS, CITY, STATE, ZIP",
-    "Original Creation Date": "Tuesday, 15 August 2017 20:34:41 Central Daylight Time",
-    "Original File SHA": "68f1cfb7e612571d74c8d88066785bb5f5e6ca7a65a0ee0d495454262f1bc66b",
+    "Original Creation Date": "Sunday, 20 August 2017 05:15:32 Central Daylight Time",
+    "Original File SHA": "194fe5778071c9d0a042f8360b695ea364e7b3d9f1dc7b2b6709270257ddad4f",
     "PWMs": {
         "PWM1": {
             "Alt. Pin": "J18:15",
@@ -474,7 +475,7 @@
                     "Name": "Terminal A Voltage for U5 and U6",
                     "Pots": {
                         "U5": {
-                            "Application": "Ambient Air Temperature",
+                            "Application": "Ambient Air Temperature FLT",
                             "ECU Pins": "J2:62",
                             "Name": "Potentiometer 5",
                             "Pin": "J24:5",
@@ -765,13 +766,13 @@
     },
     "Programmed By": "USER NAME",
     "Resistor Box Used": "No",
-    "SHA256 Digest": "68f1cfb7e612571d74c8d88066785bb5f5e6ca7a65a0ee0d495454262f1bc66b",
+    "SHA256 Digest": "194fe5778071c9d0a042f8360b695ea364e7b3d9f1dc7b2b6709270257ddad4f",
     "SSS2 Cable": "SSS2-CM2350",
-    "SSS2 Interface Release Date": "14 August 2017",
-    "SSS2 Interface Version": "1.0.4 UNIVERSAL",
+    "SSS2 Interface Release Date": "16 August 2017",
+    "SSS2 Interface Version": "1.0.5 UNIVERSAL",
     "SSS2 Product Code": "UNIVERSAL",
     "SSS2 Source Address": 250,
-    "Saved Date": "Tuesday, 15 August 2017 20:36:58 Central Daylight Time",
+    "Saved Date": "Sunday, 20 August 2017 05:19:15 Central Daylight Time",
     "Send SSS2 Component ID": "1",
     "Serial Number": "SYNER*SSS2-R05*0034*UNIVERSAL",
     "Software ID": "SSS2*REV05*1.0*master*c3b62b583f1f7b22da9f3ec93ed09addc75a1d1e",

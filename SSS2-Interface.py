@@ -27,7 +27,7 @@ import collections
 from SSS2_defaults import *
 
 #### CHANGE THIS to False FOR PRODUCTION #####
-UNIVERSAL = False
+UNIVERSAL = True
 release_date = "16 August 2017"
 release_version = "1.0.5"
 
@@ -83,7 +83,7 @@ class SerialThread(threading.Thread):
                         else:
                             self.rx_queue.put(line)
                 time.sleep(.002) #add a sleep statement to reduce CPU load for this thread.
-                if abs(self.receivetime - self.sendtime) > 2.5:
+                if abs(self.receivetime - self.sendtime) > 5:
                     self.signal = False
                 
         except Exception as e:
@@ -272,6 +272,7 @@ class SSS2(ttk.Frame):
         self.root.columnconfigure(0, weight=1)
         if UNIVERSAL:
             self.home_directory = os.getcwd()
+            self.home_directory+os.sep
         else:
             self.home_directory = os.path.expanduser('~')+os.sep+"Documents"+os.sep+"SSS2"+os.sep
             if not os.path.exists(self.home_directory):
@@ -403,10 +404,6 @@ class SSS2(ttk.Frame):
         self.menu_tools.add_command(label='Version Information',
                                          command=self.current_version)
         
-        if UNIVERSAL:
-            self.menu_tools.add_command(label='Update Settings Files',
-                                         command=self.update_settings_files)
-        
         self.menubar.add_cascade(menu=self.menu_file, label='File')
         self.menubar.add_cascade(menu=self.menu_connection, label='Connection')
         self.menubar.add_cascade(menu=self.menu_tools, label='Tools')
@@ -513,15 +510,19 @@ class SSS2(ttk.Frame):
             for pair_key in self.settings_dict["Potentiometers"][group_key]["Pairs"]:
                 for pot_key in self.settings_dict["Potentiometers"][group_key]["Pairs"][pair_key]["Pots"]:
                     pot = self.settings_dict["Potentiometers"][group_key]["Pairs"][pair_key]["Pots"][pot_key]
-                    self.wiring_dict[pot["Pin"]]={"Wire Color":pot["Wire Color"],"Application":pot["Application"],"ECU Pins":pot["ECU Pins"]}
+                    if len(pot["Application"]) > 1:
+                        self.wiring_dict[pot["Pin"]]={"Wire Color":pot["Wire Color"],"Application":pot["Application"],"ECU Pins":pot["ECU Pins"]}
         for dac_key in self.settings_dict["DACs"]:
             dac = self.settings_dict["DACs"][dac_key]
-            self.wiring_dict[dac["Pin"]]={"Wire Color":dac["Wire Color"],"Application":dac["Application"],"ECU Pins":dac["ECU Pins"]}
+            if len(dac["Application"]) > 1:
+                self.wiring_dict[dac["Pin"]]={"Wire Color":dac["Wire Color"],"Application":dac["Application"],"ECU Pins":dac["ECU Pins"]}
         for pwm_key in self.settings_dict["PWMs"]:
             pwm = self.settings_dict["PWMs"][pwm_key]
-            self.wiring_dict[pwm["Pin"]]={"Wire Color":pwm["Wire Color"],"Application":pwm["Application"],"ECU Pins":pwm["ECU Pins"]}
+            if len(pwm["Application"]) > 1:
+                self.wiring_dict[pwm["Pin"]]={"Wire Color":pwm["Wire Color"],"Application":pwm["Application"],"ECU Pins":pwm["ECU Pins"]}
         pwm = self.settings_dict["HVAdjOut"]
-        self.wiring_dict[pwm["Pin"]]={"Wire Color":pwm["Wire Color"],"Application":pwm["Application"],"ECU Pins":pwm["ECU Pins"]}
+        if len(pwm["Application"]) > 1:
+            self.wiring_dict[pwm["Pin"]]={"Wire Color":pwm["Wire Color"],"Application":pwm["Application"],"ECU Pins":pwm["ECU Pins"]}
         
         types = [('Tab delimited file', '*.txt')]
         idir = self.home_directory
@@ -2396,7 +2397,7 @@ class SSS2(ttk.Frame):
                                            initialfile=ifile,
                                            title=title,
                                            defaultextension=".csv")
-        self.write_can_log_file(data_file_name,received_can0_messages)
+        self.write_can_log_file(data_file_name,self.received_can0_messages)
         self.clear_j1939_buffer()
         
     def save_can2_buffer_as(self):
@@ -2410,7 +2411,7 @@ class SSS2(ttk.Frame):
                                            title=title,
                                            defaultextension=".csv")
         
-        self.write_can_log_file(data_file_name,received_can2_messages)
+        self.write_can_log_file(data_file_name,self.received_can2_messages)
         self.clear_can2_buffer()
 
     def save_can1_buffer_as(self):
@@ -2424,7 +2425,7 @@ class SSS2(ttk.Frame):
                                            title=title,
                                            defaultextension=".csv")
         
-        self.write_can_log_file(data_file_name,received_can1_messages)
+        self.write_can_log_file(data_file_name,self.received_can1_messages)
         self.clear_can1_buffer()
         
     def save_j1708_buffer_as(self):
