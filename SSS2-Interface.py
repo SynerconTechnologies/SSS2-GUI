@@ -510,15 +510,19 @@ class SSS2(ttk.Frame):
             for pair_key in self.settings_dict["Potentiometers"][group_key]["Pairs"]:
                 for pot_key in self.settings_dict["Potentiometers"][group_key]["Pairs"][pair_key]["Pots"]:
                     pot = self.settings_dict["Potentiometers"][group_key]["Pairs"][pair_key]["Pots"][pot_key]
-                    self.wiring_dict[pot["Pin"]]={"Wire Color":pot["Wire Color"],"Application":pot["Application"],"ECU Pins":pot["ECU Pins"]}
+                    if len(pot["Application"]) > 1:
+                        self.wiring_dict[pot["Pin"]]={"Wire Color":pot["Wire Color"],"Application":pot["Application"],"ECU Pins":pot["ECU Pins"]}
         for dac_key in self.settings_dict["DACs"]:
             dac = self.settings_dict["DACs"][dac_key]
-            self.wiring_dict[dac["Pin"]]={"Wire Color":dac["Wire Color"],"Application":dac["Application"],"ECU Pins":dac["ECU Pins"]}
+            if len(dac["Application"]) > 1:
+                self.wiring_dict[dac["Pin"]]={"Wire Color":dac["Wire Color"],"Application":dac["Application"],"ECU Pins":dac["ECU Pins"]}
         for pwm_key in self.settings_dict["PWMs"]:
             pwm = self.settings_dict["PWMs"][pwm_key]
-            self.wiring_dict[pwm["Pin"]]={"Wire Color":pwm["Wire Color"],"Application":pwm["Application"],"ECU Pins":pwm["ECU Pins"]}
+            if len(pwm["Application"]) > 1:
+                self.wiring_dict[pwm["Pin"]]={"Wire Color":pwm["Wire Color"],"Application":pwm["Application"],"ECU Pins":pwm["ECU Pins"]}
         pwm = self.settings_dict["HVAdjOut"]
-        self.wiring_dict[pwm["Pin"]]={"Wire Color":pwm["Wire Color"],"Application":pwm["Application"],"ECU Pins":pwm["ECU Pins"]}
+        if len(pwm["Application"]) > 1:
+            self.wiring_dict[pwm["Pin"]]={"Wire Color":pwm["Wire Color"],"Application":pwm["Application"],"ECU Pins":pwm["ECU Pins"]}
         
         types = [('Tab delimited file', '*.txt')]
         idir = self.home_directory
