@@ -219,15 +219,15 @@
         }
     },
     "Date of Loss": "08/22/17",
-    "ECU Component ID": "ECU Serial Number: 12946330JJ",
+    "ECU Component ID": "ECU Serial Number: 10900020KC",
     "ECU Make": "Caterpillar",
     "ECU Model": "ADEM3",
-    "ECU Software Version": "Personality Module Part Number: 3054508-00",
+    "ECU Software Version": "Personality Module Part Number: 1888492-00",
     "ECU Year": "",
-    "Engine Configuration": "Personality Module Code: 44",
+    "Engine Configuration": "Personality Module Code: 158",
     "Engine Model": "MODEL",
-    "Engine Serial Number": "BXS24569 (C-15 Truck)",
-    "File Name": "Caterpillar ADEM3 BSX.SSS2",
+    "Engine Serial Number": "8YL60890 (3126 Truck)",
+    "File Name": "Caterpillar ADEM3 8YL.SSS2",
     "HVAdjOut": {
         "Alt. Pin": null,
         "Alt. Pin Connect": false,
@@ -248,8 +248,8 @@
         "Wire Color": " "
     },
     "Location": "Tulsa Ok",
-    "Original Creation Date": "Tuesday, 22 August 2017 21:51:15 Central Daylight Time",
-    "Original File SHA": "6e4dad8a9d0d2111739d522c8e0a504591ceffc20103b09aa9f6ec42ea2e009d",
+    "Original Creation Date": "Tuesday, 22 August 2017 20:12:43 Central Daylight Time",
+    "Original File SHA": "6e0790d4aba3e7747a25bc0efefefdd25ad992cf9e80570cedb7c93f2297f501",
     "PWMs": {
         "PWM1": {
             "Alt. Pin": "J18:15",
@@ -765,13 +765,13 @@
     },
     "Programmed By": "Synercon Technologies LLC",
     "Resistor Box Used": "No",
-    "SHA256 Digest": "6e4dad8a9d0d2111739d522c8e0a504591ceffc20103b09aa9f6ec42ea2e009d",
+    "SHA256 Digest": "6e0790d4aba3e7747a25bc0efefefdd25ad992cf9e80570cedb7c93f2297f501",
     "SSS2 Cable": "SSS2-ADEM3",
     "SSS2 Interface Release Date": "16 August 2017",
     "SSS2 Interface Version": "1.0.5 UNIVERSAL",
     "SSS2 Product Code": "UNIVERSAL",
     "SSS2 Source Address": 250,
-    "Saved Date": "Tuesday, 22 August 2017 22:53:10 Central Daylight Time",
+    "Saved Date": "Tuesday, 22 August 2017 21:50:54 Central Daylight Time",
     "Send SSS2 Component ID": "1",
     "Serial Number": "SYNER*SSS2-R05*0031*UNIVERSAL",
     "Software ID": "SSS2*REV05*1.0*master*c3b62b583f1f7b22da9f3ec93ed09addc75a1d1e",
@@ -909,9 +909,9 @@
         }
     },
     "User Notes": "User notes",
-    "Vehicle Make": "",
-    "Vehicle Model": "(15 liter)",
-    "Vehicle VIN": "820391D",
-    "Vehicle Year": "",
+    "Vehicle Make": "Peterbilt",
+    "Vehicle Model": "L8500 series (7.2 liter)",
+    "Vehicle VIN": "1XP5DB9X61D532271",
+    "Vehicle Year": "2001",
     "Warnings": "Using the Smart Sensor Simulator 2 cannot guarantee a fault free environment for all electronic control units. If the elimination of fault codes is critical, then the user is encouraged to test the SSS2 settings with an exemplar module and adjust the settings accordingly. Only properly trained experts should use this software and product."
 }
