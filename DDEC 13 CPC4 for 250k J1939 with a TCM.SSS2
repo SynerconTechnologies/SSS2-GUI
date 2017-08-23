@@ -132,7 +132,7 @@
     },
     "Case Number": "CASE IDENTIFIER",
     "Company": "COMPANY NAME",
-    "Component ID": "SYNER*SSS2-R05*XXXX*UNIVERSAL",
+    "Component ID": "SYNER*SSS2-R05*0034*UNIVERSAL",
     "DACs": {
         "Vout1": {
             "Alt. Pin": "J24:15",
@@ -317,8 +317,8 @@
         "Wire Color": "Tan"
     },
     "Location": "ADDRESS, CITY, STATE, ZIP",
-    "Original Creation Date": "Wednesday, 23 August 2017 08:49:56 Central Daylight Time",
-    "Original File SHA": "dc0a332324a8028f3c23a7258a6ce9e6bf35efb509928ff8955992cee8b54655",
+    "Original Creation Date": "Wednesday, 23 August 2017 09:09:00 Central Daylight Time",
+    "Original File SHA": "c44057ffd770d5537b271a55dd67a68c8b42867bdbae28fcbaaeedf6e0b9f483",
     "PWMs": {
         "PWM1": {
             "Alt. Pin": "J18:15",
@@ -724,7 +724,7 @@
                             "Term. A Connect": true,
                             "Term. B Connect": true,
                             "Wiper Connect": true,
-                            "Wiper Position": 87,
+                            "Wiper Position": 38,
                             "Wire Color": "BLK/WHT"
                         }
                     },
@@ -834,16 +834,16 @@
     },
     "Programmed By": "USER NAME",
     "Resistor Box Used": "No",
-    "SHA256 Digest": "dc0a332324a8028f3c23a7258a6ce9e6bf35efb509928ff8955992cee8b54655",
+    "SHA256 Digest": "c44057ffd770d5537b271a55dd67a68c8b42867bdbae28fcbaaeedf6e0b9f483",
     "SSS2 Cable": "SSS2-DDEC10",
-    "SSS2 Interface Release Date": "16 August 2017",
-    "SSS2 Interface Version": "1.0.5 UNIVERSAL",
+    "SSS2 Interface Release Date": "23 August 2017",
+    "SSS2 Interface Version": "1.0.6 UNIVERSAL",
     "SSS2 Product Code": "UNIVERSAL",
     "SSS2 Source Address": 250,
-    "Saved Date": "Wednesday, 23 August 2017 08:50:06 Central Daylight Time",
+    "Saved Date": "Wednesday, 23 August 2017 09:09:47 Central Daylight Time",
     "Send SSS2 Component ID": "1",
-    "Serial Number": "SYNER*SSS2-R05*XXXX*UNIVERSAL",
-    "Software ID": "SOFTWARE ID",
+    "Serial Number": "SYNER*SSS2-R05*0034*UNIVERSAL",
+    "Software ID": "SSS2*REV05*1.0*master*c3b62b583f1f7b22da9f3ec93ed09addc75a1d1e",
     "Switches": {
         "12V Out 1": {
             "Label": "Connect +12V to Port 27 (J18:10)",
@@ -914,12 +914,12 @@
         "PWM1 Connect": {
             "Label": "Connect PWM1 Output to J24:13",
             "SSS2 setting": 67,
-            "State": true
+            "State": false
         },
         "PWM2 Connect": {
             "Label": "Connect PWM2 Output to J24:14",
             "SSS2 setting": 68,
-            "State": true
+            "State": false
         },
         "PWM3 Connect": {
             "Label": "Connect PWM3 Output to J18:10",

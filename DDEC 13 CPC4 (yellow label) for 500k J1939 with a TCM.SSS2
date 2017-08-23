@@ -134,7 +134,7 @@
     },
     "Case Number": "CASE IDENTIFIER",
     "Company": "COMPANY NAME",
-    "Component ID": "SYNER*SSS2-R05*XXXX*UNIVERSAL",
+    "Component ID": "SYNER*SSS2-R05*0034*UNIVERSAL",
     "DACs": {
         "Vout1": {
             "Alt. Pin": "J24:15",
@@ -298,7 +298,7 @@
     "Engine Configuration": "DDEC 13 A 003 446 10 02 / 005",
     "Engine Model": "MODEL",
     "Engine Serial Number": "471928S0446768",
-    "File Name": "DDEC 13 CPC4 for 500k J1939 with TCM.SSS2",
+    "File Name": "DDEC 13 CPC4 (yellow label) for 500k J1939 with a TCM.SSS2",
     "HVAdjOut": {
         "Alt. Pin": null,
         "Alt. Pin Connect": false,
@@ -319,8 +319,8 @@
         "Wire Color": "Tan"
     },
     "Location": "ADDRESS, CITY, STATE, ZIP",
-    "Original Creation Date": "Saturday, 22 July 2017 11:35:12 Central Daylight Time",
-    "Original File SHA": "697fe527b83b806b9ec8e0af2c724966aa089bd61f39ec6270a8eb09c73d20d2",
+    "Original Creation Date": "Wednesday, 23 August 2017 08:57:27 Central Daylight Time",
+    "Original File SHA": "d8f4adb8b833f2214cad6058e9c8bfaa2db95800f8d1d33c9e7742a88bb6b146",
     "PWMs": {
         "PWM1": {
             "Alt. Pin": "J18:15",
@@ -418,9 +418,9 @@
             "Alt. Pin": "",
             "Alt. Pin Connect": null,
             "Alt. Port": null,
-            "Application": "Application Description",
+            "Application": "",
             "Duty Cycle": 50,
-            "ECU Pins": "ECU Pins",
+            "ECU Pins": "",
             "Frequency": 200,
             "Highest Frequency": 5000,
             "Highest Voltage": 5,
@@ -435,15 +435,15 @@
             "SSS2 pin setting": 70,
             "SSS2 setting": 87,
             "Show Frequency": true,
-            "Wire Color": "PPL/WHT"
+            "Wire Color": ""
         },
         "PWM6": {
             "Alt. Pin": "",
             "Alt. Pin Connect": null,
             "Alt. Port": null,
-            "Application": "Application Description",
+            "Application": "",
             "Duty Cycle": 50,
-            "ECU Pins": "ECU Pins",
+            "ECU Pins": "",
             "Frequency": 200,
             "Highest Frequency": 5000,
             "Highest Voltage": 5,
@@ -458,7 +458,7 @@
             "SSS2 pin setting": 70,
             "SSS2 setting": 88,
             "Show Frequency": true,
-            "Wire Color": "PPL/WHT"
+            "Wire Color": ""
         }
     },
     "Potentiometers": {
@@ -711,7 +711,7 @@
                             "Term. A Connect": true,
                             "Term. B Connect": true,
                             "Wiper Connect": true,
-                            "Wiper Position": 90,
+                            "Wiper Position": 113,
                             "Wire Color": "BROWN"
                         },
                         "U14": {
@@ -725,8 +725,8 @@
                             "SSS2 Wiper Setting": 14,
                             "Term. A Connect": true,
                             "Term. B Connect": true,
-                            "Wiper Connect": false,
-                            "Wiper Position": 87,
+                            "Wiper Connect": true,
+                            "Wiper Position": 43,
                             "Wire Color": "BLK/WHT"
                         }
                     },
@@ -836,13 +836,13 @@
     },
     "Programmed By": "USER NAME",
     "Resistor Box Used": "No",
-    "SHA256 Digest": "697fe527b83b806b9ec8e0af2c724966aa089bd61f39ec6270a8eb09c73d20d2",
+    "SHA256 Digest": "d8f4adb8b833f2214cad6058e9c8bfaa2db95800f8d1d33c9e7742a88bb6b146",
     "SSS2 Cable": "SSS2-DDEC10",
-    "SSS2 Interface Release Date": "12 August 2017",
-    "SSS2 Interface Version": "1.0.3 UNIVERSAL",
+    "SSS2 Interface Release Date": "23 August 2017",
+    "SSS2 Interface Version": "1.0.6 UNIVERSAL",
     "SSS2 Product Code": "UNIVERSAL",
     "SSS2 Source Address": 250,
-    "Saved Date": "Saturday, 22 July 2017 11:41:18 Central Daylight Time",
+    "Saved Date": "Wednesday, 23 August 2017 09:04:27 Central Daylight Time",
     "Send SSS2 Component ID": "1",
     "Serial Number": "SYNER*SSS2-R05*0034*UNIVERSAL",
     "Software ID": "SSS2*REV05*1.0*master*c3b62b583f1f7b22da9f3ec93ed09addc75a1d1e",
@@ -916,12 +916,12 @@
         "PWM1 Connect": {
             "Label": "Connect PWM1 Output to J24:13",
             "SSS2 setting": 67,
-            "State": true
+            "State": false
         },
         "PWM2 Connect": {
             "Label": "Connect PWM2 Output to J24:14",
             "SSS2 setting": 68,
-            "State": true
+            "State": false
         },
         "PWM3 Connect": {
             "Label": "Connect PWM3 Output to J18:10",
