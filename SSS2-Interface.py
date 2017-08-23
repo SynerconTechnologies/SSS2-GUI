@@ -28,8 +28,8 @@ from SSS2_defaults import *
 
 #### CHANGE THIS to False FOR PRODUCTION #####
 UNIVERSAL = False
-release_date = "16 August 2017"
-release_version = "1.0.5"
+release_date = "23 August 2017"
+release_version = "1.0.6"
 
 class SerialThread(threading.Thread):
     def __init__(self, parent, rx_queue, tx_queue,serial):
