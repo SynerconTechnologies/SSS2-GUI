@@ -27,7 +27,7 @@ import collections
 from SSS2_defaults import *
 
 #### CHANGE THIS to False FOR PRODUCTION #####
-UNIVERSAL = True
+UNIVERSAL = False
 release_date = "16 August 2017"
 release_version = "1.0.5"
 
