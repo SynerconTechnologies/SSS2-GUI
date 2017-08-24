@@ -92,9 +92,9 @@
             "Alt. Pin": "J24:10",
             "Alt. Pin Connect": false,
             "Amplitude": 0,
-            "Application": "Fuel Rail Pressure 1 Measured ",
+            "Application": "Aftertreatment DPF Differential Pressure",
             "Average Voltage": 1.0,
-            "ECU Pins": "J1:59",
+            "ECU Pins": "J2:41",
             "Frequency": 0,
             "Highest Voltage": 5,
             "Lowest Voltage": 0,
@@ -111,9 +111,9 @@
             "Alt. Pin": null,
             "Alt. Pin Connect": false,
             "Amplitude": 0,
-            "Application": "Fuel Rail Pressure 2 Rationality Sensor",
-            "Average Voltage": 3.98,
-            "ECU Pins": "J1:42",
+            "Application": "Aftertreatment DPF Outlet Pressure",
+            "Average Voltage": 1.01,
+            "ECU Pins": "J2:42",
             "Frequency": 0,
             "Highest Voltage": 5,
             "Lowest Voltage": 0,
@@ -206,9 +206,9 @@
             "Alt. Pin": null,
             "Alt. Pin Connect": false,
             "Amplitude": 0,
-            "Application": "DEF Dosing Valve",
-            "Average Voltage": 0.0,
-            "ECU Pins": "J2:77",
+            "Application": "Barometric Pressure",
+            "Average Voltage": 1.04,
+            "ECU Pins": "J1:44",
             "Frequency": 0,
             "Highest Voltage": 5,
             "Lowest Voltage": 0,
@@ -231,7 +231,7 @@
     "Engine Configuration": "ECM/PDD Code: EB90154.08",
     "Engine Model": "MODEL",
     "Engine Serial Number": "ISX ",
-    "File Name": "Cummins CM2350 500k Vehicle and Engine Connector.SSS2",
+    "File Name": "Cummins CM2350 500k Vehicle Only Connector.SSS2",
     "HVAdjOut": {
         "Alt. Pin": null,
         "Alt. Pin Connect": false,
@@ -253,7 +253,7 @@
     },
     "Location": "ADDRESS, CITY, STATE, ZIP",
     "Original Creation Date": "Wednesday, 23 August 2017 22:27:54 Central Daylight Time",
-    "Original File SHA": "ac9a9cd2e8f1c682ecc4fef60e7dcf4b6953742be8a8676732c17218435dbabd",
+    "Original File SHA": "4621293896ed52bce9eec7a9b5d5fdb58950e81fbc30e6bebdade9e737ae4221",
     "PWMs": {
         "PWM1": {
             "Alt. Pin": "J18:15",
@@ -328,9 +328,9 @@
             "Alt. Pin": "",
             "Alt. Pin Connect": null,
             "Alt. Port": null,
-            "Application": "DEF Line Heater 3",
+            "Application": "Engine Brake Solenoid 1",
             "Duty Cycle": 0,
-            "ECU Pins": "J2:40",
+            "ECU Pins": "J1:9",
             "Frequency": 5000,
             "Highest Frequency": 5000,
             "Highest Voltage": 5,
@@ -441,8 +441,8 @@
                     "Name": "Terminal A Voltage for U3 and U4",
                     "Pots": {
                         "U3": {
-                            "Application": "EGR Temperature Sensor",
-                            "ECU Pins": "J1:65",
+                            "Application": "DEF Tank Level",
+                            "ECU Pins": "J2:14",
                             "Name": "Potentiometer 3",
                             "Pin": "J24:3",
                             "Port": "3",
@@ -452,7 +452,7 @@
                             "Term. A Connect": false,
                             "Term. B Connect": true,
                             "Wiper Connect": true,
-                            "Wiper Position": 255,
+                            "Wiper Position": 6,
                             "Wire Color": "YEL/BLK"
                         },
                         "U4": {
@@ -493,30 +493,30 @@
                             "Wire Color": "Blue"
                         },
                         "U6": {
-                            "Application": "Turbo Intake Temperature",
-                            "ECU Pins": "J1:61",
+                            "Application": "Throttle Actuator Position",
+                            "ECU Pins": "J1:68",
                             "Name": "Potentiometer 6",
                             "Pin": "J24:6",
                             "Port": "6",
                             "Resistance": "100k",
                             "SSS2 TCON Setting": 56,
                             "SSS2 Wiper Setting": 6,
-                            "Term. A Connect": false,
+                            "Term. A Connect": true,
                             "Term. B Connect": true,
                             "Wiper Connect": true,
-                            "Wiper Position": 255,
+                            "Wiper Position": 122,
                             "Wire Color": "GRN/BLK"
                         }
                     },
                     "SSS Setting": 27,
-                    "Terminal A Voltage": "+12V"
+                    "Terminal A Voltage": "+5V"
                 },
                 "U7U8": {
                     "Name": "Terminal A Voltage for U7 and U8",
                     "Pots": {
                         "U7": {
-                            "Application": "Dosing Unit Temperature",
-                            "ECU Pins": "J2:6",
+                            "Application": "EGR Temperature",
+                            "ECU Pins": "J1:65",
                             "Name": "Potentiometer 7",
                             "Pin": "J24:7",
                             "Port": "7",
@@ -526,7 +526,7 @@
                             "Term. A Connect": false,
                             "Term. B Connect": true,
                             "Wiper Connect": true,
-                            "Wiper Position": 20,
+                            "Wiper Position": 52,
                             "Wire Color": "ORN/BLK"
                         },
                         "U8": {
@@ -541,12 +541,12 @@
                             "Term. A Connect": false,
                             "Term. B Connect": true,
                             "Wiper Connect": true,
-                            "Wiper Position": 38,
+                            "Wiper Position": 1,
                             "Wire Color": "YEL/RED"
                         }
                     },
                     "SSS Setting": 28,
-                    "Terminal A Voltage": "+12V"
+                    "Terminal A Voltage": "+5V"
                 }
             },
             "SSS2 Setting": 73,
@@ -644,12 +644,12 @@
                             "Term. A Connect": true,
                             "Term. B Connect": true,
                             "Wiper Connect": true,
-                            "Wiper Position": 41,
+                            "Wiper Position": 70,
                             "Wire Color": "Brown"
                         },
                         "U14": {
-                            "Application": "Barometric Pressure",
-                            "ECU Pins": "J1:44",
+                            "Application": "Turbo Intake Temperature",
+                            "ECU Pins": "J1:61",
                             "Name": "Potentiometer 14",
                             "Pin": "J24:14",
                             "Port": "14",
@@ -755,7 +755,7 @@
                             "Term. A Connect": false,
                             "Term. B Connect": true,
                             "Wiper Connect": true,
-                            "Wiper Position": 255,
+                            "Wiper Position": 72,
                             "Wire Color": "GRN/WHT"
                         }
                     },
@@ -769,13 +769,13 @@
     },
     "Programmed By": "USER NAME",
     "Resistor Box Used": "No",
-    "SHA256 Digest": "ac9a9cd2e8f1c682ecc4fef60e7dcf4b6953742be8a8676732c17218435dbabd",
+    "SHA256 Digest": "4621293896ed52bce9eec7a9b5d5fdb58950e81fbc30e6bebdade9e737ae4221",
     "SSS2 Cable": "SSS2-CM2350",
     "SSS2 Interface Release Date": "23 August 2017",
     "SSS2 Interface Version": "1.0.6 UNIVERSAL",
     "SSS2 Product Code": "UNIVERSAL",
     "SSS2 Source Address": 250,
-    "Saved Date": "Wednesday, 23 August 2017 22:32:35 Central Daylight Time",
+    "Saved Date": "Thursday, 24 August 2017 01:52:12 Central Daylight Time",
     "Send SSS2 Component ID": "1",
     "Serial Number": "SYNER*SSS2-R05*0034*UNIVERSAL",
     "Software ID": "SSS2*REV05*1.0*master*c3b62b583f1f7b22da9f3ec93ed09addc75a1d1e",
