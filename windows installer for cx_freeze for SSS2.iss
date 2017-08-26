@@ -12,7 +12,7 @@ OutputBaseFilename=SetupSSS2Interface
 UninstallDisplayIcon={app}\SSS2-Interface
 
 [Files]
-Source: "\build\exe.win32-3.4\*"; DestDir: "{app}"; Flags: recursesubdirs
+Source: "build\exe.win32-3.4\*"; DestDir: "{app}"; Flags: recursesubdirs
 Source: "*.ico"; DestDir: "{app}"
 Source: "*.gif"; DestDir: "{app}"
 Source: "*.SSS2"; DestDir: "{userdocs}\SSS2"

@@ -11,14 +11,19 @@ build_exe_options = {"packages": ["os","tkinter"],
                                            "SynerconLogo.gif",
                                            "SSS2Pins.gif"]}
 
-# GUI applications require a different base on Windows (the default is for a
-# console application).
-base = None
-if sys.platform == "win32":
-    base = "Win32GUI"
+
+target = Executable(
+    script="SSS2-Interface.py",
+    base="Win32GUI",
+    compress=False,
+    copyDependentFiles=True,
+    appendScriptToExe=True,
+    appendScriptToLibrary=False,
+    icon="SynerconLogo.ico"
+    )
 
 setup(  name = "SSS2 Interface App",
         version = "1.0.5",
         description = "A graphical user interface for the Smart Sensor Simulator 2 from Synercon Technologies.",
         options = {"build_exe": build_exe_options},
-        executables = [Executable("SSS2-Interface.py", base=base)])
+        executables = [target])
