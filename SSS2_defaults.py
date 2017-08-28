@@ -795,22 +795,24 @@ def get_default_settings():
     t[" 21.000"]="AMB from Body Controller,21,1,0,0,1000,   0,0,1,18FEF521,8, 0, 0, 0, 0, 0, 0, 0, 0,Yes" 
                 
     return settings
+
 def get_default_wiring():
     wiring_dict={}
     wiring_dict["J24:17"]={"Wire Color":"PURPLE","Application":"CAN2L/J1708-","ECU Pins":""}
     wiring_dict["J24:18"]={"Wire Color":"PINK","Application":"CAN2H/J1708+","ECU Pins":""}
-    wiring_dict["J24:19"]={"Wire Color":"TAN","Application":"HVADJOUT","ECU Pins":""}
+    wiring_dict["J24:19"]={"Wire Color":"TAN","Application":"Adj Pwr Out","ECU Pins":""}
     wiring_dict["J24:20"]={"Wire Color":"ORANGE","Application":"Ignition","ECU Pins":""}
     wiring_dict["J24:21"]={"Wire Color":"GREEN","Application":"J1939L","ECU Pins":""}
     wiring_dict["J24:22"]={"Wire Color":"YELLOW","Application":"J1939H","ECU Pins":""}
     wiring_dict["J24:23"]={"Wire Color":"RED","Application":"+12V Out","ECU Pins":""}
     wiring_dict["J24:24"]={"Wire Color":"BLACK","Application":"Ground","ECU Pins":""}
     wiring_dict["J18:18"]={"Wire Color":"BLACK","Application":"Ground","ECU Pins":""}
-    wiring_dict["J18:17"]={"Wire Color":"Red","Application":"Battery +","ECU Pins":""}
+    wiring_dict["J18:17"]={"Wire Color":"RED","Application":"Battery +","ECU Pins":""}
     wiring_dict["J18:16"]={"Wire Color":"YELLOW","Application":"CAN2H","ECU Pins":""}
     wiring_dict["J18:15"]={"Wire Color":"GREEN","Application":"CAN2L","ECU Pins":""}
-    wiring_dict["J18:11"] ={"Wire Color":"PURPLE","Application":"","ECU Pins":""}
+    wiring_dict["J18:11"] ={"Wire Color":"PURPLE","Application":"Adj Pwr Out","ECU Pins":""}
     return wiring_dict
+
 if __name__ == '__main__':
     settings=get_default_settings()
     with open('defaults.SSS2','w') as outfile:
