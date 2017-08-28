@@ -55,14 +55,13 @@
         " 20.000": "PTO from Cab Controller,20,1,0,0, 100,   0,0,1,18FEF031,8, 0, 0, 0, 0, 0, 0, 0, 0,Yes",
         " 21.000": "AMB from Body Controller,21,1,0,0,1000,   0,0,1,18FEF521,8, 0, 0, 0, 0, 0, 0, 0, 0,Yes",
         " 22.000": "VGT Status,22,1,0,1,20,0,0,1,18FFC502,8,00,00,00,00,00,00,00,00,Yes",
-        " 23.000": "Stop Broadcast,23,2,0,0,1,5000,0,1,18DFFFF9,8,00,00,3F,0F,FF,FF,FF,FF,Yes",
-        " 23.001": "Stop Broadcast,23,2,1,0,5000,1,0,1,18DFFFF9,8,FF,FF,FF,0F,FF,FF,FF,FF,Yes",
+        " 23.001": "Stop Broadcast,23,2,1,0,1,5000,0,1,18DFFFF9,8,FF,FF,FF,0F,FF,FF,FF,FF,No",
         " 24.000": "Address Claimed from VGT,24,1,0,1,500,0,10,1,18EEFF02,8,BD,82,A4,12,00,85,00,00,Yes",
         " 25.000": "VGT Response,25,1,0,1,5000,0,20,1,18FF0B02,8,82,6A,DF,9A,FC,01,8E,00,Yes"
     },
     "CAN Config": {
         "Buffer Size": 1000000,
-        "CAN0 Baudrate": "250000",
+        "CAN0 Baudrate": "500000",
         "CAN1 Baudrate": "250000",
         "MCPCAN Baudrate": "250000"
     },
@@ -228,10 +227,10 @@
     "ECU Make": "Cummins",
     "ECU Model": "CM2350",
     "ECU Software Version": "EB90154.08",
-    "ECU Year": "2013",
+    "ECU Year": "2017",
     "Engine Configuration": "ECM/PDD Code: EB90154.08",
     "Engine Model": "MODEL",
-    "Engine Serial Number": "ISX ",
+    "Engine Serial Number": "",
     "File Name": "Cummins CM2350 500k Vehicle and Engine Connector.SSS2",
     "HVAdjOut": {
         "Alt. Pin": null,
@@ -253,8 +252,8 @@
         "Wire Color": "TAN"
     },
     "Location": "ADDRESS, CITY, STATE, ZIP",
-    "Original Creation Date": "Sunday, 20 August 2017 05:15:32 Central Daylight Time",
-    "Original File SHA": "04d99c357ede9ab76d70b5156174487c6df6069f9a3712473ee2202c039e4f21",
+    "Original Creation Date": "Thursday, 24 August 2017 08:54:27 Central Daylight Time",
+    "Original File SHA": "dd331f0cd7851112131875de61cdd0d3b6ceaa9e3801c173314deed6f9fadd41",
     "PWMs": {
         "PWM1": {
             "Alt. Pin": "J18:15",
@@ -770,13 +769,13 @@
     },
     "Programmed By": "USER NAME",
     "Resistor Box Used": "No",
-    "SHA256 Digest": "04d99c357ede9ab76d70b5156174487c6df6069f9a3712473ee2202c039e4f21",
+    "SHA256 Digest": "dd331f0cd7851112131875de61cdd0d3b6ceaa9e3801c173314deed6f9fadd41",
     "SSS2 Cable": "SSS2-CM2350",
-    "SSS2 Interface Release Date": "16 August 2017",
-    "SSS2 Interface Version": "1.0.5 UNIVERSAL",
+    "SSS2 Interface Release Date": "23 August 2017",
+    "SSS2 Interface Version": "1.0.6 UNIVERSAL",
     "SSS2 Product Code": "UNIVERSAL",
     "SSS2 Source Address": 250,
-    "Saved Date": "Sunday, 20 August 2017 12:11:31 Central Daylight Time",
+    "Saved Date": "Thursday, 24 August 2017 08:54:50 Central Daylight Time",
     "Send SSS2 Component ID": "1",
     "Serial Number": "SYNER*SSS2-R05*0034*UNIVERSAL",
     "Software ID": "SSS2*REV05*1.0*master*c3b62b583f1f7b22da9f3ec93ed09addc75a1d1e",
@@ -913,7 +912,7 @@
             "State": false
         }
     },
-    "User Notes": "ECM/PDD Code: EB90154.08\nAdvertised Power at RPM: 451 hp\nAdvertised Power RPM: 2100 RPM\nControl Parts List: 4611\nFuel Code: FP93692\nGoverned Speed: 2200 RPM\nPeak Torque at RPM: 1250 ft*lb\nPeak Torque RPM: 1400 RPM\nECM Name: CM2350A\nECM Part Number: 4358814\nECM Serial Number: 6100300\nEngine Make: CMMNS\nEngine Model: 6L u13D0890000000\n\nThis was a blank ECU and not installed in a vehicle.",
+    "User Notes": "ECM/PDD Code: EB90154.08\nAdvertised Power at RPM: 451 hp\nAdvertised Power RPM: 2100 RPM\nControl Parts List: 4611\nFuel Code: FP93692\nGoverned Speed: 2200 RPM\nPeak Torque at RPM: 1250 ft*lb\nPeak Torque RPM: 1400 RPM\nECM Name: CM2350A\nECM Part Number: 4358814\nECM Serial Number: 6100300\nEngine Make: CMMNS\nEngine Model: 6L u13D0890000000\n\nThis was a blank ECU and not installed in a vehicle.\n\nISL with 500k J1939",
     "Vehicle Make": "Kenworth",
     "Vehicle Model": "",
     "Vehicle VIN": "",
