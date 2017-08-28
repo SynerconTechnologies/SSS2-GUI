@@ -15,15 +15,11 @@ build_exe_options = {"packages": ["os","tkinter"],
 target = Executable(
     script="SSS2-Interface.py",
     base="Win32GUI",
-    compress=False,
-    copyDependentFiles=True,
-    appendScriptToExe=True,
-    appendScriptToLibrary=False,
     icon="SynerconLogo.ico"
     )
 
 setup(  name = "SSS2 Interface App",
-        version = "1.0.5",
+        version = "1.0.6",
         description = "A graphical user interface for the Smart Sensor Simulator 2 from Synercon Technologies.",
         options = {"build_exe": build_exe_options},
         executables = [target])
