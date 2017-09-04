@@ -10,19 +10,21 @@ Be sure to commit and Sync all new files to Githup after each development.
    1. Open a command prompt by typing `cmd` in the Windows start menu.
    2. Upgrade pip: ```py -3.4 -m pip install --upgrade pip```
    3. Install PySerial: ```py -3.4 -m pip install pyserial```
-   4. Install py2exe: ```py -3.4 -m pip install py2exe```
+   4. Install cxFreeze: ```py -3.4 -m pip install cx_freeze```
 2. Install the Teensy USB drivers from https://www.pjrc.com/teensy/serial_install.exe
 3. Download Github Desktop from https://desktop.github.com/
 4. Clone this repository in Github Desktop to work on it.
 
 ## Building a Windows Executable
 1. Be sure all updated SSS2 files are in the SSS2-GUI directory. This is the default setting when the UNIVERSAL is True.
-5. From the Tools Menu, run Update Settings Files. This ensures all the files are saved with the latest verison and hash values. 
-7. Change the Universal Flag to False (```UNIVERSAL = False```) for a production release.
-5. Package the Python sources into an executable using ```py -3.4 createExecutable.py py2exe```
+2. Save all the files are with the latest verison and hash values. 
+3. Change directories to ```~/Documents/GitHub/SSS2-GUI/``` or wherever the repository is installed.
+3. Change the Universal Flag to False (```UNIVERSAL = False```) for a production release.
+4. Package the Python sources into an executable using ```py -3.4 -m createFreeze.py build```
 6. Be sure all graphics files are copied into the newly created dist and build directories. This is only needed if new graphics were installed or this is the first build on your computer. 
 7. Use Inno windows installer to create a single executable file. http://www.jrsoftware.org/isdl.php#qsp
-   1. Open the `windows installer script for SSS2.iss` file.
+   1. Open the `windows installer for cx_freeze for SSS2.iss` file.
+   1. Change the version number.
    2. Compile it.
    3. Find the executable in Documents/SSS2
    4. Rename the executable with the version number.
