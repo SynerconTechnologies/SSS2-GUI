@@ -29,13 +29,17 @@ Be sure to commit and Sync all new files to Githup after each development.
    3. Find the executable in Documents/SSS2
    4. Rename the executable with the version number.
    5. Send the executable to a zip file.
-   6. Drag all the .SSS2 files into SSS2settings.zip and replace all files inside.
+   6. Drag all the .SSS2 files from SSS2-GUI into SSS2settings.zip and replace all files inside.
    7. Upload the exe file, and both zip files to the web.
      1. Use WinSCP or equivalent to log into mallory.synercontechnologies.com
      2. Navigate to `/var/www/synercontechnologies.com/files` and drop the files there.
+	 3. Open Wordpress https://synercontechnologies.com/wp-admin
+	 4. edit the Smart Sensor Simulator 2 page and update the links to the latest version.
 7. Log into the website and update the release information with the latest version. 
    1. Write up a list of product improvements since the last release.
    2. Explain what new SSS2 files are available. 
+   3. Run the file against https://www.virustotal.com
+   4. Print the result to a PDF and upload it to the SSS2 Interface Release Notes page in Wordpress.
 8. Add a version number in Github.
 8. Set the Universal Flag to True (```UNIVERSAL = True```) to continue work.
 9. Commit and Sync to Github
