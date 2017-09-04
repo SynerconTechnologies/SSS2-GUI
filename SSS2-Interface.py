@@ -27,9 +27,9 @@ import collections
 from SSS2_defaults import *
 
 #### CHANGE THIS to False FOR PRODUCTION #####
-UNIVERSAL = False
-release_date = "23 August 2017"
-release_version = "1.0.6"
+UNIVERSAL = True
+release_date = "4 September 2017"
+release_version = "1.0.7"
 
 class SerialThread(threading.Thread):
     def __init__(self, parent, rx_queue, tx_queue,serial):
@@ -41,6 +41,9 @@ class SerialThread(threading.Thread):
         self.signal = True
         self.receivetime = time.time()
         self.sendtime = time.time()
+        self.home_directory = os.path.expanduser('~')+os.sep+"Documents"+os.sep+"SSS2"+os.sep
+        if not os.path.exists(self.home_directory):
+            self.home_directory = os.path.expanduser('~')+os.sep
         
     def run(self):
         time.sleep(.1)
@@ -138,7 +141,9 @@ class setup_serial_connections(tk.Toplevel):
         self.grab_set()
         self.focus_set()
         self.wait_window(self)
-
+        self.home_directory = os.path.expanduser('~')+os.sep+"Documents"+os.sep+"SSS2"+os.sep
+        if not os.path.exists(self.home_directory):
+            self.home_directory = os.path.expanduser('~')+os.sep
     
     def buttonbox(self):
        
@@ -215,9 +220,12 @@ class setup_serial_connections(tk.Toplevel):
             try:
                 comport=(self.port_combo_box.get().split(" "))[0]
 
-                with open("SSS2comPort.txt","w") as comFile:
-                    comFile.write("{}".format(comport))
-                
+                try:
+                    with open(self.home_directory+"SSS2comPort.txt","w") as comFile:
+                        comFile.write("{}".format(comport))
+                except Exception as e:
+                    print(e)
+                  
                 ser = serial.Serial(comport,baudrate=4000000,timeout=0.1,
                                     parity=serial.PARITY_ODD,write_timeout=0.1,
                                     xonxoff=False, rtscts=False, dsrdtr=False)
@@ -2252,7 +2260,7 @@ class SSS2(ttk.Frame):
             try:
                 print("Automatically connecting to SSS2.")
                 self.connection_status_string.set("SSS2 connecting automatically.")
-                with open("SSS2comPort.txt","r") as comFile:
+                with open(self.home_directory+"SSS2comPort.txt","r") as comFile:
                     comport = comFile.readline().strip()
                 self.serial = serial.Serial(comport,baudrate=4000000,timeout=0.01,
                                         parity=serial.PARITY_ODD,write_timeout=0.01,
