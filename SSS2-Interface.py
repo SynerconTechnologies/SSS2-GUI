@@ -27,7 +27,7 @@ import collections
 from SSS2_defaults import *
 
 #### CHANGE THIS to False FOR PRODUCTION #####
-UNIVERSAL = True
+UNIVERSAL = False
 release_date = "4 September 2017"
 release_version = "1.0.7"
 
@@ -141,9 +141,7 @@ class setup_serial_connections(tk.Toplevel):
         self.grab_set()
         self.focus_set()
         self.wait_window(self)
-        self.home_directory = os.path.expanduser('~')+os.sep+"Documents"+os.sep+"SSS2"+os.sep
-        if not os.path.exists(self.home_directory):
-            self.home_directory = os.path.expanduser('~')+os.sep
+        
     
     def buttonbox(self):
        
@@ -221,7 +219,10 @@ class setup_serial_connections(tk.Toplevel):
                 comport=(self.port_combo_box.get().split(" "))[0]
 
                 try:
-                    with open(self.home_directory+"SSS2comPort.txt","w") as comFile:
+                    home_directory = os.path.expanduser('~')+os.sep+"Documents"+os.sep+"SSS2"+os.sep
+                    if not os.path.exists(home_directory):
+                        home_directory = os.path.expanduser('~')+os.sep
+                    with open(home_directory+"SSS2comPort.txt","w") as comFile:
                         comFile.write("{}".format(comport))
                 except Exception as e:
                     print(e)
@@ -2265,7 +2266,8 @@ class SSS2(ttk.Frame):
                 self.serial = serial.Serial(comport,baudrate=4000000,timeout=0.01,
                                         parity=serial.PARITY_ODD,write_timeout=0.01,
                                         xonxoff=False, rtscts=False, dsrdtr=False)
-            except:
+            except Exception as e:
+                print(e)
                 connection_dialog = setup_serial_connections(self)
                 self.serial = connection_dialog.result
         else:
@@ -3353,7 +3355,7 @@ def destroyer():
         pass
     root.quit()
     root.destroy()
-    #sys.exit()
+    sys.exit()
 
         
 if __name__ == '__main__':
@@ -3362,5 +3364,5 @@ if __name__ == '__main__':
     mainwindow = SSS2(root,name='sss2')
     root.protocol("WM_DELETE_WINDOW",destroyer)
     root.mainloop()
-    #destroyer()
+    destroyer()
     

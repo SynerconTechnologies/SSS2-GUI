@@ -317,7 +317,7 @@
         "Wire Color": "Tan"
     },
     "Location": "ADDRESS, CITY, STATE, ZIP",
-    "Original Creation Date": "Monday, 04 September 2017 16:53:13 Central Daylight Time",
+    "Original Creation Date": "Monday, 04 September 2017 19:47:56 Central Daylight Time",
     "Original File SHA": "0da2947a133091a4af5c23395500f2c2ef08364a91e0f1bc244b6a80fbb18128",
     "PWMs": {
         "PWM1": {
@@ -840,7 +840,7 @@
     "SSS2 Interface Version": "1.0.7 UNIVERSAL",
     "SSS2 Product Code": "UNIVERSAL",
     "SSS2 Source Address": 250,
-    "Saved Date": "Monday, 04 September 2017 17:00:59 Central Daylight Time",
+    "Saved Date": "Monday, 04 September 2017 19:49:27 Central Daylight Time",
     "Send SSS2 Component ID": "1",
     "Serial Number": "SYNER*SSS2-R05*0043*UNIVERSAL",
     "Software ID": "SSS2*REV05*1.0*master*c3b62b583f1f7b22da9f3ec93ed09addc75a1d1e",
