@@ -27,7 +27,7 @@ import collections
 from SSS2_defaults import *
 
 #### CHANGE THIS to False FOR PRODUCTION #####
-UNIVERSAL = False
+UNIVERSAL = True
 release_date = "4 September 2017"
 release_version = "1.0.7"
 
@@ -51,7 +51,7 @@ class SerialThread(threading.Thread):
         previous_time = time.time()
         try:
             while self.serial.is_open and self.signal:           
-                if self.tx_queue.qsize() and (time.time() - previous_time > 0.015): #ensure the listener can process the commands by waiting
+                if self.tx_queue.qsize() and (time.time() - previous_time) > 0.002: #ensure the listener can process the commands by waiting
                     previous_time = time.time()
                     s = self.tx_queue.get_nowait()
                     print('TX: ', end='')
@@ -98,6 +98,7 @@ class SerialThread(threading.Thread):
         print("Serial Connection Closed.")
         self.serial.__del__()
         self.signal = False
+        
     def getCANstring(self,databytes):
         
         channel = databytes[4]
@@ -2288,6 +2289,7 @@ class SSS2(ttk.Frame):
                     self.thread.signal = True
                     self.thread.daemon = True
                     self.thread.start()
+                    #self.thread.join()
                     print("Started Serial Thread.")
                     self.init_tabs()
                     self.check_serial_connection()
@@ -2303,6 +2305,11 @@ class SSS2(ttk.Frame):
             self.tabs.tab(tbs, state="disabled")
         self.ignition_key_button.state(['!selected'])
         self.ignition_key_button.state(['disabled'])
+        try:
+            self.thread.signal = False
+        except:
+            pass
+
         
 
     def check_serial_connection(self,event = None):
@@ -2320,12 +2327,13 @@ class SSS2(ttk.Frame):
 
         else:
             self.throw_serial_error()
-            self.file_OK_received.set(False)
-            self.wait_variable(self.file_OK_received)       
-            self.file_OK_received.set(False)
+            # self.file_OK_received.set(False)
+            # self.wait_variable(self.file_OK_received)       
+            # self.file_OK_received.set(False)
+            self.connect_to_serial()
             
 
-        self.after(2000,self.check_serial_connection)
+        self.after(3000,self.check_serial_connection)
         
     
     def send_arbitrary_serial_message(self,event = None):
