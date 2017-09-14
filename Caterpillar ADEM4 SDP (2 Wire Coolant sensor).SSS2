@@ -63,7 +63,7 @@
     },
     "Case Number": "CASE IDENTIFIER",
     "Company": "COMPANY NAME",
-    "Component ID": "SYNER*SSS2-R05*XXXX*UNIVERSAL",
+    "Component ID": "INFO SSS2 Component ID",
     "DACs": {
         "Vout1": {
             "Alt. Pin": "J24:15",
@@ -248,8 +248,8 @@
         "Wire Color": "TAN"
     },
     "Location": "ADDRESS, CITY, STATE, ZIP",
-    "Original Creation Date": "Sunday, 23 July 2017 12:05:45 Central Daylight Time",
-    "Original File SHA": "7bfa474992909b047e225de8b471ae5c4bc949314e816e83a2aa95943a7ce3da",
+    "Original Creation Date": "Wednesday, 13 September 2017 21:10:08 Central Daylight Time",
+    "Original File SHA": "577be261db05beb4d5002e5e6d717d76ceccee510bfa2b10532c62603b407de6",
     "PWMs": {
         "PWM1": {
             "Alt. Pin": "J18:15",
@@ -765,16 +765,16 @@
     },
     "Programmed By": "USER NAME",
     "Resistor Box Used": "No",
-    "SHA256 Digest": "7bfa474992909b047e225de8b471ae5c4bc949314e816e83a2aa95943a7ce3da",
+    "SHA256 Digest": "577be261db05beb4d5002e5e6d717d76ceccee510bfa2b10532c62603b407de6",
     "SSS2 Cable": "SSS2-ADEM4",
-    "SSS2 Interface Release Date": "12 August 2017",
-    "SSS2 Interface Version": "1.0.3 UNIVERSAL",
+    "SSS2 Interface Release Date": "4 September 2017",
+    "SSS2 Interface Version": "1.0.8 UNIVERSAL",
     "SSS2 Product Code": "UNIVERSAL",
     "SSS2 Source Address": 250,
-    "Saved Date": "Sunday, 23 July 2017 13:41:23 Central Daylight Time",
+    "Saved Date": "Wednesday, 13 September 2017 21:10:18 Central Daylight Time",
     "Send SSS2 Component ID": "1",
-    "Serial Number": "SYNER*SSS2-03*0016*UNIVERSAL",
-    "Software ID": "SSS2*REV03*0.91b*master*18887b06f7f46973e403baf2cbbdc876b832adba",
+    "Serial Number": "INFO SSS2 Component ID",
+    "Software ID": "SSS2*REV05*1.0*master*c3b62b583f1f7b22da9f3ec93ed09addc75a1d1e",
     "Switches": {
         "12V Out 1": {
             "Label": "Connect +12V to Port 27 (J18:10)",
@@ -908,7 +908,7 @@
             "State": false
         }
     },
-    "User Notes": "Example file. Not fault free",
+    "User Notes": "Example file.",
     "Vehicle Make": "Caterpillar",
     "Vehicle Model": "C15 Truck",
     "Vehicle VIN": "236330J",

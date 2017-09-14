@@ -38,12 +38,12 @@
         "  3.000": "DDEC TCM 02,3,1,0,1,10,0,0,1, 8FF0303,8,FF,FF,FF,FF,FF,FF,FF,FF,Yes",
         "  4.000": "DDEC TCM 03,4,1,0,1,100,0,0,1,18F00503,8,00,00,00,00,00,00,00,00,Yes",
         "  5.000": "HRW from Brake Controller,5,1,0,0,20,0,0,1, CFE6E0B,8,00,00,00,00,00,00,00,00,Yes",
-        "  6.000": "EBC1 from Cab Controller,6,1,0,0,100,0,0,1,18F00131,8,00,00,00,00,00,00,00,00,No",
+        "  6.000": "EBC1 from Cab Controller,6,1,0,0,100,0,0,1,18F00131,8,00,00,00,00,00,00,00,00,Yes",
         "  7.000": "EBC1 from Brake Controller,7,1,0,0,100,0,0,1,18F0010B,8,00,00,00,00,00,00,00,00,Yes",
-        "  8.000": "CCVS1 from Instrument Cluster,8,1,0,0,100,0,0,1,18FEF117,8,00,20,20,00,00,00,00,00,Yes",
-        "  9.000": "CCVS1 from Cab Display 1,9,1,0,0,100,0,0,1,18FEF128,8,00,00,00,00,00,00,00,00,No",
-        " 10.000": "CCVS1 from Body Controller,10,1,0,0,100,0,0,1,18FEF121,8,00,00,00,00,00,00,00,00,No",
-        " 11.000": "CCVS1 from Cab Controller,11,1,0,0,100,0,0,1,18FEF131,8,00,00,00,00,00,00,00,00,No",
+        "  8.000": "CCVS1 from Instrument Cluster,8,1,0,0,100,0,0,1,18FEF117,8,00,00,00,00,00,00,00,00,Yes",
+        "  9.000": "CCVS1 from Cab Display 1,9,1,0,0,100,0,0,1,18FEF128,8,00,00,00,00,00,00,00,00,Yes",
+        " 10.000": "CCVS1 from Body Controller,10,1,0,0,100,0,0,1,18FEF121,8,00,00,00,00,00,00,00,00,Yes",
+        " 11.000": "CCVS1 from Cab Controller,11,1,0,0,100,0,0,1,18FEF131,8,00,00,00,00,00,00,00,00,Yes",
         " 12.000": "CM1 from Instrument Cluster,12,1,0,0,100,0,0,1,18E00017,8,00,00,00,00,00,00,00,00,Yes",
         " 13.000": "CM1 from Climate Control 1,13,1,0,0,100,   0,0,1,18E00019,8, 0, 0, 0, 0, 0, 0, 0, 0,Yes",
         " 14.000": "CM1 from Body Controller,14,1,0,0,100,   0,0,1,18E00021,8, 0, 0, 0, 0, 0, 0, 0, 0,Yes",
@@ -127,12 +127,12 @@
     "CAN Config": {
         "Buffer Size": 1000000,
         "CAN0 Baudrate": "250000",
-        "CAN1 Baudrate": "666666",
+        "CAN1 Baudrate": "500000",
         "MCPCAN Baudrate": "250000"
     },
     "Case Number": "CASE IDENTIFIER",
     "Company": "COMPANY NAME",
-    "Component ID": "SYNER*SSS2-R05*0043*UNIVERSAL",
+    "Component ID": "INFO SSS2 Component ID",
     "DACs": {
         "Vout1": {
             "Alt. Pin": "J24:15",
@@ -296,7 +296,7 @@
     "Engine Configuration": "DDEC 10 A 003 446 82 02 / 003",
     "Engine Model": "MODEL",
     "Engine Serial Number": "472903S0173343",
-    "File Name": "CPC4 Only with VSS- DDEC 13 - DD15 - 2011 Freightliner Cascadia.SSS2",
+    "File Name": "DDEC 10 - CPC Only - DD15 - 2011 Freightliner Cascadia.SSS2",
     "HVAdjOut": {
         "Alt. Pin": null,
         "Alt. Pin Connect": false,
@@ -317,8 +317,8 @@
         "Wire Color": "Tan"
     },
     "Location": "ADDRESS, CITY, STATE, ZIP",
-    "Original Creation Date": "Wednesday, 06 September 2017 20:14:51 Central Daylight Time",
-    "Original File SHA": "7fc6c6bfe762a88c18cd9287ff607177cfbb7093b6118ce46219c346e980e609",
+    "Original Creation Date": "Thursday, 14 September 2017 06:17:07 Central Daylight Time",
+    "Original File SHA": "8a974ee8f4bdbcd620f27ed8e436331debb4106f8d0b507f21af8b6d82c1002d",
     "PWMs": {
         "PWM1": {
             "Alt. Pin": "J18:15",
@@ -416,10 +416,10 @@
             "Alt. Pin": "",
             "Alt. Pin Connect": null,
             "Alt. Port": null,
-            "Application": "Vehicle Speed Signal",
+            "Application": "Application Description",
             "Duty Cycle": 50,
-            "ECU Pins": "C3-13",
-            "Frequency": 0,
+            "ECU Pins": "ECU Pins",
+            "Frequency": 200,
             "Highest Frequency": 5000,
             "Highest Voltage": 5,
             "Lowest Frequency": 0,
@@ -433,7 +433,7 @@
             "SSS2 pin setting": 70,
             "SSS2 setting": 87,
             "Show Frequency": true,
-            "Wire Color": "BRN/WHT"
+            "Wire Color": "PPL/WHT"
         },
         "PWM6": {
             "Alt. Pin": "",
@@ -442,7 +442,7 @@
             "Application": "Application Description",
             "Duty Cycle": 50,
             "ECU Pins": "ECU Pins",
-            "Frequency": 0,
+            "Frequency": 200,
             "Highest Frequency": 5000,
             "Highest Voltage": 5,
             "Lowest Frequency": 0,
@@ -484,8 +484,8 @@
                             "Wire Color": "PPL/WHT"
                         },
                         "U2": {
-                            "Application": "Vehicle Speed (+)",
-                            "ECU Pins": "CPC3-13",
+                            "Application": "Supply",
+                            "ECU Pins": "CPC3-3",
                             "Name": "Potentiometer 2",
                             "Pin": "J24:2",
                             "Port": "2",
@@ -493,9 +493,9 @@
                             "SSS2 TCON Setting": 52,
                             "SSS2 Wiper Setting": 2,
                             "Term. A Connect": false,
-                            "Term. B Connect": false,
+                            "Term. B Connect": true,
                             "Wiper Connect": true,
-                            "Wiper Position": 145,
+                            "Wiper Position": 255,
                             "Wire Color": "BRN/WHT"
                         }
                     },
@@ -514,15 +514,15 @@
                             "Resistance": "10k",
                             "SSS2 TCON Setting": 53,
                             "SSS2 Wiper Setting": 3,
-                            "Term. A Connect": false,
-                            "Term. B Connect": true,
+                            "Term. A Connect": true,
+                            "Term. B Connect": false,
                             "Wiper Connect": true,
-                            "Wiper Position": 0,
+                            "Wiper Position": 232,
                             "Wire Color": "YEL/BLK"
                         },
                         "U4": {
-                            "Application": "Supply",
-                            "ECU Pins": "CPC3-3",
+                            "Application": "Vehicle Speed (+)",
+                            "ECU Pins": "CPC3-13",
                             "Name": "Potentiometer 4",
                             "Pin": "J24:4",
                             "Port": "4",
@@ -709,7 +709,7 @@
                             "Term. A Connect": true,
                             "Term. B Connect": true,
                             "Wiper Connect": true,
-                            "Wiper Position": 159,
+                            "Wiper Position": 194,
                             "Wire Color": "BROWN"
                         },
                         "U14": {
@@ -724,7 +724,7 @@
                             "Term. A Connect": true,
                             "Term. B Connect": true,
                             "Wiper Connect": true,
-                            "Wiper Position": 162,
+                            "Wiper Position": 0,
                             "Wire Color": "BLK/WHT"
                         }
                     },
@@ -834,15 +834,15 @@
     },
     "Programmed By": "USER NAME",
     "Resistor Box Used": "No",
-    "SHA256 Digest": "7fc6c6bfe762a88c18cd9287ff607177cfbb7093b6118ce46219c346e980e609",
+    "SHA256 Digest": "8a974ee8f4bdbcd620f27ed8e436331debb4106f8d0b507f21af8b6d82c1002d",
     "SSS2 Cable": "SSS2-DDEC10",
     "SSS2 Interface Release Date": "4 September 2017",
-    "SSS2 Interface Version": "1.0.7 UNIVERSAL",
+    "SSS2 Interface Version": "1.0.8 UNIVERSAL",
     "SSS2 Product Code": "UNIVERSAL",
     "SSS2 Source Address": 250,
-    "Saved Date": "Wednesday, 06 September 2017 21:16:46 Central Daylight Time",
+    "Saved Date": "Thursday, 14 September 2017 06:17:14 Central Daylight Time",
     "Send SSS2 Component ID": "1",
-    "Serial Number": "SYNER*SSS2-R05*0043*UNIVERSAL",
+    "Serial Number": "INFO SSS2 Component ID",
     "Software ID": "SSS2*REV05*1.0*master*c3b62b583f1f7b22da9f3ec93ed09addc75a1d1e",
     "Switches": {
         "12V Out 1": {
@@ -951,7 +951,7 @@
         "PWM5 Connect": {
             "Label": "Connect PWM5 Output to J24:2",
             "SSS2 setting": 89,
-            "State": true
+            "State": false
         },
         "PWM6 Connect": {
             "Label": "Connect PWM6 Output to J24:1",
