@@ -10,6 +10,7 @@ SolidCompression=yes
 OutputDir=userdocs:SSS2
 OutputBaseFilename=SetupSSS2Interface
 UninstallDisplayIcon={app}\SSS2-Interface
+SignTool=DigiCert
 
 [Files]
 Source: "build\exe.win32-3.4\*"; DestDir: "{app}"; Flags: recursesubdirs
