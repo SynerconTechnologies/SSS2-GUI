@@ -27,8 +27,8 @@ import collections
 from SSS2_defaults import *
 
 #### CHANGE THIS to False FOR PRODUCTION #####
-UNIVERSAL = False
-release_date = "14 September 2017"
+UNIVERSAL = True
+release_date = "02 October 2017"
 release_version = "1.0.8"
 
 class SerialThread(threading.Thread):
