@@ -18,7 +18,7 @@ import getpass
 import webbrowser
 from operator import itemgetter
 import struct
-
+import traceback
 from tkinter.tix import *
 from tkinter.constants import *
 import tkinter.scrolledtext as tkst
@@ -29,41 +29,25 @@ from SSS2_defaults import *
 #### CHANGE THIS to False FOR PRODUCTION #####
 UNIVERSAL = True
 release_date = "4 September 2017"
-release_version = "1.0.7"
+release_version = "2.0.0"
 
 class SerialThread(threading.Thread):
-    def __init__(self, parent, rx_queue, tx_queue,serial):
+    def __init__(self, parent, rx_queue):
         self.root = parent
         threading.Thread.__init__(self)
         self.rx_queue = rx_queue
-        self.tx_queue = tx_queue
-        self.serial=serial
         self.signal = True
         self.receivetime = time.time()
-        self.sendtime = time.time()
-        self.home_directory = os.path.expanduser('~')+os.sep+"Documents"+os.sep+"SSS2"+os.sep
-        if not os.path.exists(self.home_directory):
-            self.home_directory = os.path.expanduser('~')+os.sep
         
     def run(self):
-        time.sleep(.1)
         needsMore = False
-        previous_time = time.time()
         try:
-            while self.serial.is_open and self.signal:           
-                if self.tx_queue.qsize() and (time.time() - previous_time) > 0.002: #ensure the listener can process the commands by waiting
-                    previous_time = time.time()
-                    s = self.tx_queue.get_nowait()
-                    print('TX: ', end='')
-                    print(s)
-                    self.serial.write(bytes(s,'utf-8') + b'\x0A')
-                    self.sendtime = time.time()
-                    
-                if self.serial.in_waiting:
-                    lines = self.serial.readlines(self.serial.in_waiting)
+            while self.root.serial.is_open and self.signal:           
+                if self.root.serial.in_waiting:
+                    lines = self.root.serial.readlines(self.root.serial.in_waiting)
                     self.receivetime = time.time()
-                    for line in lines:
-                        
+                    for line in lines: 
+                        print(line)       
                         if line[0:3] == b'CAN': 
                             canline = line[3:]
                             if len(canline) == 22:
@@ -85,18 +69,16 @@ class SerialThread(threading.Thread):
                                 needsMore = True
                         else:
                             self.rx_queue.put(line)
-                time.sleep(.002) #add a sleep statement to reduce CPU load for this thread.
-                if abs(self.receivetime - self.sendtime) > 5:
-                    self.signal = False
+                time.sleep(.001) #add a sleep statement to reduce CPU load for this thread.
                 
-        except Exception as e:
-            print(e)
-            print("Serial Connection Broken. Exiting Thread.")
-            self.serial.close()
-            self.serial.__del__()
+        except:
+            print(traceback.format_exc())
+            print("Serial Connection Broken. Exiting RX Thread.")
+            self.root.serial.close()
+            self.root.serial.__del__()
 
         print("Serial Connection Closed.")
-        self.serial.__del__()
+        self.root.serial.__del__()
         self.signal = False
         
     def getCANstring(self,databytes):
@@ -118,8 +100,28 @@ class SerialThread(threading.Thread):
         #print(line,end='')
         return bytearray(line,'ascii')
         
-        
-
+class TXThread(threading.Thread):
+    def __init__(self, parent, tx_queue):
+        self.root = parent
+        threading.Thread.__init__(self)
+        self.tx_queue = tx_queue
+        self.signal = True
+       
+    def run(self):
+        try:
+            while self.root.serial.is_open:
+                if self.tx_queue.qsize(): #ensure the listener can process the commands by waiting
+                    s = self.tx_queue.get()
+                    print('TX: ', end='')
+                    print(s)
+                    self.root.serial.write(bytes(s,'utf-8') + b'\x0A')
+                    #self.sendtime = time.time()
+                time.sleep(.010) #add a sleep statement to reduce CPU load for this thread.
+                
+        except Exception:
+            print(traceback.format_exc())
+            print("Serial Connection Broken. Exiting TX Thread.")
+            
 class setup_serial_connections(tk.Toplevel):
     def __init__(self, parent):
         tk.Toplevel.__init__(self, parent)
@@ -229,7 +231,7 @@ class setup_serial_connections(tk.Toplevel):
                     print(e)
                   
                 ser = serial.Serial(comport,baudrate=4000000,timeout=0.1,
-                                    parity=serial.PARITY_ODD,write_timeout=0.1,
+                                    parity=serial.PARITY_ODD,write_timeout=0,
                                     xonxoff=False, rtscts=False, dsrdtr=False)
                 self.result = ser
                 return True
@@ -320,8 +322,8 @@ class SSS2(ttk.Frame):
     def init_gui(self):
         """Builds GUI."""
         
-        self.tx_queue = queue.Queue()
-        self.rx_queue = queue.Queue()
+        self.tx_queue = queue.Queue(100000)
+        self.rx_queue = queue.Queue(100000)
 
         
 
@@ -452,8 +454,8 @@ class SSS2(ttk.Frame):
     def init_tabs(self,event=None):
         
         
-        self.tx_queue.put_nowait("50,0")
-        time.sleep(.25)
+        self.tx_queue.put("50,0")
+        #time.sleep(.25)
         
         if self.autosave_job is not None:
             self.after_cancel(self.autosave_job)
@@ -2264,8 +2266,8 @@ class SSS2(ttk.Frame):
                 self.connection_status_string.set("SSS2 connecting automatically.")
                 with open(self.home_directory+"SSS2comPort.txt","r") as comFile:
                     comport = comFile.readline().strip()
-                self.serial = serial.Serial(comport,baudrate=4000000,timeout=0.01,
-                                        parity=serial.PARITY_ODD,write_timeout=0.01,
+                self.serial = serial.Serial(comport,baudrate=4000000,timeout=1,
+                                        parity=serial.PARITY_ODD,write_timeout=1,
                                         xonxoff=False, rtscts=False, dsrdtr=False)
             except Exception as e:
                 print(e)
@@ -2285,10 +2287,15 @@ class SSS2(ttk.Frame):
             if self.serial is not None:
                 if self.serial.is_open:
                     print("SSS2 connected.")
-                    self.thread = SerialThread(self,self.rx_queue,self.tx_queue,self.serial)
+                    self.thread = SerialThread(self, self.rx_queue)
                     self.thread.signal = True
                     self.thread.daemon = True
                     self.thread.start()
+                    self.TXthread = TXThread(self,self.tx_queue)
+                    self.TXthread.signal = True
+                    self.TXthread.daemon = True
+                    self.TXthread.start()
+                    
                     #self.thread.join()
                     print("Started Serial Thread.")
                     self.init_tabs()
@@ -2781,7 +2788,7 @@ class SSS2(ttk.Frame):
                     self.settings_text.insert(tk.END,new_serial_line.decode('ascii',"ignore"))
                     self.settings_text.see(tk.END)
                 
-        self.after(50, self.process_serial)
+        self.after(10, self.process_serial)
     
     def potentiometer_settings(self):
         """Adjusts the potentiometers and other analog outputs"""
