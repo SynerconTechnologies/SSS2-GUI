@@ -736,36 +736,37 @@ def get_default_settings():
     d["SSS2 setting"] = 49
     d["Highest Voltage"] = 11.0
     d["Amplitude"]=0
-
+    d["Value"] = 100
     
     settings["Switches"]={}
     s=settings["Switches"]
     s["Port 10 or 19"]={"SSS2 setting":37,"State":False,"Label A":"Connect Vout B to J24:10","Label B":"Connect Potentiometer 10 to J24:10"}
     s["Port 15 or 18"]={"SSS2 setting":38,"State":False,"Label A":"Connect Vout A to J24:15","Label B":"Connect Potentiometer 15 to J24:15"}
-    s["CAN1 or J1708"]={"SSS2 setting":39,"State":True,"Label A":"Connect J1708 to J24:17 and J24:18","Label B":"Connect CAN2 to J24:17 and J24:18"}
+    s["CAN2 or J1708"]={"SSS2 setting":39,"State":True,"Label A":"Connect J1708 to J24:17 and J24:18","Label B":"Connect CAN2 to J24:17 and J24:18"}
     s["PWMs or CAN2"]={"SSS2 setting":40,"State":True,"Label A":"Connect CAN2 to J18:15 and J18:16","Label B":"Connect PWM1 to J18:15 and PWM2 to J18:16"}
-    s["CAN0"]={"SSS2 setting":41,"State":True,"Label":"Connect CAN0 (FlexCAN0) Termination Resistor (J1939)"}
-    s["CAN1"]={"SSS2 setting":42,"State":True,"Label":"Connect CAN1 (MCP-CAN) Termination Resistor"}
-    s["CAN2"]={"SSS2 setting":43,"State":True,"Label":"Connect CAN2 (FlexCAN1) Termination Resistor (E-CAN)"}
+    s["CAN0 Resistor 1"]={"SSS2 setting":41,"State":True,"Label":"Connect CAN0 (FlexCAN0) Termination Resistor 1(J1939)"}
+    s["CAN1 Resistor 1"]={"SSS2 setting":42,"State":True,"Label":"Connect CAN1 (MCP-CAN) Termination Resistor 1"}
+    s["CAN2 Resistor 1"]={"SSS2 setting":43,"State":True,"Label":"Connect CAN2 (FlexCAN1) Termination Resistor 1 (E-CAN)"}
     s["LIN Master Pullup Resistor"]={"SSS2 setting":44,"State":True,"Label":"Connect LIN Master Pullup Resistor"}
+    s["PWM3 or 12V"]={"SSS2 setting":45,"State":False,"Label A":"Connect J18:10 to +12VDC","Label B":"Connect PWM3 Output to J18:10"}
     s["12V Out 2"]={"SSS2 setting":46,"State":False,"Label":"Connect +12V to Port 11 (J24:11)"}
-    s["12V Out 1"]={"SSS2 setting":45,"State":False,"Label":"Connect +12V to Port 27 (J18:10)"}
-    s["Ground Out 1"]={"SSS2 setting":47,"State":False,"Label":"Connect Ground to Port 17 (J18:1)"}
+    s["PWM4 or Ground"]={"SSS2 setting":47,"State":False,"Label A":"Connect J18:1 to Ground","Label B":"Connect PWM4 Output to J18:1"}
     s["Ground Out 2"]={"SSS2 setting":48,"State":False,"Label":"Connect Ground to Port 12 (J24:12)"}
-    s["LIN to SHLD"]={"SSS2 setting":71,"State":False,"Label":"Connect LIN to Round Pin E (J10:5)"}
-    s["LIN to Port 16"]={"SSS2 setting":72,"State":False,"Label":"Connect LIN to Port 16 (J24:16)"}
+    s["Ignition"]={"SSS2 setting":50,"State":False,"Label":"Ignition Key Switch Relay (J24:20)"}
     s["PWM1 Connect"]={"SSS2 setting":67,"State":True,"Label":"Connect PWM1 Output to J24:13"}
     s["PWM2 Connect"]={"SSS2 setting":68,"State":True,"Label":"Connect PWM2 Output to J24:14"}
     s["PWM3 Connect"]={"SSS2 setting":69,"State":True,"Label":"Connect PWM3 Output to J18:10"}
     s["PWM4 Connect"]={"SSS2 setting":70,"State":True,"Label":"Connect PWM4 Output to J18:1"}
+    s["LIN to SHLD"]={"SSS2 setting":71,"State":False,"Label":"Connect LIN to Round Pin E (J10:5)"}
+    s["LIN to Port 16"]={"SSS2 setting":72,"State":False,"Label":"Connect LIN to Port 16 (J24:16)"}
     s["PWM4_28 Connect"]={"SSS2 setting":86,"State":True,"Label":"Connect PWM4 Output to J18:12"}
-    s["PWM3 or 12V"]={"SSS2 setting":45,"State":False,"Label A":"Connect J18:10 to +12VDC","Label B":"Connect PWM3 Output to J18:10"}
-    s["PWM4 or Ground"]={"SSS2 setting":47,"State":False,"Label A":"Connect J18:1 to Ground","Label B":"Connect PWM4 Output to J18:1"}
-    s["CAN1 Connect"]={"SSS2 setting":91,"State":False,"Label":"Connect CAN1 (MCPCAN) to J24:3 and J24:4"}
     s["PWM5 Connect"]={"SSS2 setting":89,"State":False,"Label":"Connect PWM5 Output to J24:2"}
     s["PWM6 Connect"]={"SSS2 setting":90,"State":False,"Label":"Connect PWM6 Output to J24:1"}
-    s["CAN2 Connect"]={"SSS2 setting":40,"State":False,"Label":"Connect CAN2H to J18:16 and CAN2L to J18:15"}
-    
+    s["CAN1 Connect"]={"SSS2 setting":91,"State":False,"Label":"Connect CAN1 (MCPCAN) to J24:3 and J24:4"}
+    s["CAN0 Resistor 2"]={"SSS2 setting":93,"State":True,"Label":"Connect CAN0 (FlexCAN0) Termination Resistor 2 (J1939)"}
+    s["CAN1 Resistor 2"]={"SSS2 setting":94,"State":True,"Label":"Connect CAN1 (MCP-CAN) Termination Resistor 2"}
+    s["CAN2 Resistor 2"]={"SSS2 setting":95,"State":True,"Label":"Connect CAN2 (FlexCAN1) Termination Resistor 2 (E-CAN)"}
+     
     
     
     settings["CAN Config"]={"CAN0 Baudrate":"250000", "MCPCAN Baudrate":"250000","CAN1 Baudrate":"500000", "Buffer Size":1000000}

@@ -1,37 +1,152 @@
+from PyQt5.QtWidgets import (QMainWindow,
+                             QWidget,
+                             QTreeView,
+                             QMessageBox,
+                             QFileDialog,
+                             QLabel,
+                             QSlider,
+                             QCheckBox,
+                             QLineEdit,
+                             QVBoxLayout,
+                             QApplication,
+                             QPushButton,
+                             QTableWidget,
+                             QTableView,
+                             QTableWidgetItem,
+                             QScrollArea,
+                             QAbstractScrollArea,
+                             QAbstractItemView,
+                             QSizePolicy,
+                             QGridLayout,
+                             QGroupBox,
+                             QComboBox,
+                             QAction,
+                             QTreeWidget,
+                             QTreeWidgetItem,
+                             QDialog,
+                             QFrame,
+                             QDialogButtonBox,
+                             QInputDialog,
+                             QProgressDialog,
+                             QTabWidget)
+from PyQt5.QtCore import Qt, QTimer, QAbstractTableModel, QCoreApplication, QSize
+from PyQt5.QtGui import QIcon
+
 import tkinter as tk
 from tkinter import filedialog
 from tkinter import ttk
 from tkinter import messagebox
 from tkinter import simpledialog
-import serial
-import serial.tools.list_ports
+from tkinter.tix import *
+from tkinter.constants import *
+import tkinter.scrolledtext as tkst
 import os
 import sys
 import threading
 import queue
 import time
 import string
-import hashlib
-from pprint import pformat
-import re
-import getpass
-import webbrowser
+import usb.core
+import usb.util
+import struct
+import json
+import crc16
+import traceback
 from operator import itemgetter
 import struct
 import traceback
-from tkinter.tix import *
-from tkinter.constants import *
-import tkinter.scrolledtext as tkst
 import collections
+import logging
+import logging.config
+logger = logging.getLogger(__name__)
+logger.setLevel("DEBUG")
+logging.basicConfig()
+logger.debug("Starting SSS2 Interface")
 
 from SSS2_defaults import *
+
+USB_HID_OUTPUT_ENDPOINT_ADDRESS = 0x04
+USB_HID_INPUT_ENDPOINT_ADDRESS = 0x83
+USB_HID_LENGTH = 64
+USB_HID_TIMEOUT = 0 # 0 = Blocking
+
+USB_FRAME_TYPE_MASK =  0xF0
+USB_FRAME_TYPE_LOC  =     0
+STATUS_TYPE         =  0x00
+COMMAND_TYPE        =  0x10
+MESSAGE_TYPE        =  0x20
+ESCAPE_TYPE         =  0x80
+
+CONFIGSWITCH_1_LOC   = 33
+U1U2P0ASWITCH_MASK   = 0x01
+U3U4P0ASWITCH_MASK   = 0x02
+U5U6P0ASWITCH_MASK   = 0x04
+U7U8P0ASWITCH_MASK   = 0x08
+U9U10P0ASWITCH_MASK  = 0x10
+U11U12P0ASWITCH_MASK = 0x20
+U13U14P0ASWITCH_MASK = 0x40
+U15U16P0ASWITCH_MASK = 0x80
+
+CONFIGSWITCH_2_LOC  = 34
+LINTOSHIELD_MASK    = 0x01
+LINTO16_MASK        = 0x02
+P10OR19SWITCH_MASK  = 0x04
+P15OR18SWITCH_MASK  = 0x08
+U28P0AENABLE_MASK   = 0x10
+U31P0AENABLE_MASK   = 0x20
+J1708ORCAN1_MASK    = 0x40
+CAN2CONNECT_MASK    = 0x80
+
+PWMSWITCHES_LOC     = 47
+CAN0TERM1_MASK    = 0x01
+CAN1TERM1_MASK    = 0x02
+CAN2TERM1_MASK    = 0x04
+LIN_PULLUP_MASK   = 0x08
+PWM1_CONNECT_MASK = 0x10
+PWM2_CONNECT_MASK = 0x20
+PWM3_CONNECT_MASK = 0x40
+PWM4_CONNECT_MASK = 0x80
+
+TERMSWITCHES_LOC  = 61
+CAN0TERM2_MASK    = 0x01
+CAN1TERM2_MASK    = 0x02
+CAN2TERM2_MASK    = 0x04
+PWM4_P28_MASK     = 0x08
+MISSING_MASK      = 0x10
+CAN1_CONNECT_MASK = 0x20
+PWM5_CONNECT_MASK = 0x40
+PWM6_CONNECT_MASK = 0x80
+
+HBRIDGE_LOC         = 60
+TWELVE_OUT_1_MASK   = 0x01
+TWELVE_OUT_2_MASK   = 0x02
+GROUND_OUT_1_MASK   = 0x04
+GROUND_OUT_2_MASK   = 0x08
+IGNITION_RELAY_MASK = 0x80
+
+HVADJOUT_LOC = 48
+HVADJOUT_MASK = 0xFF
+
+U34_WIPER_LOC = 49
+U36_WIPER_LOC = 50
+U37_WIPER_LOC = 51
+
+def crc16_ccitt(crc, data):
+    msb = (crc & 0xFF00) >> 8
+    lsb = crc & 0xFF
+    for c in data:
+        x = c ^ msb
+        x ^= (x >> 4)
+        msb = (lsb ^ (x >> 3) ^ (x << 4)) & 255
+        lsb = (x ^ (x << 5)) & 255
+    return bytes([lsb, msb])
 
 #### CHANGE THIS to False FOR PRODUCTION #####
 UNIVERSAL = True
 release_date = "4 September 2017"
 release_version = "2.0.0"
 
-class SerialThread(threading.Thread):
+class USBThread(threading.Thread):
     def __init__(self, parent, rx_queue):
         self.root = parent
         threading.Thread.__init__(self)
@@ -40,291 +155,256 @@ class SerialThread(threading.Thread):
         self.receivetime = time.time()
         
     def run(self):
-        needsMore = False
-        try:
-            while self.root.serial.is_open and self.signal:           
-                if self.root.serial.in_waiting:
-                    lines = self.root.serial.readlines(self.root.serial.in_waiting)
-                    self.receivetime = time.time()
-                    for line in lines: 
-                        print(line)       
-                        if line[0:3] == b'CAN': 
-                            canline = line[3:]
-                            if len(canline) == 22:
-                                self.rx_queue.put(self.getCANstring(canline))
-                                canline = b''
-                                needsMore = False
-                                continue
-                            else:
-                                needsMore = True
-                        if needsMore:
-                            canline+=line
-                            if len(canline) == 22:
-                                #print("Complete CAN String")
-                                self.rx_queue.put(self.getCANstring(canline))
-                                canline = b''
-                                needsMore = False
-                                continue
-                            else:
-                                needsMore = True
-                        else:
-                            self.rx_queue.put(line)
-                time.sleep(.001) #add a sleep statement to reduce CPU load for this thread.
-                
-        except:
-            print(traceback.format_exc())
-            print("Serial Connection Broken. Exiting RX Thread.")
-            self.root.serial.close()
-            self.root.serial.__del__()
-
-        print("Serial Connection Closed.")
-        self.root.serial.__del__()
-        self.signal = False
-        
-    def getCANstring(self,databytes):
-        
-        channel = databytes[4]
-        now = struct.unpack('>L',databytes[0:4])[0]
-        fractions = struct.unpack('>L',b'\x00'+databytes[5:8])[0]
-        canID = struct.unpack('>L',databytes[8:12])[0] & 0x1FFFFFFF
-        extended = (databytes[8] & 0x80) >> 7
-        length = databytes[12]
-        
-        line = "CAN{:d} {:d}.{:06d}".format(channel,now,fractions)
-        line+= " {:08X}".format(canID)
-        line+= " {:d}".format(extended)
-        line+= " {:d}".format(length)
-        for d in databytes[13:21]:
-            line+= " {:02X}".format(d)
-        line+= "\n"
-        #print(line,end='')
-        return bytearray(line,'ascii')
-        
-class TXThread(threading.Thread):
-    def __init__(self, parent, tx_queue):
-        self.root = parent
-        threading.Thread.__init__(self)
-        self.tx_queue = tx_queue
-        self.signal = True
-       
-    def run(self):
-        try:
-            while self.root.serial.is_open:
-                if self.tx_queue.qsize(): #ensure the listener can process the commands by waiting
-                    s = self.tx_queue.get()
-                    print('TX: ', end='')
-                    print(s)
-                    self.root.serial.write(bytes(s,'utf-8') + b'\x0A')
-                    #self.sendtime = time.time()
-                time.sleep(.010) #add a sleep statement to reduce CPU load for this thread.
-                
-        except Exception:
-            print(traceback.format_exc())
-            print("Serial Connection Broken. Exiting TX Thread.")
-            
-class setup_serial_connections(tk.Toplevel):
-    def __init__(self, parent):
-        tk.Toplevel.__init__(self, parent)
-        self.transient(parent)
-        self.title("Connect")
-        self.parent = parent
-        self.result = None
-
-        self.serial_frame = tk.Frame(self)
-        self.buttonbox()
-        self.serial_frame.pack(padx=5, pady=5)
-        
-        self.protocol("WM_DELETE_WINDOW", self.cancel)
-
-        self.geometry("+%d+%d" % (parent.winfo_rootx()+150,
-                                  parent.winfo_rooty()+150))
-       
-        self.serial=False
-
-        self.grab_set()
-        self.focus_set()
-        self.wait_window(self)
-        
-    
-    def buttonbox(self):
-       
-
-        self.connect_button = tk.Button(self.serial_frame, name='connect_button',
-                                   text="Connect", width=10, command=self.ok, default=ACTIVE)
-        self.connect_button.grid(row=3,column=0, padx=5, pady=5)
-        cancel_button = tk.Button(self.serial_frame, text="Cancel", width=10, command=self.cancel)
-        cancel_button.grid(row=3,column=1, padx=5, pady=5)
-        
-        self.bind("<Return>", self.ok)
-        self.bind("<Escape>", self.cancel)
-        self.connect_button.focus()
-        
-        tk.Label(self.serial_frame,text="SSS2 COM Port").grid(row=0,column=0,columnspan=2)
-        self.port_combo_box = ttk.Combobox(self.serial_frame,name="serial_port", 
-                                           text="SSS2 COM Port")
-        self.port_combo_box.grid(row=1,column=0,columnspan=2)
-        self.populate_combo_box()
-        
-       
-
-    def find_serial_ports(self):
-        comPorts = []
-        comPorts.append("Not Available")
-        for possibleCOMPort in sorted(serial.tools.list_ports.comports()):
-            comPortstr =  str(possibleCOMPort).split()  
-                
-            if ('Teensy' in str(possibleCOMPort)):
-                comPort = re.sub(r'\W+', '',comPortstr[0])+ " (SSS2)"
-            else:
-                comPort =  re.sub(r'\W+', '',comPortstr[0])
-            comPorts.append(comPort)
-        return comPorts
-    
-    def populate_combo_box(self):
-        comPorts = self.find_serial_ports()
-        self.port_combo_box['values'] = comPorts[::-1]
-        self.port_combo_box.current(0)
-
-        #self.after(4000,self.populate_combo_box)
-        
-    # standard button semantics
-
-    def ok(self, event=None):
-
-        if not self.validate():
-            self.focus_set() 
-            return
-
-        self.withdraw()
-        self.update_idletasks()
-
-        self.apply() #usually this is in the OK function
-
-        self.cancel()
-        
-    def cancel(self, event=None):
-        
-        # put focus back to the parent window
-        
-        self.parent.focus_set()
-        self.destroy()
-
-    # command hooks
-
-    def validate(self):
-        if self.port_combo_box.get() == "Not Available":
-            messagebox.showerror("SSS2 Serial Connection Error",
-                   "SSS2 Connection is not available. Please plug in the SSS2 and be sure the drivers are installed." )
-            self.result= None
-            
-        else:
+        while self.signal:
             try:
-                comport=(self.port_combo_box.get().split(" "))[0]
+                data_stream = bytes(self.root.sss.read(USB_HID_INPUT_ENDPOINT_ADDRESS, 
+                                         USB_HID_LENGTH, 
+                                         0))
+                data_stream_crc = data_stream[62:64]
+                calculated_crc = crc16_ccitt(0xFFFF, data_stream[0:62])
+                assert data_stream_crc == calculated_crc
+                self.rx_queue.put(data_stream[:62])
+                
+            # except usb.core.USBError:
+            #     pass
+            except:
+                self.signal = False
+                print(traceback.format_exc())
+        logger.debug("Finished with USBThread")
 
-                try:
-                    home_directory = os.path.expanduser('~')+os.sep+"Documents"+os.sep+"SSS2"+os.sep
-                    if not os.path.exists(home_directory):
-                        home_directory = os.path.expanduser('~')+os.sep
-                    with open(home_directory+"SSS2comPort.txt","w") as comFile:
-                        comFile.write("{}".format(comport))
-                except Exception as e:
-                    print(e)
-                  
-                ser = serial.Serial(comport,baudrate=4000000,timeout=0.1,
-                                    parity=serial.PARITY_ODD,write_timeout=0,
-                                    xonxoff=False, rtscts=False, dsrdtr=False)
-                self.result = ser
-                return True
-            except Exception as e:
-                print(e)
-                messagebox.showerror("SSS2 Serial Connection Error",
-                   "The new SSS2 serial connection did not respond properly. The program gives the following error: {}".format(e) )
-                self.result= False
-        return False
-    def apply(self):
-        
-        self.parent.focus_set()
-        self.destroy()
+# def all_children (wid) :
+#     _list = wid.winfo_children()
 
-def all_children (wid) :
-    _list = wid.winfo_children()
+#     for item in _list :
+#         if item.winfo_children() :
+#             _list.extend(item.winfo_children())
 
-    for item in _list :
-        if item.winfo_children() :
-            _list.extend(item.winfo_children())
+#     return _list
 
-    return _list
+# def update_dict(d, u):
+#     for k, v in u.items():
+#         if isinstance(v, collections.Mapping):
+#             default = v.copy()
+#             default.clear()
+#             r = update_dict(d.get(k, default), v)
+#             d[k] = r
+#         else:
+#             d[k] = v
+#     return d
 
-def update_dict(d, u):
-    for k, v in u.items():
-        if isinstance(v, collections.Mapping):
-            default = v.copy()
-            default.clear()
-            r = update_dict(d.get(k, default), v)
-            d[k] = r
-        else:
-            d[k] = v
-    return d
 
-class SSS2(ttk.Frame):
-    """The SSS2 gui and functions."""
-    def __init__(self, parent, *args, **kwargs):
-        self.frame_top = ttk.Frame.__init__(self, parent, *args, **kwargs)
-        self.root = parent
-        self.root.geometry('1492x770+0+0')
-        #self.root.geometry('+0+0')
-        self.root.resizable(width=False, height=False)
-        self.root.iconbitmap('synerconlogo.ico')
+
+class SSS2Interface(QMainWindow):
+    def __init__(self):
+        super(SSS2Interface, self).__init__()
+        self.show()
         self.settings_dict = get_default_settings()
+        with open("default_setting.json",'w') as f:
+            json.dump(self.settings_dict,f,indent=4,sort_keys=True)
         self.wiring_dict = get_default_wiring()
-        self.root.title('Smart Sensor Simulator Interface')
-        self.grid( column=0, row=0, sticky='NSEW') #needed to display
-        #self.root.lift()
-        self.root.rowconfigure(1, weight=1)
-        self.root.columnconfigure(0, weight=1)
-        if UNIVERSAL:
-            self.home_directory = os.getcwd()
-            self.home_directory+os.sep
-        else:
-            self.home_directory = os.path.expanduser('~')+os.sep+"Documents"+os.sep+"SSS2"+os.sep
-            if not os.path.exists(self.home_directory):
-                self.home_directory = os.path.expanduser('~')+os.sep
-        os.path.normpath(self.home_directory)
-        self.receivetime = 0
-        self.filename = None
-        self.lasthash = None
-        self.file_authenticated = False
-        self.file_OK_received = tk.BooleanVar(name='file_OK_received')
-        self.file_OK_received.set(False)
-        self.autosave_job = None
-        self.update_job = None
-        self.unique_ID = None
+        self.setWindowTitle('Smart Sensor Simulator Interface')
         self.baudrates = ["250000","500000","666666","125000","1000000","5000","10000","20000","31520","333333","40000","50000","80000","100000","200000"]
-        self.can2_baud_value=tk.StringVar(value="250000")
-        self.can1_baud_value=tk.StringVar(value="250000")
-        self.j1939_baud_value=tk.StringVar(value="250000")
-        self.settings_file_status_string = tk.StringVar(value="Default Settings Loaded")
-        self.file_loaded = False
-        self.release_date = release_date
-        if UNIVERSAL:
-            self.release_version = release_version + " UNIVERSAL"
-        else:
-            self.release_version = release_version
-        self.connection_status_string = tk.StringVar(name='status_string',value="Not Connected.")
-        connection_status_string = self.connection_status_string
-        self.serial_rx_entry = tk.Entry(self,width=60,name='serial_monitor')
-        serial_rx_entry = self.serial_rx_entry
-        self.sss_component_id_text = tk.StringVar(value = self.settings_dict["Component ID"])
-        self.sss_software_id_text = tk.StringVar(value = self.settings_dict["Software ID"])
+        self.can2_baud_value = self.baudrates[0]
+        self.can1_baud_value=self.baudrates[0]
+        self.j1939_baud_value=self.baudrates[0]
+
+        if self.setup_usb():
+            read_timer = QTimer(self)
+            read_timer.timeout.connect(self.read_usb_hid)
+            read_timer.start(100) #milliseconds
+
         self.init_gui()
+    
+
+    def setup_usb(self):
+        # find our device
+        self.sss = usb.core.find(idVendor=0x16c0, idProduct=0x0486)
+
+        # was it found?
+        if self.sss is None:
+            QMessageBox.warning(self,"SSS2 Missing","Please connect the Smart Sensor Simulator 2 with power and USB. Ensure the SSS2 has the latest firmware.")
+            return False
+
+        print(self.sss)
+        self.sss.set_configuration()
+        # get an endpoint instance
+        self.usb_cfg = self.sss.get_active_configuration()
+        self.sss_interface = self.usb_cfg[(0,0)]
         
- 
+        self.rx_queue = queue.Queue(100000)
+        self.read_usb_hid_thread = USBThread(self, self.rx_queue)
+        self.read_usb_hid_thread.setDaemon(True) #needed to close the thread when the application closes.
+        self.read_usb_hid_thread.start()
+        return True
+                    
+    def read_usb_hid(self):  
+        while self.rx_queue.qsize():
+            #Get a message from the queue. These are raw bytes
+            rxmessage = self.rx_queue.get()
+            rxmessage_type = rxmessage[USB_FRAME_TYPE_LOC] & USB_FRAME_TYPE_MASK
+            if rxmessage_type == STATUS_TYPE:
+                #Status Message
+                if   rxmessage[0] & 0x0F == 1:
+                    self.parse_status_message_one(rxmessage)
+                elif rxmessage[0] & 0x0F == 2:
+                    self.parse_status_message_two(rxmessage)
+                elif rxmessage[0] & 0x0F == 3:
+                    self.parse_status_message_three(rxmessage)    
+                #print(" ".join(["{:02X}".format(b) for b in rxmessage]))
+            elif rxmessage_type == COMMAND_TYPE:
+                pass # the SSS2 doesn't send commands to the computer
+            elif rxmessage_type == MESSAGE_TYPE:
+                # Received a network message
+                pass
+            elif rxmessage_type == ESCAPE_TYPE:
+                #Future stuff
+                pass
+
+    def parse_status_message_one(self, rxmessage):
+        self.settings_dict["Potentiometers"]["Group A"]["Pairs"]["U1U2"]["Pots"]["U1"]["Wiper Position"]    = rxmessage[1]
+        self.settings_dict["Potentiometers"]["Group A"]["Pairs"]["U1U2"]["Pots"]["U2"]["Wiper Position"]    = rxmessage[2]
+        self.settings_dict["Potentiometers"]["Group A"]["Pairs"]["U3U4"]["Pots"]["U3"]["Wiper Position"]    = rxmessage[3]
+        self.settings_dict["Potentiometers"]["Group A"]["Pairs"]["U3U4"]["Pots"]["U4"]["Wiper Position"]    = rxmessage[4]
+        self.settings_dict["Potentiometers"]["Group A"]["Pairs"]["U5U6"]["Pots"]["U5"]["Wiper Position"]    = rxmessage[5]
+        self.settings_dict["Potentiometers"]["Group A"]["Pairs"]["U5U6"]["Pots"]["U6"]["Wiper Position"]    = rxmessage[6]
+        self.settings_dict["Potentiometers"]["Group A"]["Pairs"]["U7U8"]["Pots"]["U7"]["Wiper Position"]    = rxmessage[7]
+        self.settings_dict["Potentiometers"]["Group A"]["Pairs"]["U7U8"]["Pots"]["U8"]["Wiper Position"]    = rxmessage[8]
+        self.settings_dict["Potentiometers"]["Group B"]["Pairs"]["U09U10"]["Pots"]["U09"]["Wiper Position"] = rxmessage[9]
+        self.settings_dict["Potentiometers"]["Group B"]["Pairs"]["U09U10"]["Pots"]["U10"]["Wiper Position"] = rxmessage[10]
+        self.settings_dict["Potentiometers"]["Group B"]["Pairs"]["U11U12"]["Pots"]["U11"]["Wiper Position"] = rxmessage[11]
+        self.settings_dict["Potentiometers"]["Group B"]["Pairs"]["U11U12"]["Pots"]["U12"]["Wiper Position"] = rxmessage[12]
+        self.settings_dict["Potentiometers"]["Group B"]["Pairs"]["U13U14"]["Pots"]["U13"]["Wiper Position"] = rxmessage[13]
+        self.settings_dict["Potentiometers"]["Group B"]["Pairs"]["U13U14"]["Pots"]["U14"]["Wiper Position"] = rxmessage[14]
+        self.settings_dict["Potentiometers"]["Group B"]["Pairs"]["U15U16"]["Pots"]["U15"]["Wiper Position"] = rxmessage[15]
+        self.settings_dict["Potentiometers"]["Group B"]["Pairs"]["U15U16"]["Pots"]["U16"]["Wiper Position"] = rxmessage[16]
+        
+        self.settings_dict["DACs"]["Vout1"]["Average Voltage"] = struct.unpack('<H',rxmessage[17:19])[0]
+        self.settings_dict["DACs"]["Vout2"]["Average Voltage"] = struct.unpack('<H',rxmessage[19:21])[0]
+        self.settings_dict["DACs"]["Vout3"]["Average Voltage"] = struct.unpack('<H',rxmessage[21:23])[0]
+        self.settings_dict["DACs"]["Vout4"]["Average Voltage"] = struct.unpack('<H',rxmessage[23:25])[0]
+        self.settings_dict["DACs"]["Vout5"]["Average Voltage"] = struct.unpack('<H',rxmessage[25:27])[0]
+        self.settings_dict["DACs"]["Vout6"]["Average Voltage"] = struct.unpack('<H',rxmessage[27:29])[0]
+        self.settings_dict["DACs"]["Vout7"]["Average Voltage"] = struct.unpack('<H',rxmessage[29:31])[0]
+        self.settings_dict["DACs"]["Vout8"]["Average Voltage"] = struct.unpack('<H',rxmessage[31:33])[0]
+
+        self.settings_dict["Potentiometers"]["Group A"]["Pairs"]["U1U2"]["Terminal A Voltage"]   = bool(rxmessage[CONFIGSWITCH_1_LOC] & U1U2P0ASWITCH_MASK)
+        self.settings_dict["Potentiometers"]["Group A"]["Pairs"]["U3U4"]["Terminal A Voltage"]   = bool(rxmessage[CONFIGSWITCH_1_LOC] & U3U4P0ASWITCH_MASK)
+        self.settings_dict["Potentiometers"]["Group A"]["Pairs"]["U5U6"]["Terminal A Voltage"]   = bool(rxmessage[CONFIGSWITCH_1_LOC] & U5U6P0ASWITCH_MASK)
+        self.settings_dict["Potentiometers"]["Group A"]["Pairs"]["U7U8"]["Terminal A Voltage"]   = bool(rxmessage[CONFIGSWITCH_1_LOC] & U7U8P0ASWITCH_MASK)
+        self.settings_dict["Potentiometers"]["Group B"]["Pairs"]["U09U10"]["Terminal A Voltage"] = bool(rxmessage[CONFIGSWITCH_1_LOC] & U9U10P0ASWITCH_MASK)
+        self.settings_dict["Potentiometers"]["Group B"]["Pairs"]["U11U12"]["Terminal A Voltage"] = bool(rxmessage[CONFIGSWITCH_1_LOC] & U11U12P0ASWITCH_MASK)
+        self.settings_dict["Potentiometers"]["Group B"]["Pairs"]["U13U14"]["Terminal A Voltage"] = bool(rxmessage[CONFIGSWITCH_1_LOC] & U13U14P0ASWITCH_MASK)
+        self.settings_dict["Potentiometers"]["Group B"]["Pairs"]["U15U16"]["Terminal A Voltage"] = bool(rxmessage[CONFIGSWITCH_1_LOC] & U15U16P0ASWITCH_MASK)
+
+        self.settings_dict["Switches"]["Port 10 or 19"]["State"]              = bool(rxmessage[CONFIGSWITCH_2_LOC] & P10OR19SWITCH_MASK)
+        self.settings_dict["Switches"]["Port 15 or 18"]["State"]              = bool(rxmessage[CONFIGSWITCH_2_LOC] & P15OR18SWITCH_MASK)
+        self.settings_dict["Switches"]["CAN2 or J1708"]["State"]              = bool(rxmessage[CONFIGSWITCH_2_LOC] & J1708ORCAN1_MASK)
+        self.settings_dict["Switches"]["PWMs or CAN2"]["State"]               = bool(rxmessage[CONFIGSWITCH_2_LOC] & CAN2CONNECT_MASK)
+        self.settings_dict["Switches"]["CAN0 Resistor 1"]["State"]            = bool(rxmessage[PWMSWITCHES_LOC] & CAN0TERM1_MASK)
+        self.settings_dict["Switches"]["CAN2 Resistor 1"]["State"]            = bool(rxmessage[PWMSWITCHES_LOC] & CAN1TERM1_MASK)
+        self.settings_dict["Switches"]["CAN1 Resistor 1"]["State"]            = bool(rxmessage[PWMSWITCHES_LOC] & CAN2TERM1_MASK)
+        self.settings_dict["Switches"]["LIN Master Pullup Resistor"]["State"] = bool(rxmessage[PWMSWITCHES_LOC] & LIN_PULLUP_MASK)
+        self.settings_dict["Switches"]["PWM3 or 12V"]["State"]                = bool(rxmessage[HBRIDGE_LOC] & TWELVE_OUT_1_MASK)
+        self.settings_dict["Switches"]["12V Out 2"]["State"]                  = bool(rxmessage[HBRIDGE_LOC] & TWELVE_OUT_2_MASK)
+        self.settings_dict["Switches"]["PWM4 or Ground"]["State"]             = bool(rxmessage[HBRIDGE_LOC] & GROUND_OUT_1_MASK)
+        self.settings_dict["Switches"]["Ground Out 2"]["State"]               = bool(rxmessage[HBRIDGE_LOC] & GROUND_OUT_2_MASK)
+        self.settings_dict["Switches"]["PWM1 Connect"]["State"]               = bool(rxmessage[PWMSWITCHES_LOC] & PWM1_CONNECT_MASK)
+        self.settings_dict["Switches"]["PWM2 Connect"]["State"]               = bool(rxmessage[PWMSWITCHES_LOC] & PWM2_CONNECT_MASK)
+        self.settings_dict["Switches"]["PWM3 Connect"]["State"]               = bool(rxmessage[PWMSWITCHES_LOC] & PWM3_CONNECT_MASK)
+        self.settings_dict["Switches"]["PWM4 Connect"]["State"]               = bool(rxmessage[PWMSWITCHES_LOC] & PWM4_CONNECT_MASK)
+        self.settings_dict["Switches"]["LIN to SHLD"]["State"]                = bool(rxmessage[CONFIGSWITCH_2_LOC] & LINTOSHIELD_MASK)
+        self.settings_dict["Switches"]["LIN to Port 16"]["State"]             = bool(rxmessage[CONFIGSWITCH_2_LOC] & LINTO16_MASK)
+        self.settings_dict["Switches"]["PWM4_28 Connect"]["State"]            = bool(rxmessage[TERMSWITCHES_LOC] & PWM4_P28_MASK)
+        self.settings_dict["Switches"]["PWM5 Connect"]["State"]               = bool(rxmessage[TERMSWITCHES_LOC] & PWM5_CONNECT_MASK)
+        self.settings_dict["Switches"]["PWM6 Connect"]["State"]               = bool(rxmessage[TERMSWITCHES_LOC] & PWM6_CONNECT_MASK)
+        self.settings_dict["Switches"]["CAN1 Connect"]["State"]               = bool(rxmessage[TERMSWITCHES_LOC] & CAN1_CONNECT_MASK)
+        self.settings_dict["Switches"]["CAN0 Resistor 2"]["State"]            = bool(rxmessage[TERMSWITCHES_LOC] & CAN0TERM2_MASK)
+        self.settings_dict["Switches"]["CAN2 Resistor 2"]["State"]            = bool(rxmessage[TERMSWITCHES_LOC] & CAN2TERM2_MASK)
+        self.settings_dict["Switches"]["CAN1 Resistor 2"]["State"]            = bool(rxmessage[TERMSWITCHES_LOC] & CAN1TERM2_MASK)
+
+        self.settings_dict["PWMs"]["PWM1"]["Duty Cycle"] = struct.unpack('<H',rxmessage[35:37])[0]
+        self.settings_dict["PWMs"]["PWM2"]["Duty Cycle"] = struct.unpack('<H',rxmessage[37:39])[0]
+        self.settings_dict["PWMs"]["PWM3"]["Duty Cycle"] = struct.unpack('<H',rxmessage[39:41])[0]
+        self.settings_dict["PWMs"]["PWM4"]["Duty Cycle"] = struct.unpack('<H',rxmessage[41:43])[0]
+        self.settings_dict["PWMs"]["PWM5"]["Duty Cycle"] = struct.unpack('<H',rxmessage[43:45])[0]
+        self.settings_dict["PWMs"]["PWM6"]["Duty Cycle"] = struct.unpack('<H',rxmessage[45:47])[0]
+
+        self.settings_dict["HVAdjOut"]["Value"]    = bool(rxmessage[HVADJOUT_LOC] & HVADJOUT_MASK)
+        self.settings_dict["Switches"]["Ignition"]["State"] = bool(rxmessage[HBRIDGE_LOC] & IGNITION_RELAY_MASK)
+        
+        self.settings_dict["Potentiometers"]["Group A"]["Terminal A Connection"] = bool(rxmessage[CONFIGSWITCH_2_LOC] & U28P0AENABLE_MASK)
+        self.settings_dict["Potentiometers"]["Group B"]["Terminal A Connection"] = bool(rxmessage[CONFIGSWITCH_2_LOC] & U31P0AENABLE_MASK)
+        
+        self.settings_dict["Potentiometers"]["Others"]["Pairs"]["I2CPots"]["Pots"]["U34"]["Wiper Position"] = rxmessage[U34_WIPER_LOC]
+        self.settings_dict["Potentiometers"]["Others"]["Pairs"]["I2CPots"]["Pots"]["U36"]["Wiper Position"] = rxmessage[U36_WIPER_LOC]
+        self.settings_dict["Potentiometers"]["Others"]["Pairs"]["I2CPots"]["Pots"]["U37"]["Wiper Position"] = rxmessage[U37_WIPER_LOC]
+
+        self.settings_dict["PWMs"]["PWM1"]["Frequency"] = struct.unpack('<H',rxmessage[52:54])[0]
+        self.settings_dict["PWMs"]["PWM2"]["Frequency"] = struct.unpack('<H',rxmessage[54:56])[0]
+        self.settings_dict["PWMs"]["PWM3"]["Frequency"] = struct.unpack('<H',rxmessage[56:58])[0]
+        self.settings_dict["PWMs"]["PWM4"]["Frequency"] = struct.unpack('<H',rxmessage[56:58])[0]
+        self.settings_dict["PWMs"]["PWM5"]["Frequency"] = struct.unpack('<H',rxmessage[58:60])[0]
+        self.settings_dict["PWMs"]["PWM6"]["Frequency"] = struct.unpack('<H',rxmessage[58:60])[0]
+        
+        self.update_dict_display()
+
+        #print(" ".join(["{:02X}".format(b) for b in rxmessage[:61]]))
+        print(self.settings_dict["Switches"]["Ignition"]["State"])
+
+    def parse_status_message_two(self, rxmessage):
+        pass
+    
+    def parse_status_message_three(self, rxmessage):
+        pass
+
+    def write_usb_hid(self):
+        pass
+
+    def update_dict_display(self):
+        
+
+        self.fill_item(self.tree.invisibleRootItem(), self.settings_dict)
+    
+    def new_item(self, parent, text, val=None):
+            child = QTreeWidgetItem([text])
+            self.fill_item(child, val)
+            parent.addChild(child)
+            child.setExpanded(True)
+
+    def fill_item(self, item, value):
+        
+        if value is None: return
+        elif isinstance(value, dict):
+            for key, val in sorted(value.items()):
+                self.new_item(item, str(key), val)
+        elif isinstance(value, (list, tuple)):
+            for val in value:
+                text = (str(val) if not isinstance(val, (dict, list, tuple))
+                        else '[%s]' % type(val).__name__)
+                self.new_item(item, text, val) 
+        else:
+            self.new_item(item, str(value))
+
     def init_gui(self):
         """Builds GUI."""
-        
-        self.tx_queue = queue.Queue(100000)
-        self.rx_queue = queue.Queue(100000)
+        self.statusBar().showMessage("Welcome to TruckCRYPT!")
 
+        self.grid_layout = QGridLayout()
+        
+        # Build common menu options
+        menubar = self.menuBar()
+
+        self.tree = QTreeWidget()
+        
+        self.grid_layout.addWidget(self.tree,0,0,1,1)
+
+        main_widget = QWidget()
+        main_widget.setLayout(self.grid_layout)
+        self.setCentralWidget(main_widget)
+
+        self.tx_queue = queue.Queue(100000)
+        
+        return
         
 
         # Button to do something on the right
@@ -893,7 +973,7 @@ class SSS2(ttk.Frame):
         
         
         self.sss2_frame = tk.LabelFrame(self.profile_tab, name="sss2_frame",
-                                                  text="Smart Sensor Simulator 2 (SSS2) Settings")
+                                                  text="Smart Sensor Simulator 2 (QWidget) Settings")
         self.sss2_frame.grid(row=1,column=0,sticky=tk.E+tk.W,columnspan=1)
 
         tk.Label(self.sss2_frame,text="SSS2 Component ID:").grid(row=0,column=0,sticky=tk.W)
@@ -2830,7 +2910,7 @@ class SSS2(ttk.Frame):
       
 
     
-class pot_bank(SSS2):
+class pot_bank(QWidget):
     def __init__(self, parent,tx_queue,pot_dict,key, row = 0, col = 0,colspan=3):
         self.root=parent
         self.tx_queue = tx_queue
@@ -2875,7 +2955,7 @@ class pot_bank(SSS2):
             self.tx_queue.put_nowait(commandString)
 
             
-class config_switches(SSS2):
+class config_switches(QWidget):
     def __init__(self, parent,tx_queue,switch_dict,key, row = 0, col = 0):
         self.root=parent
         self.tx_queue = tx_queue
@@ -2907,7 +2987,7 @@ class config_switches(SSS2):
             commandString = "{},0".format(SSS2_setting)
         return self.tx_queue.put_nowait(commandString)
 
-class config_radio_switches(SSS2):
+class config_radio_switches(QWidget):
     def __init__(self, parent,tx_queue,switch_dict,key, rowA = 0, colA = 0,
                  rowB = 0, colB = 1, rowspanA=2, rowspanB=2,
                  colspanA=1, colspanB=1,):
@@ -2968,7 +3048,7 @@ class config_radio_switches(SSS2):
         return self.tx_queue.put_nowait(commandString)   
 
   
-class potentiometer_pair(SSS2):
+class potentiometer_pair(QWidget):
     def __init__(self, parent,tx_queue,pair_dict,pair_id, row = 0, col = 0):
         self.root = parent
         self.tx_queue = tx_queue
@@ -3022,7 +3102,7 @@ class potentiometer_pair(SSS2):
             commandString = "{},1".format(self.pair_dict["SSS Setting"])
         return self.tx_queue.put_nowait(commandString)
 
-class potentiometer(SSS2):
+class potentiometer(QWidget):
     def __init__(self, parent,tx_queue, pot_dict, row = 2, col = 0):
         self.root = parent
         self.tx_queue = tx_queue
@@ -3120,7 +3200,7 @@ class potentiometer(SSS2):
         self.tx_queue.put_nowait(commandString)
         
 
-class DAC7678(SSS2):
+class DAC7678(QWidget):
     def __init__(self, parent,tx_queue,sss2_settings, row = 2, col = 0, software_ID = ""):
         self.root = parent
         self.tx_queue = tx_queue
@@ -3205,7 +3285,7 @@ class DAC7678(SSS2):
             self.dac_mean_position_value['foreground'] = "red"
 
 
-class pwm_out(SSS2):
+class pwm_out(QWidget):
     def __init__(self, parent,tx_queue,sss2_settings, row = 2, col = 0):
         self.root = parent
         self.tx_queue = tx_queue
@@ -3324,7 +3404,7 @@ class pwm_out(SSS2):
             self.root.bell()
             self.pwm_duty_cycle_value['foreground'] = "red"
             
-class ecu_application(SSS2):
+class ecu_application(QWidget):
     def __init__(self, parent, ecu_settings, row = 2, column = 0,columnspan=3,rowspan=1):
         self.root = parent
         self.row=row
@@ -3361,23 +3441,9 @@ class ecu_application(SSS2):
         self.ecu_app.insert(tk.END,self.settings_dict["Application"])
         self.ecu_app.grid(row=1,column=0,columnspan=4,sticky=tk.E+tk.W)
 
-def destroyer():
-    mainwindow.tx_queue.put_nowait("50,0")
-    time.sleep(.3)
-    try:
-        mainwindow.thread.signal = False
-    except:
-        pass
-    root.quit()
-    root.destroy()
-    sys.exit()
-
         
 if __name__ == '__main__':
-
-    root = tk.Tk()
-    mainwindow = SSS2(root,name='sss2')
-    root.protocol("WM_DELETE_WINDOW",destroyer)
-    root.mainloop()
-    destroyer()
+    app = QApplication(sys.argv)
+    execute = SSS2Interface()
+    sys.exit(app.exec_())
     
