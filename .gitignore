@@ -143,3 +143,8 @@ $RECYCLE.BIN/
 SSS2comPort.txt
 codecert.cer
 codecert.p7b
+DigiCertUtil.exe
+*.dll
+*.exe
+SSS2-Interface.build/
+SSS2-Interface.dist/

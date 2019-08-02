@@ -15,7 +15,29 @@ Be sure to commit and Sync all new files to Githup after each development.
 3. Download Github Desktop from https://desktop.github.com/
 4. Clone this repository in Github Desktop to work on it.
 
-## Building a Windows Executable
+## Building a Windows Executable with Nuitka
+Install Python 3.6
+
+Download and install Nuitka: http://nuitka.net/releases/Nuitka-5.1.281.win32.py36.msi 
+
+At the command prompt:
+
+`set TCL_LIBRARY=C:\Users\dailyadmin\AppData\Local\Programs\Python\Python36-32\tcl\tcl8.6`
+
+and
+
+`set TK_LIBRARY=C:\Users\dailyadmin\AppData\Local\Programs\Python\Python36-32\tcl\tk8.6` 
+
+Change directory to 
+
+`C:\Users\dailyadmin\Documents\GitHub\SSS2-GUI\`
+
+Run 
+
+`nuitka --recurse-all --standalone SSS2-Interface.py`
+
+
+## Building a Windows Executable with cxFreeze
 1. Be sure all updated SSS2 files are in the SSS2-GUI directory. This is the default setting when the UNIVERSAL is True.
 2. Save all the files are with the latest verison and hash values. 
 3. Change directories to ```~/Documents/GitHub/SSS2-GUI/``` or wherever the repository is installed.

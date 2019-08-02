@@ -28,8 +28,8 @@ from SSS2_defaults import *
 
 #### CHANGE THIS to False FOR PRODUCTION #####
 UNIVERSAL = True
-release_date = "4 September 2017"
-release_version = "1.0.7"
+release_date = "02 October 2017"
+release_version = "1.0.8"
 
 class SerialThread(threading.Thread):
     def __init__(self, parent, rx_queue, tx_queue,serial):
@@ -51,7 +51,7 @@ class SerialThread(threading.Thread):
         previous_time = time.time()
         try:
             while self.serial.is_open and self.signal:           
-                if self.tx_queue.qsize() and (time.time() - previous_time) > 0.002: #ensure the listener can process the commands by waiting
+                if self.tx_queue.qsize() and (time.time() - previous_time) > 0.010: #ensure the listener can process the commands by waiting
                     previous_time = time.time()
                     s = self.tx_queue.get_nowait()
                     print('TX: ', end='')
@@ -223,7 +223,7 @@ class setup_serial_connections(tk.Toplevel):
                     home_directory = os.path.expanduser('~')+os.sep+"Documents"+os.sep+"SSS2"+os.sep
                     if not os.path.exists(home_directory):
                         home_directory = os.path.expanduser('~')+os.sep
-                    with open(home_directory+"SSS2comPort.txt","w") as comFile:
+                    with open(home_directory+os.sep+"SSS2comPort.txt","w") as comFile:
                         comFile.write("{}".format(comport))
                 except Exception as e:
                     print(e)
@@ -314,6 +314,7 @@ class SSS2(ttk.Frame):
         serial_rx_entry = self.serial_rx_entry
         self.sss_component_id_text = tk.StringVar(value = self.settings_dict["Component ID"])
         self.sss_software_id_text = tk.StringVar(value = self.settings_dict["Software ID"])
+        self.serial_error_count = 0
         self.init_gui()
         
  
@@ -2262,7 +2263,7 @@ class SSS2(ttk.Frame):
             try:
                 print("Automatically connecting to SSS2.")
                 self.connection_status_string.set("SSS2 connecting automatically.")
-                with open(self.home_directory+"SSS2comPort.txt","r") as comFile:
+                with open(self.home_directory+os.sep+"SSS2comPort.txt","r") as comFile:
                     comport = comFile.readline().strip()
                 self.serial = serial.Serial(comport,baudrate=4000000,timeout=0.01,
                                         parity=serial.PARITY_ODD,write_timeout=0.01,
@@ -2297,7 +2298,8 @@ class SSS2(ttk.Frame):
             self.throw_serial_error()
 
     def throw_serial_error(self):
-        messagebox.showerror("SSS2 Serial Connection Error",
+        if self.serial_error_count < 1:
+            messagebox.showerror("SSS2 Serial Connection Error",
                               "The SSS2 serial connection is not present on the selected COM port. Please connect the SSS2 to the correct USB to Serial connection. You may have to restart the program and the SSS2 if the connection continues to fail." )                
         self.connection_status_string.set('USB to Serial Connection Unavailable. Please install drivers and plug in the SSS2.')
         self.serial_rx_entry['bg']='red'
@@ -2309,7 +2311,7 @@ class SSS2(ttk.Frame):
             self.thread.signal = False
         except:
             pass
-
+        self.serial_error_count +=1
         
 
     def check_serial_connection(self,event = None):
@@ -2322,6 +2324,7 @@ class SSS2(ttk.Frame):
             for tbs in range(7):
                 self.tabs.tab(tbs, state="normal")
             self.ignition_key_button.state(['!disabled'])
+            self.serial_error_count = 0
             #self.ignition_key_button.configure(state = "normal")
             
 
@@ -2330,7 +2333,8 @@ class SSS2(ttk.Frame):
             # self.file_OK_received.set(False)
             # self.wait_variable(self.file_OK_received)       
             # self.file_OK_received.set(False)
-            self.connect_to_serial()
+            if self.serial_error_count == 1:
+                self.connect_to_serial()
             
 
         self.after(3000,self.check_serial_connection)

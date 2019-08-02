@@ -2,7 +2,7 @@
 
 [Setup]
 AppName=SSS2-Interface
-AppVersion=1.0.8
+AppVersion=1.0.9
 DefaultDirName={pf}\SSS2
 DefaultGroupName=SSS2
 Compression=lzma2
@@ -13,7 +13,8 @@ UninstallDisplayIcon={app}\SSS2-Interface
 SignTool=DigiCert
 
 [Files]
-Source: "build\exe.win32-3.4\*"; DestDir: "{app}"; Flags: recursesubdirs
+Source: "C:\Users\dailyadmin\AppData\Local\Programs\Python\Python36-32\tcl\*"; DestDir: "{pf}\lib\";  Flags: recursesubdirs
+Source: "SSS2-Interface.dist\*"; DestDir: "{app}"; Flags: recursesubdirs
 Source: "*.ico"; DestDir: "{app}"
 Source: "*.gif"; DestDir: "{app}"
 Source: "*.SSS2"; DestDir: "{userdocs}\SSS2"

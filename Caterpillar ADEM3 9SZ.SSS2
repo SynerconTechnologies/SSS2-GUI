@@ -63,7 +63,7 @@
     },
     "Case Number": "SSS2 Dev",
     "Company": "Synercon Technologies LLC",
-    "Component ID": "SYNER*SSS2-R05*0031*UNIVERSAL",
+    "Component ID": "INFO SSS2 Component ID",
     "DACs": {
         "Vout1": {
             "Alt. Pin": "J24:15",
@@ -248,7 +248,7 @@
         "Wire Color": " "
     },
     "Location": "Tulsa Ok",
-    "Original Creation Date": "Tuesday, 22 August 2017 20:12:43 Central Daylight Time",
+    "Original Creation Date": "Wednesday, 13 September 2017 21:10:24 Central Daylight Time",
     "Original File SHA": "8a1b2145946d9d6cfb3dd478d3faa834511c6f81d4b13116ed5df8621c3b7417",
     "PWMs": {
         "PWM1": {
@@ -767,13 +767,13 @@
     "Resistor Box Used": "No",
     "SHA256 Digest": "8a1b2145946d9d6cfb3dd478d3faa834511c6f81d4b13116ed5df8621c3b7417",
     "SSS2 Cable": "SSS2-ADEM3",
-    "SSS2 Interface Release Date": "16 August 2017",
-    "SSS2 Interface Version": "1.0.5 UNIVERSAL",
+    "SSS2 Interface Release Date": "4 September 2017",
+    "SSS2 Interface Version": "1.0.8 UNIVERSAL",
     "SSS2 Product Code": "UNIVERSAL",
     "SSS2 Source Address": 250,
-    "Saved Date": "Tuesday, 22 August 2017 21:35:56 Central Daylight Time",
+    "Saved Date": "Wednesday, 13 September 2017 21:10:30 Central Daylight Time",
     "Send SSS2 Component ID": "1",
-    "Serial Number": "SYNER*SSS2-R05*0031*UNIVERSAL",
+    "Serial Number": "INFO SSS2 Component ID",
     "Software ID": "SSS2*REV05*1.0*master*c3b62b583f1f7b22da9f3ec93ed09addc75a1d1e",
     "Switches": {
         "12V Out 1": {
