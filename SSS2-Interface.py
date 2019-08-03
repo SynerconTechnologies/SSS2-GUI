@@ -151,53 +151,32 @@ class USBThread(threading.Thread):
         self.root = parent
         threading.Thread.__init__(self)
         self.rx_queue = rx_queue
-        self.signal = True
-        self.receivetime = time.time()
-        
+        self.root.signal = True
+
     def run(self):
-        while self.signal:
+        while True:
             try:
-                data_stream = bytes(self.root.sss.read(USB_HID_INPUT_ENDPOINT_ADDRESS, 
-                                         USB_HID_LENGTH, 
-                                         0))
+                data_stream = bytes(self.root.sss.read(USB_HID_INPUT_ENDPOINT_ADDRESS, USB_HID_LENGTH, 0))
                 data_stream_crc = data_stream[62:64]
                 calculated_crc = crc16_ccitt(0xFFFF, data_stream[0:62])
                 assert data_stream_crc == calculated_crc
                 self.rx_queue.put(data_stream[:62])
-                
-            # except usb.core.USBError:
-            #     pass
+                self.root.signal = True
+            except usb.core.USBError:
+                self.root.signal = False
+                break
+            except AttributeError:
+                self.root.signal = False
+                break
             except:
-                self.signal = False
+                self.root.signal = False
                 print(traceback.format_exc())
-        logger.debug("Finished with USBThread")
-
-# def all_children (wid) :
-#     _list = wid.winfo_children()
-
-#     for item in _list :
-#         if item.winfo_children() :
-#             _list.extend(item.winfo_children())
-
-#     return _list
-
-# def update_dict(d, u):
-#     for k, v in u.items():
-#         if isinstance(v, collections.Mapping):
-#             default = v.copy()
-#             default.clear()
-#             r = update_dict(d.get(k, default), v)
-#             d[k] = r
-#         else:
-#             d[k] = v
-#     return d
-
-
+                break
+        logger.debug("USBThread Ending.")
 
 class SSS2Interface(QMainWindow):
     def __init__(self):
         super(SSS2Interface, self).__init__()
-        self.show()
         self.settings_dict = get_default_settings()
         with open("default_setting.json",'w') as f:
             json.dump(self.settings_dict,f,indent=4,sort_keys=True)
@@ -207,22 +186,26 @@ class SSS2Interface(QMainWindow):
         self.can2_baud_value = self.baudrates[0]
         self.can1_baud_value=self.baudrates[0]
         self.j1939_baud_value=self.baudrates[0]
+        self.signal = False
 
-        if self.setup_usb():
-            read_timer = QTimer(self)
-            read_timer.timeout.connect(self.read_usb_hid)
-            read_timer.start(100) #milliseconds
+        read_timer = QTimer(self)
+        read_timer.timeout.connect(self.read_usb_hid)
+        read_timer.start(100) #milliseconds
 
         self.init_gui()
-    
+        self.show()
+        
 
     def setup_usb(self):
         # find our device
-        self.sss = usb.core.find(idVendor=0x16c0, idProduct=0x0486)
+        self.sss = None
+        for device in usb.core.find(find_all=True, idVendor=0x16c0, idProduct=0x0486):
+            self.sss = device
 
         # was it found?
         if self.sss is None:
-            QMessageBox.warning(self,"SSS2 Missing","Please connect the Smart Sensor Simulator 2 with power and USB. Ensure the SSS2 has the latest firmware.")
+            #QMessageBox.warning(self,"SSS2 Missing","Please connect the Smart Sensor Simulator 2 with power and USB. Ensure the SSS2 has the latest firmware.")
+            #logger.debug("No SSS2 Present.")
             return False
 
         print(self.sss)
@@ -230,6 +213,16 @@ class SSS2Interface(QMainWindow):
         # get an endpoint instance
         self.usb_cfg = self.sss.get_active_configuration()
         self.sss_interface = self.usb_cfg[(0,0)]
+
+        ep = usb.util.find_descriptor(
+            self.sss_interface,
+            # match the first OUT endpoint
+            custom_match = \
+            lambda e: \
+                usb.util.endpoint_direction(e.bEndpointAddress) == \
+                usb.util.ENDPOINT_OUT)
+        if ep is None:
+            return False
         
         self.rx_queue = queue.Queue(100000)
         self.read_usb_hid_thread = USBThread(self, self.rx_queue)
@@ -238,27 +231,34 @@ class SSS2Interface(QMainWindow):
         return True
                     
     def read_usb_hid(self):  
-        while self.rx_queue.qsize():
-            #Get a message from the queue. These are raw bytes
-            rxmessage = self.rx_queue.get()
-            rxmessage_type = rxmessage[USB_FRAME_TYPE_LOC] & USB_FRAME_TYPE_MASK
-            if rxmessage_type == STATUS_TYPE:
-                #Status Message
-                if   rxmessage[0] & 0x0F == 1:
-                    self.parse_status_message_one(rxmessage)
-                elif rxmessage[0] & 0x0F == 2:
-                    self.parse_status_message_two(rxmessage)
-                elif rxmessage[0] & 0x0F == 3:
-                    self.parse_status_message_three(rxmessage)    
-                #print(" ".join(["{:02X}".format(b) for b in rxmessage]))
-            elif rxmessage_type == COMMAND_TYPE:
-                pass # the SSS2 doesn't send commands to the computer
-            elif rxmessage_type == MESSAGE_TYPE:
-                # Received a network message
-                pass
-            elif rxmessage_type == ESCAPE_TYPE:
-                #Future stuff
-                pass
+        if self.signal:    
+            while self.rx_queue.qsize():
+                #Get a message from the queue. These are raw bytes
+                rxmessage = self.rx_queue.get()
+                rxmessage_type = rxmessage[USB_FRAME_TYPE_LOC] & USB_FRAME_TYPE_MASK
+                if rxmessage_type == STATUS_TYPE:
+                    #Status Message
+                    if   rxmessage[0] & 0x0F == 1:
+                        self.parse_status_message_one(rxmessage)
+                    elif rxmessage[0] & 0x0F == 2:
+                        self.parse_status_message_two(rxmessage)
+                    elif rxmessage[0] & 0x0F == 3:
+                        self.parse_status_message_three(rxmessage)    
+                    print(" ".join(["{:02X}".format(b) for b in rxmessage]))
+                elif rxmessage_type == COMMAND_TYPE:
+                    pass # the SSS2 doesn't send commands to the computer
+                elif rxmessage_type == MESSAGE_TYPE:
+                    # Received a network message
+                    pass
+                elif rxmessage_type == ESCAPE_TYPE:
+                    #Future stuff
+                    pass
+        else:
+            self.signal = self.setup_usb()
+            if self.signal:
+                self.statusBar().showMessage("Success - SSS2 Connected.")
+            else:
+                self.statusBar().showMessage("Missing - SSS2 not detected over USB.")
 
     def parse_status_message_one(self, rxmessage):
         self.settings_dict["Potentiometers"]["Group A"]["Pairs"]["U1U2"]["Pots"]["U1"]["Wiper Position"]    = rxmessage[1]
@@ -349,7 +349,7 @@ class SSS2Interface(QMainWindow):
         self.update_dict_display()
 
         #print(" ".join(["{:02X}".format(b) for b in rxmessage[:61]]))
-        print(self.settings_dict["Switches"]["Ignition"]["State"])
+        #print(self.settings_dict["Switches"]["Ignition"]["State"])
 
     def parse_status_message_two(self, rxmessage):
         pass
@@ -357,7 +357,7 @@ class SSS2Interface(QMainWindow):
     def parse_status_message_three(self, rxmessage):
         pass
 
-    def write_usb_hid(self):
+    def write_usb_hid(self, command):
         pass
 
     def update_dict_display(self):
@@ -387,7 +387,7 @@ class SSS2Interface(QMainWindow):
 
     def init_gui(self):
         """Builds GUI."""
-        self.statusBar().showMessage("Welcome to TruckCRYPT!")
+        
 
         self.grid_layout = QGridLayout()
         
