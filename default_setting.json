@@ -405,6 +405,7 @@
                             "SSS2 Wiper Setting": 1,
                             "Term. A Connect": true,
                             "Term. B Connect": true,
+                            "Terminal Value": 7,
                             "Wiper Connect": true,
                             "Wiper Position": 210,
                             "Wire Color": "PPL/WHT"
@@ -420,6 +421,7 @@
                             "SSS2 Wiper Setting": 2,
                             "Term. A Connect": true,
                             "Term. B Connect": true,
+                            "Terminal Value": 7,
                             "Wiper Connect": true,
                             "Wiper Position": 200,
                             "Wire Color": "BRN/WHT"
@@ -442,6 +444,7 @@
                             "SSS2 Wiper Setting": 3,
                             "Term. A Connect": true,
                             "Term. B Connect": true,
+                            "Terminal Value": 7,
                             "Wiper Connect": true,
                             "Wiper Position": 190,
                             "Wire Color": "YEL/BLK"
@@ -457,6 +460,7 @@
                             "SSS2 Wiper Setting": 4,
                             "Term. A Connect": true,
                             "Term. B Connect": false,
+                            "Terminal Value": 7,
                             "Wiper Connect": true,
                             "Wiper Position": 180,
                             "Wire Color": "PNK/BLK"
@@ -479,6 +483,7 @@
                             "SSS2 Wiper Setting": 5,
                             "Term. A Connect": true,
                             "Term. B Connect": true,
+                            "Terminal Value": 7,
                             "Wiper Connect": true,
                             "Wiper Position": 170,
                             "Wire Color": "Blue"
@@ -494,6 +499,7 @@
                             "SSS2 Wiper Setting": 6,
                             "Term. A Connect": true,
                             "Term. B Connect": true,
+                            "Terminal Value": 7,
                             "Wiper Connect": true,
                             "Wiper Position": 160,
                             "Wire Color": "GRN/BLK"
@@ -516,6 +522,7 @@
                             "SSS2 Wiper Setting": 7,
                             "Term. A Connect": true,
                             "Term. B Connect": true,
+                            "Terminal Value": 7,
                             "Wiper Connect": true,
                             "Wiper Position": 150,
                             "Wire Color": "ORN/BLK"
@@ -531,6 +538,7 @@
                             "SSS2 Wiper Setting": 8,
                             "Term. A Connect": true,
                             "Term. B Connect": true,
+                            "Terminal Value": 7,
                             "Wiper Connect": true,
                             "Wiper Position": 140,
                             "Wire Color": "YEL/RED"
@@ -560,6 +568,7 @@
                             "SSS2 Wiper Setting": 9,
                             "Term. A Connect": true,
                             "Term. B Connect": true,
+                            "Terminal Value": 7,
                             "Wiper Connect": true,
                             "Wiper Position": 130,
                             "Wire Color": "RED/WHT"
@@ -575,6 +584,7 @@
                             "SSS2 Wiper Setting": 10,
                             "Term. A Connect": true,
                             "Term. B Connect": true,
+                            "Terminal Value": 7,
                             "Wiper Connect": true,
                             "Wiper Position": 120,
                             "Wire Color": "RED/BLK"
@@ -597,6 +607,7 @@
                             "SSS2 Wiper Setting": 11,
                             "Term. A Connect": true,
                             "Term. B Connect": true,
+                            "Terminal Value": 7,
                             "Wiper Connect": true,
                             "Wiper Position": 110,
                             "Wire Color": "BLU/WHT"
@@ -612,6 +623,7 @@
                             "SSS2 Wiper Setting": 12,
                             "Term. A Connect": true,
                             "Term. B Connect": true,
+                            "Terminal Value": 7,
                             "Wiper Connect": true,
                             "Wiper Position": 100,
                             "Wire Color": "TAN/BLK"
@@ -634,6 +646,7 @@
                             "SSS2 Wiper Setting": 13,
                             "Term. A Connect": true,
                             "Term. B Connect": true,
+                            "Terminal Value": 7,
                             "Wiper Connect": true,
                             "Wiper Position": 90,
                             "Wire Color": "Brown"
@@ -649,6 +662,7 @@
                             "SSS2 Wiper Setting": 14,
                             "Term. A Connect": true,
                             "Term. B Connect": true,
+                            "Terminal Value": 7,
                             "Wiper Connect": true,
                             "Wiper Position": 80,
                             "Wire Color": "BLK/WHT"
@@ -671,6 +685,7 @@
                             "SSS2 Wiper Setting": 15,
                             "Term. A Connect": true,
                             "Term. B Connect": true,
+                            "Terminal Value": 7,
                             "Wiper Connect": true,
                             "Wiper Position": 70,
                             "Wire Color": "GRN/WHT"
@@ -686,6 +701,7 @@
                             "SSS2 Wiper Setting": 16,
                             "Term. A Connect": true,
                             "Term. B Connect": true,
+                            "Terminal Value": 7,
                             "Wiper Connect": true,
                             "Wiper Position": 60,
                             "Wire Color": "RED/GRN"
@@ -715,6 +731,7 @@
                             "SSS2 Wiper Setting": 75,
                             "Term. A Connect": true,
                             "Term. B Connect": true,
+                            "Terminal Value": 7,
                             "Wiper Connect": true,
                             "Wiper Position": 20,
                             "Wire Color": "TAN/BLK"
@@ -730,6 +747,7 @@
                             "SSS2 Wiper Setting": 76,
                             "Term. A Connect": true,
                             "Term. B Connect": true,
+                            "Terminal Value": 7,
                             "Wiper Connect": true,
                             "Wiper Position": 50,
                             "Wire Color": "BROWN"
@@ -745,6 +763,7 @@
                             "SSS2 Wiper Setting": 77,
                             "Term. A Connect": true,
                             "Term. B Connect": true,
+                            "Terminal Value": 7,
                             "Wiper Connect": true,
                             "Wiper Position": 50,
                             "Wire Color": "GRN/WHT"

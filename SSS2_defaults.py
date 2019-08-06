@@ -63,6 +63,7 @@ def get_default_settings():
     pair["Pots"] = {"U1":{},"U2":{}}
 
     u=pair["Pots"]["U1"]
+    u["Terminal Value"]=7
     u["Term. A Connect"]=True
     u["Term. B Connect"]=True
     u["Wiper Connect"]=True
@@ -80,6 +81,7 @@ def get_default_settings():
     u["ECM Fault High Setting"]=255
     
     u=pair["Pots"]["U2"]
+    u["Terminal Value"]=7
     u["Term. A Connect"]=True
     u["Term. B Connect"]=True
     u["Wiper Connect"]=True
@@ -101,6 +103,7 @@ def get_default_settings():
     pair["Pots"] = {"U3":{},"U4":{}}
 
     u=pair["Pots"]["U3"]
+    u["Terminal Value"]=7
     u["Term. A Connect"]=True
     u["Term. B Connect"]=True
     u["Wiper Connect"]=True
@@ -116,6 +119,7 @@ def get_default_settings():
     u["Resistance"]="10k"
     
     u=pair["Pots"]["U4"]
+    u["Terminal Value"]=7
     u["Term. A Connect"]=True
     u["Term. B Connect"]=False
     u["Wiper Connect"]=True
@@ -137,6 +141,7 @@ def get_default_settings():
     pair["Pots"] = {"U5":{},"U6":{}}
 
     u=pair["Pots"]["U5"]
+    u["Terminal Value"]=7
     u["Term. A Connect"]=True
     u["Term. B Connect"]=True
     u["Wiper Connect"]=True
@@ -152,6 +157,7 @@ def get_default_settings():
     u["Resistance"]="10k"
     
     u=pair["Pots"]["U6"]
+    u["Terminal Value"]=7
     u["Term. A Connect"]=True
     u["Term. B Connect"]=True
     u["Wiper Connect"]=True
@@ -173,6 +179,7 @@ def get_default_settings():
     pair["Pots"] = {"U7":{},"U8":{}}
 
     u=pair["Pots"]["U7"]
+    u["Terminal Value"]=7
     u["Term. A Connect"]=True
     u["Term. B Connect"]=True
     u["Wiper Connect"]=True
@@ -188,6 +195,7 @@ def get_default_settings():
     u["Resistance"]="100k"
     
     u=pair["Pots"]["U8"]
+    u["Terminal Value"]=7
     u["Term. A Connect"]=True
     u["Term. B Connect"]=True
     u["Wiper Connect"]=True
@@ -217,6 +225,7 @@ def get_default_settings():
     pair["Pots"] = {"U09":{},"U10":{}}
 
     u=pair["Pots"]["U09"]
+    u["Terminal Value"]=7
     u["Term. A Connect"]=True
     u["Term. B Connect"]=True
     u["Wiper Connect"]=True
@@ -232,6 +241,7 @@ def get_default_settings():
     u["Resistance"]="10k"
     
     u=pair["Pots"]["U10"]
+    u["Terminal Value"]=7
     u["Term. A Connect"]=True
     u["Term. B Connect"]=True
     u["Wiper Connect"]=True
@@ -253,6 +263,7 @@ def get_default_settings():
     pair["Pots"] = {"U11":{},"U12":{}}
 
     u=pair["Pots"]["U11"]
+    u["Terminal Value"]=7
     u["Term. A Connect"]=True
     u["Term. B Connect"]=True
     u["Wiper Connect"]=True
@@ -268,6 +279,7 @@ def get_default_settings():
     u["Resistance"]="10k"
     
     u=pair["Pots"]["U12"]
+    u["Terminal Value"]=7
     u["Term. A Connect"]=True
     u["Term. B Connect"]=True
     u["Wiper Connect"]=True
@@ -289,6 +301,7 @@ def get_default_settings():
     pair["Pots"] = {"U13":{},"U14":{}}
 
     u=pair["Pots"]["U13"]
+    u["Terminal Value"]=7
     u["Term. A Connect"]=True
     u["Term. B Connect"]=True
     u["Wiper Connect"]=True
@@ -304,6 +317,7 @@ def get_default_settings():
     u["Resistance"]="10k"
     
     u=pair["Pots"]["U14"]
+    u["Terminal Value"]=7
     u["Term. A Connect"]=True
     u["Term. B Connect"]=True
     u["Wiper Connect"]=True
@@ -325,6 +339,7 @@ def get_default_settings():
     pair["Pots"] = {"U15":{},"U16":{}}
 
     u=pair["Pots"]["U15"]
+    u["Terminal Value"]=7
     u["Term. A Connect"]=True
     u["Term. B Connect"]=True
     u["Wiper Connect"]=True
@@ -340,6 +355,7 @@ def get_default_settings():
     u["Resistance"]="10k"
     
     u=pair["Pots"]["U16"]
+    u["Terminal Value"]=7
     u["Term. A Connect"]=True
     u["Term. B Connect"]=True
     u["Wiper Connect"]=True
@@ -369,6 +385,7 @@ def get_default_settings():
     pair["Pots"] = {"U34":{},"U36":{},"U37":{}}
 
     u=pair["Pots"]["U34"]
+    u["Terminal Value"]=7
     u["Term. A Connect"]=True
     u["Term. B Connect"]=True
     u["Wiper Connect"]=True
@@ -384,6 +401,7 @@ def get_default_settings():
     u["Resistance"]="100k"
     
     u=pair["Pots"]["U36"]
+    u["Terminal Value"]=7
     u["Term. A Connect"]=True
     u["Term. B Connect"]=True
     u["Wiper Connect"]=True
@@ -399,6 +417,7 @@ def get_default_settings():
     u["Resistance"]="10k"
 
     u=pair["Pots"]["U37"]
+    u["Terminal Value"]=7
     u["Term. A Connect"]=True
     u["Term. B Connect"]=True
     u["Wiper Connect"]=True

@@ -13,6 +13,7 @@ from PyQt5.QtWidgets import (QMainWindow,
                              QTableWidget,
                              QTableView,
                              QTableWidgetItem,
+                             QHeaderView,
                              QScrollArea,
                              QAbstractScrollArea,
                              QAbstractItemView,
@@ -29,8 +30,10 @@ from PyQt5.QtWidgets import (QMainWindow,
                              QInputDialog,
                              QProgressDialog,
                              QTabWidget)
-from PyQt5.QtCore import Qt, QTimer, QAbstractTableModel, QCoreApplication, QSize
-from PyQt5.QtGui import QIcon
+from PyQt5.QtCore import Qt, QTimer, QAbstractTableModel, QCoreApplication, QSize, QAbstractItemModel
+from PyQt5.QtGui import QIcon, QStandardItemModel, QStandardItem
+
+from TableModel import *
 
 import tkinter as tk
 from tkinter import filedialog
@@ -127,9 +130,31 @@ IGNITION_RELAY_MASK = 0x80
 HVADJOUT_LOC = 48
 HVADJOUT_MASK = 0xFF
 
-U34_WIPER_LOC = 49
-U36_WIPER_LOC = 50
-U37_WIPER_LOC = 51
+U34_I2C_ADDR = 0x3C
+U36_I2C_ADDR = 0x3F
+U37_I2C_ADDR = 0x3D
+
+U34_WIPER_LOC =  49
+U36_WIPER_LOC =  50
+U37_WIPER_LOC =  51
+
+U34_TCON_LOC = 17
+U36_TCON_LOC = 18
+U37_TCON_LOC = 19
+
+PWM1_LOC = 35
+PWM2_LOC = 37
+PWM3_LOC = 39
+PWM4_LOC = 41
+PWM5_LOC = 43
+PWM6_LOC = 45
+
+
+PWM1_FREQ_LOC = 52
+PWM2_FREQ_LOC = 54
+PWM3_FREQ_LOC = 56
+PWM5_FREQ_LOC = 58
+
 
 def crc16_ccitt(crc, data):
     msb = (crc & 0xFF00) >> 8
@@ -156,7 +181,7 @@ class USBThread(threading.Thread):
     def run(self):
         while True:
             try:
-                data_stream = bytes(self.root.sss.read(USB_HID_INPUT_ENDPOINT_ADDRESS, USB_HID_LENGTH, 0))
+                data_stream = bytes(self.root.sss.read(USB_HID_INPUT_ENDPOINT_ADDRESS, USB_HID_LENGTH, USB_HID_TIMEOUT))
                 data_stream_crc = data_stream[62:64]
                 calculated_crc = crc16_ccitt(0xFFFF, data_stream[0:62])
                 assert data_stream_crc == calculated_crc
@@ -173,6 +198,7 @@ class USBThread(threading.Thread):
                 print(traceback.format_exc())
                 break
         logger.debug("USBThread Ending.")
+        usb.util.release_interface(self.root.sss,self.root.sss_interface)
 
 class SSS2Interface(QMainWindow):
     def __init__(self):
@@ -195,6 +221,14 @@ class SSS2Interface(QMainWindow):
         self.init_gui()
         self.show()
         
+    def send_command(self, command_string):
+        if self.signal:
+            data = b'\x10' + command_string.encode('ascii')
+            padded_data = data + bytes([0 for i in range(62 - len(data))])
+            crc = crc16_ccitt(0xFFFF, bytes(padded_data[0:62]))
+            data_to_send = bytes(padded_data[0:62]) + crc
+            self.sss.write(USB_HID_OUTPUT_ENDPOINT_ADDRESS, data_to_send, USB_HID_TIMEOUT)
+            print(command_string)
 
     def setup_usb(self):
         # find our device
@@ -244,7 +278,7 @@ class SSS2Interface(QMainWindow):
                         self.parse_status_message_two(rxmessage)
                     elif rxmessage[0] & 0x0F == 3:
                         self.parse_status_message_three(rxmessage)    
-                    print(" ".join(["{:02X}".format(b) for b in rxmessage]))
+                    #print(" ".join(["{:02X}".format(b) for b in rxmessage]))
                 elif rxmessage_type == COMMAND_TYPE:
                     pass # the SSS2 doesn't send commands to the computer
                 elif rxmessage_type == MESSAGE_TYPE:
@@ -257,10 +291,15 @@ class SSS2Interface(QMainWindow):
             self.signal = self.setup_usb()
             if self.signal:
                 self.statusBar().showMessage("Success - SSS2 Connected.")
+                self.ignition_key_button.setEnabled(True)
             else:
                 self.statusBar().showMessage("Missing - SSS2 not detected over USB.")
+                self.ignition_key_button.setCheckState(Qt.PartiallyChecked)
+                self.ignition_key_button.setEnabled(False)
 
     def parse_status_message_one(self, rxmessage):
+        print(rxmessage)
+
         self.settings_dict["Potentiometers"]["Group A"]["Pairs"]["U1U2"]["Pots"]["U1"]["Wiper Position"]    = rxmessage[1]
         self.settings_dict["Potentiometers"]["Group A"]["Pairs"]["U1U2"]["Pots"]["U2"]["Wiper Position"]    = rxmessage[2]
         self.settings_dict["Potentiometers"]["Group A"]["Pairs"]["U3U4"]["Pots"]["U3"]["Wiper Position"]    = rxmessage[3]
@@ -278,6 +317,23 @@ class SSS2Interface(QMainWindow):
         self.settings_dict["Potentiometers"]["Group B"]["Pairs"]["U15U16"]["Pots"]["U15"]["Wiper Position"] = rxmessage[15]
         self.settings_dict["Potentiometers"]["Group B"]["Pairs"]["U15U16"]["Pots"]["U16"]["Wiper Position"] = rxmessage[16]
         
+        self.settings_model["Potentiometers"]["Group A"]["Pairs"]["U1U2"]["Pots"]["U1"]["Wiper Position"].setText("{:d}".format(rxmessage[1]))
+        self.settings_model["Potentiometers"]["Group A"]["Pairs"]["U1U2"]["Pots"]["U2"]["Wiper Position"].setText("{:d}".format(rxmessage[2]))
+        self.settings_model["Potentiometers"]["Group A"]["Pairs"]["U3U4"]["Pots"]["U3"]["Wiper Position"].setText("{:d}".format(rxmessage[3]))
+        self.settings_model["Potentiometers"]["Group A"]["Pairs"]["U3U4"]["Pots"]["U4"]["Wiper Position"].setText("{:d}".format(rxmessage[4]))
+        self.settings_model["Potentiometers"]["Group A"]["Pairs"]["U5U6"]["Pots"]["U5"]["Wiper Position"].setText("{:d}".format(rxmessage[5]))
+        self.settings_model["Potentiometers"]["Group A"]["Pairs"]["U5U6"]["Pots"]["U6"]["Wiper Position"].setText("{:d}".format(rxmessage[6]))
+        self.settings_model["Potentiometers"]["Group A"]["Pairs"]["U7U8"]["Pots"]["U7"]["Wiper Position"].setText("{:d}".format(rxmessage[7]))
+        self.settings_model["Potentiometers"]["Group A"]["Pairs"]["U7U8"]["Pots"]["U8"]["Wiper Position"].setText("{:d}".format(rxmessage[8]))
+        self.settings_model["Potentiometers"]["Group B"]["Pairs"]["U09U10"]["Pots"]["U09"]["Wiper Position"].setText("{:d}".format(rxmessage[9]))
+        self.settings_model["Potentiometers"]["Group B"]["Pairs"]["U09U10"]["Pots"]["U10"]["Wiper Position"].setText("{:d}".format(rxmessage[10]))
+        self.settings_model["Potentiometers"]["Group B"]["Pairs"]["U11U12"]["Pots"]["U11"]["Wiper Position"].setText("{:d}".format(rxmessage[11]))
+        self.settings_model["Potentiometers"]["Group B"]["Pairs"]["U11U12"]["Pots"]["U12"]["Wiper Position"].setText("{:d}".format(rxmessage[12]))
+        self.settings_model["Potentiometers"]["Group B"]["Pairs"]["U13U14"]["Pots"]["U13"]["Wiper Position"].setText("{:d}".format(rxmessage[13]))
+        self.settings_model["Potentiometers"]["Group B"]["Pairs"]["U13U14"]["Pots"]["U14"]["Wiper Position"].setText("{:d}".format(rxmessage[14]))
+        self.settings_model["Potentiometers"]["Group B"]["Pairs"]["U15U16"]["Pots"]["U15"]["Wiper Position"].setText("{:d}".format(rxmessage[15]))
+        self.settings_model["Potentiometers"]["Group B"]["Pairs"]["U15U16"]["Pots"]["U16"]["Wiper Position"].setText("{:d}".format(rxmessage[16]))
+        
         self.settings_dict["DACs"]["Vout1"]["Average Voltage"] = struct.unpack('<H',rxmessage[17:19])[0]
         self.settings_dict["DACs"]["Vout2"]["Average Voltage"] = struct.unpack('<H',rxmessage[19:21])[0]
         self.settings_dict["DACs"]["Vout3"]["Average Voltage"] = struct.unpack('<H',rxmessage[21:23])[0]
@@ -286,6 +342,14 @@ class SSS2Interface(QMainWindow):
         self.settings_dict["DACs"]["Vout6"]["Average Voltage"] = struct.unpack('<H',rxmessage[27:29])[0]
         self.settings_dict["DACs"]["Vout7"]["Average Voltage"] = struct.unpack('<H',rxmessage[29:31])[0]
         self.settings_dict["DACs"]["Vout8"]["Average Voltage"] = struct.unpack('<H',rxmessage[31:33])[0]
+        self.settings_model["DACs"]["Vout1"]["Average Voltage"].setText("{:d}".format(struct.unpack('<H',rxmessage[17:19])[0]))
+        self.settings_model["DACs"]["Vout2"]["Average Voltage"].setText("{:d}".format(struct.unpack('<H',rxmessage[19:21])[0]))
+        self.settings_model["DACs"]["Vout3"]["Average Voltage"].setText("{:d}".format(struct.unpack('<H',rxmessage[21:23])[0]))
+        self.settings_model["DACs"]["Vout4"]["Average Voltage"].setText("{:d}".format(struct.unpack('<H',rxmessage[23:25])[0]))
+        self.settings_model["DACs"]["Vout5"]["Average Voltage"].setText("{:d}".format(struct.unpack('<H',rxmessage[25:27])[0]))
+        self.settings_model["DACs"]["Vout6"]["Average Voltage"].setText("{:d}".format(struct.unpack('<H',rxmessage[27:29])[0]))
+        self.settings_model["DACs"]["Vout7"]["Average Voltage"].setText("{:d}".format(struct.unpack('<H',rxmessage[29:31])[0]))
+        self.settings_model["DACs"]["Vout8"]["Average Voltage"].setText("{:d}".format(struct.unpack('<H',rxmessage[31:33])[0]))
 
         self.settings_dict["Potentiometers"]["Group A"]["Pairs"]["U1U2"]["Terminal A Voltage"]   = bool(rxmessage[CONFIGSWITCH_1_LOC] & U1U2P0ASWITCH_MASK)
         self.settings_dict["Potentiometers"]["Group A"]["Pairs"]["U3U4"]["Terminal A Voltage"]   = bool(rxmessage[CONFIGSWITCH_1_LOC] & U3U4P0ASWITCH_MASK)
@@ -328,8 +392,13 @@ class SSS2Interface(QMainWindow):
         self.settings_dict["PWMs"]["PWM4"]["Duty Cycle"] = struct.unpack('<H',rxmessage[41:43])[0]
         self.settings_dict["PWMs"]["PWM5"]["Duty Cycle"] = struct.unpack('<H',rxmessage[43:45])[0]
         self.settings_dict["PWMs"]["PWM6"]["Duty Cycle"] = struct.unpack('<H',rxmessage[45:47])[0]
+        self.settings_model["PWMs"]["PWM1"]["Duty Cycle"].setText("{:0.2f}%".format(struct.unpack('<H',rxmessage[35:37])[0]/4096*100))
+        self.settings_model["PWMs"]["PWM2"]["Duty Cycle"].setText("{:0.2f}%".format(struct.unpack('<H',rxmessage[37:39])[0]/4096*100))
+        self.settings_model["PWMs"]["PWM3"]["Duty Cycle"].setText("{:0.2f}%".format(struct.unpack('<H',rxmessage[39:41])[0]/4096*100))
+        self.settings_model["PWMs"]["PWM4"]["Duty Cycle"].setText("{:0.2f}%".format(struct.unpack('<H',rxmessage[41:43])[0]/4096*100))
+        self.settings_model["PWMs"]["PWM5"]["Duty Cycle"].setText("{:0.2f}%".format(struct.unpack('<H',rxmessage[43:45])[0]/4096*100))
+        self.settings_model["PWMs"]["PWM6"]["Duty Cycle"].setText("{:0.2f}%".format(struct.unpack('<H',rxmessage[45:47])[0]/4096*100))
 
-        self.settings_dict["HVAdjOut"]["Value"]    = bool(rxmessage[HVADJOUT_LOC] & HVADJOUT_MASK)
         self.settings_dict["Switches"]["Ignition"]["State"] = bool(rxmessage[HBRIDGE_LOC] & IGNITION_RELAY_MASK)
         
         self.settings_dict["Potentiometers"]["Group A"]["Terminal A Connection"] = bool(rxmessage[CONFIGSWITCH_2_LOC] & U28P0AENABLE_MASK)
@@ -338,86 +407,249 @@ class SSS2Interface(QMainWindow):
         self.settings_dict["Potentiometers"]["Others"]["Pairs"]["I2CPots"]["Pots"]["U34"]["Wiper Position"] = rxmessage[U34_WIPER_LOC]
         self.settings_dict["Potentiometers"]["Others"]["Pairs"]["I2CPots"]["Pots"]["U36"]["Wiper Position"] = rxmessage[U36_WIPER_LOC]
         self.settings_dict["Potentiometers"]["Others"]["Pairs"]["I2CPots"]["Pots"]["U37"]["Wiper Position"] = rxmessage[U37_WIPER_LOC]
+        self.settings_model["Potentiometers"]["Others"]["Pairs"]["I2CPots"]["Pots"]["U34"]["Wiper Position"].setText("{:d}".format(rxmessage[U34_WIPER_LOC]))
+        self.settings_model["Potentiometers"]["Others"]["Pairs"]["I2CPots"]["Pots"]["U36"]["Wiper Position"].setText("{:d}".format(rxmessage[U36_WIPER_LOC]))
+        self.settings_model["Potentiometers"]["Others"]["Pairs"]["I2CPots"]["Pots"]["U37"]["Wiper Position"].setText("{:d}".format(rxmessage[U37_WIPER_LOC]))
 
-        self.settings_dict["PWMs"]["PWM1"]["Frequency"] = struct.unpack('<H',rxmessage[52:54])[0]
+        self.settings_dict["PWMs"]["PWM1"]["Frequency"] = struct.unpack('<H',rxmessage[54:56])[0]
         self.settings_dict["PWMs"]["PWM2"]["Frequency"] = struct.unpack('<H',rxmessage[54:56])[0]
         self.settings_dict["PWMs"]["PWM3"]["Frequency"] = struct.unpack('<H',rxmessage[56:58])[0]
         self.settings_dict["PWMs"]["PWM4"]["Frequency"] = struct.unpack('<H',rxmessage[56:58])[0]
         self.settings_dict["PWMs"]["PWM5"]["Frequency"] = struct.unpack('<H',rxmessage[58:60])[0]
         self.settings_dict["PWMs"]["PWM6"]["Frequency"] = struct.unpack('<H',rxmessage[58:60])[0]
+
+        self.settings_model["PWMs"]["PWM1"]["Frequency"].setText("{:d}".format(struct.unpack('<H',rxmessage[54:56])[0]))
+        self.settings_model["PWMs"]["PWM2"]["Frequency"].setText("{:d}".format(struct.unpack('<H',rxmessage[54:56])[0]))
+        self.settings_model["PWMs"]["PWM3"]["Frequency"].setText("{:d}".format(struct.unpack('<H',rxmessage[56:58])[0]))
+        self.settings_model["PWMs"]["PWM4"]["Frequency"].setText("{:d}".format(struct.unpack('<H',rxmessage[56:58])[0]))
+        self.settings_model["PWMs"]["PWM5"]["Frequency"].setText("{:d}".format(struct.unpack('<H',rxmessage[58:60])[0]))
+        self.settings_model["PWMs"]["PWM6"]["Frequency"].setText("{:d}".format(struct.unpack('<H',rxmessage[58:60])[0]))
         
+        self.settings_dict["HVAdjOut"]["Value"] =  rxmessage[HVADJOUT_LOC]
+        self.settings_model["HVAdjOut"]["Value"].setText("{:0.2f}V".format(self.getHVOUT_voltage(rxmessage[HVADJOUT_LOC])))
+
         self.update_dict_display()
 
         #print(" ".join(["{:02X}".format(b) for b in rxmessage[:61]]))
         #print(self.settings_dict["Switches"]["Ignition"]["State"])
+    def getHVOUT_voltage(self, reading):
+        return reading*0.049441804 + 1.94
 
+    def setHVOUT_voltage(self, voltage):
+        return "{:d}".format(int((voltage-1.94)*20.22579915))
+        
     def parse_status_message_two(self, rxmessage):
         pass
     
     def parse_status_message_three(self, rxmessage):
         pass
 
-    def write_usb_hid(self, command):
-        pass
-
     def update_dict_display(self):
-        
-
-        self.fill_item(self.tree.invisibleRootItem(), self.settings_dict)
-    
-    def new_item(self, parent, text, val=None):
-            child = QTreeWidgetItem([text])
-            self.fill_item(child, val)
-            parent.addChild(child)
-            child.setExpanded(True)
-
-    def fill_item(self, item, value):
-        
-        if value is None: return
-        elif isinstance(value, dict):
-            for key, val in sorted(value.items()):
-                self.new_item(item, str(key), val)
-        elif isinstance(value, (list, tuple)):
-            for val in value:
-                text = (str(val) if not isinstance(val, (dict, list, tuple))
-                        else '[%s]' % type(val).__name__)
-                self.new_item(item, text, val) 
+        if self.settings_dict["Switches"]["Ignition"]["State"]:
+            self.ignition_key_button.setCheckState(Qt.Checked)
         else:
-            self.new_item(item, str(value))
+            self.ignition_key_button.setCheckState(Qt.Unchecked)
+
+
+    def change_setting(self, index):
+        print("Change Setting")
+        print(index.parent())
+        print(index.row())
+        print(index.column())
+
+        print(self.settings_tree.model())
+    
+    def fill_tree(self):
+        self.settings_tree.model().setHorizontalHeaderLabels(['Item', 'Description', "Setting", 'Value'])
+        self.settings_tree.header().setSectionResizeMode(QHeaderView.ResizeToContents)
+        self.settings_tree.model().itemChanged.connect(self.change_setting)
+        self.settings_model={}
+        for key0,item0 in self.settings_dict.items():
+            thing = QStandardItem(key0)
+            thing.setFlags(Qt.NoItemFlags | Qt.ItemIsEnabled)
+            if not isinstance(item0, dict):
+                continue
+            self.settings_model[key0]={}
+            for key1, item1 in item0.items():
+                if not isinstance(item1, dict):
+                    continue 
+                self.settings_model[key0][key1]={}
+                if key0 == "Potentiometers":
+                    group = QStandardItem(key1)
+                    if item1["Terminal A Connection"] or item1["Terminal A Connection"] is None:
+                        group_label = QStandardItem("Terminal A is connected to voltage for {}.".format(item1["Label"]))
+                    else:
+                        group_label = QStandardItem("No Voltage Applied to {}.".format(item1["Label"]))
+                    try:
+                        group_setting = QStandardItem("{:2d}".format(item1["SSS2 Setting"]))
+                    except TypeError:
+                        group_setting = QStandardItem("")
+                    group_value = QStandardItem(str(item1["Terminal A Connection"]))
+                    #group_value.setCheckable(True)
+                    
+                    group.setFlags(Qt.NoItemFlags | Qt.ItemIsEnabled)
+                    group_label.setFlags(Qt.NoItemFlags | Qt.ItemIsEnabled)
+                    group_setting.setFlags(Qt.NoItemFlags | Qt.ItemIsEnabled)
+                    self.settings_model[key0][key1]["Pairs"] = {}
+                    for p,pots in item1["Pairs"].items():
+                        self.settings_model[key0][key1]["Pairs"][p]={}
+                        pair = QStandardItem(p)
+                        pair_value = QStandardItem(pots["Terminal A Voltage"])
+                        try:
+                            pair_setting = QStandardItem("{:2d}".format(pots["SSS Setting"]))
+                        except TypeError:
+                            pair_setting = QStandardItem("")
+                        pair_label = QStandardItem(pots["Name"])
+                        pair.setFlags(Qt.NoItemFlags | Qt.ItemIsEnabled)
+                        pair_label.setFlags(Qt.NoItemFlags | Qt.ItemIsEnabled)
+                        pair_setting.setFlags(Qt.NoItemFlags | Qt.ItemIsEnabled)
+                        
+                        self.settings_model[key0][key1]["Pairs"][p]["Pots"]={}
+                        for pot_key,vals in pots["Pots"].items():
+                            self.settings_model[key0][key1]["Pairs"][p]["Pots"][pot_key]={}
+                            pot =  QStandardItem(pot_key)
+                            pot_setting = QStandardItem("{:2d}".format(vals["SSS2 Wiper Setting"]))
+                            pot_value = QStandardItem(str(vals["Wiper Position"]))
+                            pot_label = QStandardItem(vals["Name"] + " ({}) Wiper Position ({})".format(vals["Resistance"],vals["Pin"]))
+                            pot.setFlags(Qt.NoItemFlags | Qt.ItemIsEnabled)
+                            pot_label.setFlags(Qt.NoItemFlags | Qt.ItemIsEnabled)
+                            pot_setting.setFlags(Qt.NoItemFlags | Qt.ItemIsEnabled)
+                            terminal = QStandardItem("")
+                            terminal_setting = QStandardItem("{:2d}".format(vals["SSS2 TCON Setting"]))
+                            terminal_value = QStandardItem(str(vals["Term. A Connect"]*4+vals["Term. B Connect"]*2+vals["Wiper Connect"]*1 ))
+                            terminal_label = QStandardItem("Term. A Connect: {}, Term. B Connect: {}, Wiper Connect: {}".format(
+                                    vals["Term. A Connect"],
+                                    vals["Term. B Connect"],
+                                    vals["Wiper Connect"]))
+                            terminal.setFlags(Qt.NoItemFlags | Qt.ItemIsEnabled)
+                            terminal_label.setFlags(Qt.NoItemFlags | Qt.ItemIsEnabled)
+                            terminal_setting.setFlags(Qt.NoItemFlags | Qt.ItemIsEnabled)
+                            pot.appendRow([terminal, terminal_label, terminal_setting, terminal_value])
+                            self.settings_model[key0][key1]["Pairs"][p]["Pots"][pot_key]["Wiper Position"] = pot_value
+                            pair.appendRow([pot,pot_label,pot_setting,pot_value])
+                            self.settings_model[key0][key1]["Pairs"][p]["Pots"][pot_key]["Terminal Value"] = terminal_value
+                        group.appendRow([pair,pair_label,pair_setting,pair_value])
+                    thing.appendRow([group,group_label,group_setting,group_value])        
+                elif key0 == "DACs":
+                    vout = QStandardItem(key1)
+                    vout_label = QStandardItem("Millivolts for {} ({})".format(item1["Name"],item1["Pin"]))
+                    vout_setting = QStandardItem("{:2d}".format(item1["SSS2 setting"]))
+                    vout_value = QStandardItem("{}".format(item1["Average Voltage"]))
+                    
+                    vout.setFlags(Qt.NoItemFlags | Qt.ItemIsEnabled)
+                    vout_label.setFlags(Qt.NoItemFlags | Qt.ItemIsEnabled)
+                    vout_setting.setFlags(Qt.NoItemFlags | Qt.ItemIsEnabled)
+                    self.settings_model[key0][key1] = {}
+                    self.settings_model[key0][key1]["Average Voltage"]=vout_value
+                    thing.appendRow([vout,vout_label,vout_setting,vout_value])
+                elif key0 == "PWMs":
+                    pwm = QStandardItem(key1)
+                    pwm_label = QStandardItem("Pulse Width Modulated Signal {} Duty Cycle ({})".format(item1["Name"],item1["Pin"]))
+                    pwm_setting = QStandardItem("{:2d}".format(item1["SSS2 setting"]))
+                    pwm_value = QStandardItem("{}".format(item1["Duty Cycle"]))
+                    pwm.setFlags(Qt.NoItemFlags | Qt.ItemIsEnabled)
+                    pwm_label.setFlags(Qt.NoItemFlags | Qt.ItemIsEnabled)
+                    pwm_setting.setFlags(Qt.NoItemFlags | Qt.ItemIsEnabled)
+                    freq = QStandardItem("Freq.")
+                    freq_label = QStandardItem("Frequency of PWM Signal (Hz)")
+                    freq_setting = QStandardItem("{:2d}".format(item1["SSS2 freq setting"]))
+                    freq_value = QStandardItem("{}".format(item1["Frequency"]))
+                    freq.setFlags(Qt.NoItemFlags | Qt.ItemIsEnabled)
+                    freq_label.setFlags(Qt.NoItemFlags | Qt.ItemIsEnabled)
+                    freq_setting.setFlags(Qt.NoItemFlags | Qt.ItemIsEnabled)
+                    self.settings_model[key0][key1] = {}
+                    self.settings_model[key0][key1]["Duty Cycle"]=pwm_value
+                    self.settings_model[key0][key1]["Frequency"]=freq_value
+                    thing.appendRow([pwm,pwm_label,pwm_setting,pwm_value])
+                    pwm.appendRow([freq,freq_label,freq_setting,freq_value])
+            if key0 ==  "HVAdjOut":
+                hvout = QStandardItem(key0)
+                hvout_label = QStandardItem("Regulated adjustable voltage (J24:19 and J18:11)")
+                hvout_setting = QStandardItem("{:2d}".format(item0["SSS2 setting"]))
+                hvout_value = QStandardItem("{}".format(item0["Value"]))
+                hvout.setFlags(Qt.NoItemFlags | Qt.ItemIsEnabled)
+                hvout_label.setFlags(Qt.NoItemFlags | Qt.ItemIsEnabled)
+                hvout_setting.setFlags(Qt.NoItemFlags | Qt.ItemIsEnabled)
+                self.settings_model[key0] = {}
+                self.settings_model[key0]["Value"]=hvout_value
+                thing.appendRow([hvout,hvout_label,hvout_setting,hvout_value])
+            self.settings_tree.model().appendRow(thing)
+
+        self.settings_tree.expandAll()
 
     def init_gui(self):
         """Builds GUI."""
-        
-
         self.grid_layout = QGridLayout()
         
         # Build common menu options
         menubar = self.menuBar()
 
-        self.tree = QTreeWidget()
+        self.tabs = QTabWidget()
+        self.tabs.setTabShape(QTabWidget.Triangular)
+
+         # Button to do something on the right
+        self.ignition_key_button =  QCheckBox("Ignition Key Switch")
+        self.ignition_key_button.setTristate(True)
+        self.ignition_key_button.clicked.connect(self.send_ignition_key_command)
         
-        self.grid_layout.addWidget(self.tree,0,0,1,1)
+        # self.settings_tab = QWidget()
+        # self.tabs.addTab(self.settings_tab,"Settings Table")
+        # table_tab_layout = QVBoxLayout()
+
+        # #Set up the Table Model/View/Proxy
+        # self.settings_table = QTableView()
+        # self.settings_data_model = SettingsTableModel()
+        # self.settings_table_proxy = Proxy()
+        # self.settings_data_model.setDataDict(self.settings_dict)
+        # self.settings_table_columns = ["ID","Description","Port","Wire Color","Desired Value","Actual Value","State","Application"]
+        # #self.pgn_resizable_rows = [0,1,2,3,4]
+        # self.settings_data_model.setDataHeader(self.settings_table_columns)
+        # self.settings_table_proxy.setSourceModel(self.settings_data_model)
+        # self.settings_table.setModel(self.settings_table_proxy)
+        # self.settings_table.setSelectionBehavior(QAbstractItemView.SelectRows)
+        # self.settings_table.setSortingEnabled(True)
+        # self.settings_table.setWordWrap(False)
+
+        # #setup the layout to be displayed in the box
+        # table_tab_layout.addWidget(self.settings_table)
+        # self.settings_tab.setLayout(table_tab_layout)
+        
+        self.tree_tab = QWidget()
+        self.tabs.addTab(self.tree_tab,"Settings Tree")
+        tree_tab_layout = QVBoxLayout()
+
+        #Set up the Table Model/View/Proxy
+        self.settings_tree = QTreeView(self)
+        self.settings_tree.setModel(QStandardItemModel())
+        self.settings_tree.setAlternatingRowColors(True)
+        #self.settings_tree.setSortingEnabled(True)
+        self.settings_tree.setHeaderHidden(False)
+        self.settings_tree.setSelectionBehavior(QAbstractItemView.SelectItems)
+        self.settings_tree.doubleClicked.connect(self.change_setting)
+        self.fill_tree();
+
+     
+        #setup the layout to be displayed in the box
+        tree_tab_layout.addWidget(self.settings_tree)
+        self.tree_tab.setLayout(tree_tab_layout)
+
+        
+
+
+        self.grid_layout.addWidget(self.ignition_key_button,0,0,1,1)
+        self.grid_layout.addWidget(self.tabs,1,0,1,1)
 
         main_widget = QWidget()
         main_widget.setLayout(self.grid_layout)
         self.setCentralWidget(main_widget)
 
-        self.tx_queue = queue.Queue(100000)
         
         return
         
 
-        # Button to do something on the right
-        self.ignition_key_button =  ttk.Checkbutton(self,name='ignition_key_switch',
-                                            text="Ignition Key Switch",
-                                            command=self.send_ignition_key_command)
-        self.ignition_key_button.grid(row=0,column=0, padx=10, pady =5,sticky="w")
-        self.ignition_key_button.state(['!alternate']) #Clears Check Box
+       
         
         
-        ttk.Label(self, text='USB/Serial Monitor:').grid(row=0,column=1,sticky=tk.E)
-        #self.serial_rx_entry = tk.Entry(self,width=60,name='serial_monitor')
-        self.serial_rx_entry.grid(row=0,column=2,sticky=tk.W+tk.E)
         
         self.tabs = ttk.Notebook(self, name='tabs')
         self.tabs.grid(row=1,column=0,columnspan=3,sticky=tk.W)
@@ -2895,18 +3127,16 @@ class SSS2Interface(QMainWindow):
 
                 
 
-    def send_ignition_key_command(self,event=None):
+    def send_ignition_key_command(self):
         commandString = "50,0"    
-        if self.ignition_key_button.instate(['selected']):
-            self.root.bell()
-            if messagebox.askyesno("Turn Key Switch On","Have you loaded or configured the desired settings?\n Would you like to turn on the key switch?"):
+        if self.ignition_key_button.isChecked():
+            print('\007') #Bell sound
+            response =  QMessageBox.question(self,"Turn Key Switch On","Have you loaded or configured the desired settings?\n Would you like to turn on the key switch?")
+            if response == QMessageBox.Yes:
                 commandString = "50,1"
-        self.tx_queue.put_nowait(commandString)
-     
-    def on_quit(self,event=None):
-        """Exits program."""
-        
-        destroyer()
+            else:
+                self.ignition_key_button.setChecked()
+        self.send_command(commandString)
       
 
     
