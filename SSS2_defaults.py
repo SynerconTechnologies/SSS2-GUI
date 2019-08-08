@@ -435,6 +435,7 @@ def get_default_settings():
     settings["DACs"]={}
     for i in range(1,9):
         settings["DACs"]["Vout{}".format(i)]={}
+    settings["DACs"]["HVAdjOut"]={}
 
     d=settings["DACs"]["Vout1"]
     d["Lowest Voltage"]=0
@@ -589,7 +590,26 @@ def get_default_settings():
     d["Alt. Pin Connect"]=False
     d["Name"] = "Vout H"
 
-    
+    d=settings["DACs"]["HVAdjOut"]
+    d["Shape"]="Constant" #Sine, Square, Triangle or Sawtooth
+    d["ECU Pins"]="ECU Pins"
+    d["Show Amplitude"]=False
+    d["Frequency"]=0
+    d["Show Frequency"]=False
+    d["Frequency"]= 0
+    d["Average Voltage"]=8.5
+    d["Lowest Voltage"]= 1.9
+    d["Pin"]= "J24:19"
+    d["Wire Color"]="TAN"
+    d["Port"]= " "
+    d["Alt. Pin"]=None
+    d["Alt. Pin Connect"]=False
+    d["Name"] ="High Current Regulator"
+    d["Application"]="Application Description"
+    d["SSS2 setting"] = 49
+    d["Highest Voltage"] = 11.0
+    d["Amplitude"]=0
+    d["Value"] = 100
 
             
     settings["PWMs"]={}
@@ -735,27 +755,7 @@ def get_default_settings():
     d["Alt. Pin Connect"]=None
     d["SSS2 alt setting"] =None
 
-    settings["HVAdjOut"]={}
-    d=settings["HVAdjOut"]
-    d["Shape"]="Constant" #Sine, Square, Triangle or Sawtooth
-    d["ECU Pins"]="ECU Pins"
-    d["Show Amplitude"]=False
-    d["Frequency"]=0
-    d["Show Frequency"]=False
-    d["Frequency"]= 0
-    d["Average Voltage"]=8.5
-    d["Lowest Voltage"]= 1.9
-    d["Pin"]= "J24:19"
-    d["Wire Color"]="TAN"
-    d["Port"]= " "
-    d["Alt. Pin"]=None
-    d["Alt. Pin Connect"]=False
-    d["Name"] ="High Current Regulator"
-    d["Application"]="Application Description"
-    d["SSS2 setting"] = 49
-    d["Highest Voltage"] = 11.0
-    d["Amplitude"]=0
-    d["Value"] = 100
+    
     
     settings["Switches"]={}
     s=settings["Switches"]

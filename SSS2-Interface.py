@@ -80,7 +80,7 @@ COMMAND_TYPE        =  0x10
 MESSAGE_TYPE        =  0x20
 ESCAPE_TYPE         =  0x80
 
-CONFIGSWITCH_1_LOC   = 33
+CONFIGSWITCH_1_LOC   = 34
 U1U2P0ASWITCH_MASK   = 0x01
 U3U4P0ASWITCH_MASK   = 0x02
 U5U6P0ASWITCH_MASK   = 0x04
@@ -90,7 +90,7 @@ U11U12P0ASWITCH_MASK = 0x20
 U13U14P0ASWITCH_MASK = 0x40
 U15U16P0ASWITCH_MASK = 0x80
 
-CONFIGSWITCH_2_LOC  = 34
+CONFIGSWITCH_2_LOC  = 33
 LINTOSHIELD_MASK    = 0x01
 LINTO16_MASK        = 0x02
 P10OR19SWITCH_MASK  = 0x04
@@ -110,7 +110,7 @@ PWM2_CONNECT_MASK = 0x20
 PWM3_CONNECT_MASK = 0x40
 PWM4_CONNECT_MASK = 0x80
 
-TERMSWITCHES_LOC  = 61
+TERMSWITCHES_LOC  = 60
 CAN0TERM2_MASK    = 0x01
 CAN1TERM2_MASK    = 0x02
 CAN2TERM2_MASK    = 0x04
@@ -298,8 +298,8 @@ class SSS2Interface(QMainWindow):
                 self.ignition_key_button.setEnabled(False)
 
     def parse_status_message_one(self, rxmessage):
-        print(rxmessage)
-
+        """
+        """
         self.settings_dict["Potentiometers"]["Group A"]["Pairs"]["U1U2"]["Pots"]["U1"]["Wiper Position"]    = rxmessage[1]
         self.settings_dict["Potentiometers"]["Group A"]["Pairs"]["U1U2"]["Pots"]["U2"]["Wiper Position"]    = rxmessage[2]
         self.settings_dict["Potentiometers"]["Group A"]["Pairs"]["U3U4"]["Pots"]["U3"]["Wiper Position"]    = rxmessage[3]
@@ -342,6 +342,9 @@ class SSS2Interface(QMainWindow):
         self.settings_dict["DACs"]["Vout6"]["Average Voltage"] = struct.unpack('<H',rxmessage[27:29])[0]
         self.settings_dict["DACs"]["Vout7"]["Average Voltage"] = struct.unpack('<H',rxmessage[29:31])[0]
         self.settings_dict["DACs"]["Vout8"]["Average Voltage"] = struct.unpack('<H',rxmessage[31:33])[0]
+        self.settings_dict["DACs"]["HVAdjOut"]["Average Voltage"] =  rxmessage[HVADJOUT_LOC]
+        
+            
         self.settings_model["DACs"]["Vout1"]["Average Voltage"].setText("{:d}".format(struct.unpack('<H',rxmessage[17:19])[0]))
         self.settings_model["DACs"]["Vout2"]["Average Voltage"].setText("{:d}".format(struct.unpack('<H',rxmessage[19:21])[0]))
         self.settings_model["DACs"]["Vout3"]["Average Voltage"].setText("{:d}".format(struct.unpack('<H',rxmessage[21:23])[0]))
@@ -350,6 +353,7 @@ class SSS2Interface(QMainWindow):
         self.settings_model["DACs"]["Vout6"]["Average Voltage"].setText("{:d}".format(struct.unpack('<H',rxmessage[27:29])[0]))
         self.settings_model["DACs"]["Vout7"]["Average Voltage"].setText("{:d}".format(struct.unpack('<H',rxmessage[29:31])[0]))
         self.settings_model["DACs"]["Vout8"]["Average Voltage"].setText("{:d}".format(struct.unpack('<H',rxmessage[31:33])[0]))
+        self.settings_model["DACs"]["HVAdjOut"]["Average Voltage"].setText("{:0.2f} volts".format(self.getHVOUT_voltage(rxmessage[HVADJOUT_LOC])))
 
         self.settings_dict["Potentiometers"]["Group A"]["Pairs"]["U1U2"]["Terminal A Voltage"]   = bool(rxmessage[CONFIGSWITCH_1_LOC] & U1U2P0ASWITCH_MASK)
         self.settings_dict["Potentiometers"]["Group A"]["Pairs"]["U3U4"]["Terminal A Voltage"]   = bool(rxmessage[CONFIGSWITCH_1_LOC] & U3U4P0ASWITCH_MASK)
@@ -360,31 +364,47 @@ class SSS2Interface(QMainWindow):
         self.settings_dict["Potentiometers"]["Group B"]["Pairs"]["U13U14"]["Terminal A Voltage"] = bool(rxmessage[CONFIGSWITCH_1_LOC] & U13U14P0ASWITCH_MASK)
         self.settings_dict["Potentiometers"]["Group B"]["Pairs"]["U15U16"]["Terminal A Voltage"] = bool(rxmessage[CONFIGSWITCH_1_LOC] & U15U16P0ASWITCH_MASK)
 
-        self.settings_dict["Switches"]["Port 10 or 19"]["State"]              = bool(rxmessage[CONFIGSWITCH_2_LOC] & P10OR19SWITCH_MASK)
-        self.settings_dict["Switches"]["Port 15 or 18"]["State"]              = bool(rxmessage[CONFIGSWITCH_2_LOC] & P15OR18SWITCH_MASK)
-        self.settings_dict["Switches"]["CAN2 or J1708"]["State"]              = bool(rxmessage[CONFIGSWITCH_2_LOC] & J1708ORCAN1_MASK)
-        self.settings_dict["Switches"]["PWMs or CAN2"]["State"]               = bool(rxmessage[CONFIGSWITCH_2_LOC] & CAN2CONNECT_MASK)
-        self.settings_dict["Switches"]["CAN0 Resistor 1"]["State"]            = bool(rxmessage[PWMSWITCHES_LOC] & CAN0TERM1_MASK)
-        self.settings_dict["Switches"]["CAN2 Resistor 1"]["State"]            = bool(rxmessage[PWMSWITCHES_LOC] & CAN1TERM1_MASK)
-        self.settings_dict["Switches"]["CAN1 Resistor 1"]["State"]            = bool(rxmessage[PWMSWITCHES_LOC] & CAN2TERM1_MASK)
-        self.settings_dict["Switches"]["LIN Master Pullup Resistor"]["State"] = bool(rxmessage[PWMSWITCHES_LOC] & LIN_PULLUP_MASK)
-        self.settings_dict["Switches"]["PWM3 or 12V"]["State"]                = bool(rxmessage[HBRIDGE_LOC] & TWELVE_OUT_1_MASK)
-        self.settings_dict["Switches"]["12V Out 2"]["State"]                  = bool(rxmessage[HBRIDGE_LOC] & TWELVE_OUT_2_MASK)
-        self.settings_dict["Switches"]["PWM4 or Ground"]["State"]             = bool(rxmessage[HBRIDGE_LOC] & GROUND_OUT_1_MASK)
-        self.settings_dict["Switches"]["Ground Out 2"]["State"]               = bool(rxmessage[HBRIDGE_LOC] & GROUND_OUT_2_MASK)
-        self.settings_dict["Switches"]["PWM1 Connect"]["State"]               = bool(rxmessage[PWMSWITCHES_LOC] & PWM1_CONNECT_MASK)
-        self.settings_dict["Switches"]["PWM2 Connect"]["State"]               = bool(rxmessage[PWMSWITCHES_LOC] & PWM2_CONNECT_MASK)
-        self.settings_dict["Switches"]["PWM3 Connect"]["State"]               = bool(rxmessage[PWMSWITCHES_LOC] & PWM3_CONNECT_MASK)
-        self.settings_dict["Switches"]["PWM4 Connect"]["State"]               = bool(rxmessage[PWMSWITCHES_LOC] & PWM4_CONNECT_MASK)
-        self.settings_dict["Switches"]["LIN to SHLD"]["State"]                = bool(rxmessage[CONFIGSWITCH_2_LOC] & LINTOSHIELD_MASK)
-        self.settings_dict["Switches"]["LIN to Port 16"]["State"]             = bool(rxmessage[CONFIGSWITCH_2_LOC] & LINTO16_MASK)
-        self.settings_dict["Switches"]["PWM4_28 Connect"]["State"]            = bool(rxmessage[TERMSWITCHES_LOC] & PWM4_P28_MASK)
-        self.settings_dict["Switches"]["PWM5 Connect"]["State"]               = bool(rxmessage[TERMSWITCHES_LOC] & PWM5_CONNECT_MASK)
-        self.settings_dict["Switches"]["PWM6 Connect"]["State"]               = bool(rxmessage[TERMSWITCHES_LOC] & PWM6_CONNECT_MASK)
-        self.settings_dict["Switches"]["CAN1 Connect"]["State"]               = bool(rxmessage[TERMSWITCHES_LOC] & CAN1_CONNECT_MASK)
-        self.settings_dict["Switches"]["CAN0 Resistor 2"]["State"]            = bool(rxmessage[TERMSWITCHES_LOC] & CAN0TERM2_MASK)
-        self.settings_dict["Switches"]["CAN2 Resistor 2"]["State"]            = bool(rxmessage[TERMSWITCHES_LOC] & CAN2TERM2_MASK)
-        self.settings_dict["Switches"]["CAN1 Resistor 2"]["State"]            = bool(rxmessage[TERMSWITCHES_LOC] & CAN1TERM2_MASK)
+        s = self.settings_dict["Switches"]
+        s["Port 10 or 19"]["State"]              = bool(rxmessage[CONFIGSWITCH_2_LOC] & P10OR19SWITCH_MASK)
+        s["Port 15 or 18"]["State"]              = bool(rxmessage[CONFIGSWITCH_2_LOC] & P15OR18SWITCH_MASK)
+        s["CAN2 or J1708"]["State"]              = bool(rxmessage[CONFIGSWITCH_2_LOC] & J1708ORCAN1_MASK)
+        s["PWMs or CAN2"]["State"]               = bool(rxmessage[CONFIGSWITCH_2_LOC] & CAN2CONNECT_MASK)
+        s["CAN0 Resistor 1"]["State"]            = bool(rxmessage[PWMSWITCHES_LOC] & CAN0TERM1_MASK)
+        s["CAN1 Resistor 1"]["State"]            = bool(rxmessage[PWMSWITCHES_LOC] & CAN1TERM1_MASK)
+        s["CAN2 Resistor 1"]["State"]            = bool(rxmessage[PWMSWITCHES_LOC] & CAN2TERM1_MASK)
+        s["LIN Master Pullup Resistor"]["State"] = bool(rxmessage[PWMSWITCHES_LOC] & LIN_PULLUP_MASK)
+        s["PWM3 or 12V"]["State"]                = bool(rxmessage[HBRIDGE_LOC] & TWELVE_OUT_1_MASK)
+        s["12V Out 2"]["State"]                  = bool(rxmessage[HBRIDGE_LOC] & TWELVE_OUT_2_MASK)
+        s["PWM4 or Ground"]["State"]             = bool(rxmessage[HBRIDGE_LOC] & GROUND_OUT_1_MASK)
+        s["Ground Out 2"]["State"]               = bool(rxmessage[HBRIDGE_LOC] & GROUND_OUT_2_MASK)
+        s["PWM1 Connect"]["State"]               = bool(rxmessage[PWMSWITCHES_LOC] & PWM1_CONNECT_MASK)
+        s["PWM2 Connect"]["State"]               = bool(rxmessage[PWMSWITCHES_LOC] & PWM2_CONNECT_MASK)
+        s["PWM3 Connect"]["State"]               = bool(rxmessage[PWMSWITCHES_LOC] & PWM3_CONNECT_MASK)
+        s["PWM4 Connect"]["State"]               = bool(rxmessage[PWMSWITCHES_LOC] & PWM4_CONNECT_MASK)
+        s["LIN to SHLD"]["State"]                = bool(rxmessage[CONFIGSWITCH_2_LOC] & LINTOSHIELD_MASK)
+        s["LIN to Port 16"]["State"]             = bool(rxmessage[CONFIGSWITCH_2_LOC] & LINTO16_MASK)
+       
+
+        sm = self.settings_model["Switches"]
+        sm["Port 10 or 19"]["State"].setText(             "{}".format(s["Port 10 or 19"]["State"] ))             
+        sm["Port 15 or 18"]["State"].setText(             "{}".format(s["Port 15 or 18"]["State"] ))             
+        sm["CAN2 or J1708"]["State"].setText(             "{}".format(s["CAN2 or J1708"]["State"] ))           
+        sm["PWMs or CAN2"]["State"].setText(              "{}".format(s["PWMs or CAN2"]["State"]))            
+        sm["CAN0 Resistor 1"]["State"].setText(           "{}".format(s["CAN0 Resistor 1"]["State"]))        
+        sm["CAN2 Resistor 1"]["State"].setText(           "{}".format(s["CAN2 Resistor 1"]["State"]))        
+        sm["CAN1 Resistor 1"]["State"].setText(           "{}".format(s["CAN1 Resistor 1"]["State"] ))        
+        sm["LIN Master Pullup Resistor"]["State"].setText("{}".format(s["LIN Master Pullup Resistor"]["State"] ))
+        sm["PWM3 or 12V"]["State"].setText(               "{}".format(s["PWM3 or 12V"]["State"] ))            
+        sm["12V Out 2"]["State"].setText(                 "{}".format(s["12V Out 2"]["State"]))              
+        sm["PWM4 or Ground"]["State"].setText(            "{}".format(s["PWM4 or Ground"]["State"]))         
+        sm["Ground Out 2"]["State"].setText(              "{}".format(s["Ground Out 2"]["State"]))           
+        sm["PWM1 Connect"]["State"].setText(              "{}".format(s["PWM1 Connect"]["State"]))           
+        sm["PWM2 Connect"]["State"].setText(              "{}".format(s["PWM2 Connect"]["State"]))           
+        sm["PWM3 Connect"]["State"].setText(              "{}".format(s["PWM3 Connect"]["State"]))           
+        sm["PWM4 Connect"]["State"].setText(              "{}".format(s["PWM4 Connect"]["State"]))           
+        sm["LIN to SHLD"]["State"].setText(               "{}".format(s["LIN to SHLD"]["State"] ))          
+        sm["LIN to Port 16"]["State"].setText(            "{}".format(s["LIN to Port 16"]["State"]))         
+           
 
         self.settings_dict["PWMs"]["PWM1"]["Duty Cycle"] = struct.unpack('<H',rxmessage[35:37])[0]
         self.settings_dict["PWMs"]["PWM2"]["Duty Cycle"] = struct.unpack('<H',rxmessage[37:39])[0]
@@ -392,6 +412,7 @@ class SSS2Interface(QMainWindow):
         self.settings_dict["PWMs"]["PWM4"]["Duty Cycle"] = struct.unpack('<H',rxmessage[41:43])[0]
         self.settings_dict["PWMs"]["PWM5"]["Duty Cycle"] = struct.unpack('<H',rxmessage[43:45])[0]
         self.settings_dict["PWMs"]["PWM6"]["Duty Cycle"] = struct.unpack('<H',rxmessage[45:47])[0]
+        
         self.settings_model["PWMs"]["PWM1"]["Duty Cycle"].setText("{:0.2f}%".format(struct.unpack('<H',rxmessage[35:37])[0]/4096*100))
         self.settings_model["PWMs"]["PWM2"]["Duty Cycle"].setText("{:0.2f}%".format(struct.unpack('<H',rxmessage[37:39])[0]/4096*100))
         self.settings_model["PWMs"]["PWM3"]["Duty Cycle"].setText("{:0.2f}%".format(struct.unpack('<H',rxmessage[39:41])[0]/4096*100))
@@ -425,13 +446,12 @@ class SSS2Interface(QMainWindow):
         self.settings_model["PWMs"]["PWM5"]["Frequency"].setText("{:d}".format(struct.unpack('<H',rxmessage[58:60])[0]))
         self.settings_model["PWMs"]["PWM6"]["Frequency"].setText("{:d}".format(struct.unpack('<H',rxmessage[58:60])[0]))
         
-        self.settings_dict["HVAdjOut"]["Value"] =  rxmessage[HVADJOUT_LOC]
-        self.settings_model["HVAdjOut"]["Value"].setText("{:0.2f}V".format(self.getHVOUT_voltage(rxmessage[HVADJOUT_LOC])))
 
-        self.update_dict_display()
+        if self.settings_dict["Switches"]["Ignition"]["State"]:
+            self.ignition_key_button.setCheckState(Qt.Checked)
+        else:
+            self.ignition_key_button.setCheckState(Qt.Unchecked)
 
-        #print(" ".join(["{:02X}".format(b) for b in rxmessage[:61]]))
-        #print(self.settings_dict["Switches"]["Ignition"]["State"])
     def getHVOUT_voltage(self, reading):
         return reading*0.049441804 + 1.94
 
@@ -439,17 +459,26 @@ class SSS2Interface(QMainWindow):
         return "{:d}".format(int((voltage-1.94)*20.22579915))
         
     def parse_status_message_two(self, rxmessage):
-        pass
+        s = self.settings_dict["Switches"]
+        s["PWM4_28 Connect"]["State"]            = bool(rxmessage[TERMSWITCHES_LOC] & PWM4_P28_MASK)
+        s["PWM5 Connect"]["State"]               = bool(rxmessage[TERMSWITCHES_LOC] & PWM5_CONNECT_MASK)
+        s["PWM6 Connect"]["State"]               = bool(rxmessage[TERMSWITCHES_LOC] & PWM6_CONNECT_MASK)
+        s["CAN1 Connect"]["State"]               = bool(rxmessage[TERMSWITCHES_LOC] & CAN1_CONNECT_MASK)
+        s["CAN0 Resistor 2"]["State"]            = bool(rxmessage[TERMSWITCHES_LOC] & CAN0TERM2_MASK)
+        s["CAN2 Resistor 2"]["State"]            = bool(rxmessage[TERMSWITCHES_LOC] & CAN2TERM2_MASK)
+        s["CAN1 Resistor 2"]["State"]            = bool(rxmessage[TERMSWITCHES_LOC] & CAN1TERM2_MASK)
+
+        sm = self.settings_model["Switches"]
+        sm["PWM4_28 Connect"]["State"].setText(           "{}".format(s["PWM4_28 Connect"]["State"]))        
+        sm["PWM5 Connect"]["State"].setText(              "{}".format(s["PWM5 Connect"]["State"]))           
+        sm["PWM6 Connect"]["State"].setText(              "{}".format(s["PWM6 Connect"]["State"]))           
+        sm["CAN1 Connect"]["State"].setText(              "{}".format(s["CAN1 Connect"]["State"]))           
+        sm["CAN0 Resistor 2"]["State"].setText(           "{}".format(s["CAN0 Resistor 2"]["State"]))        
+        sm["CAN2 Resistor 2"]["State"].setText(           "{}".format(s["CAN2 Resistor 2"]["State"]))        
+        sm["CAN1 Resistor 2"]["State"].setText(           "{}".format(s["CAN1 Resistor 2"]["State"]))     
     
     def parse_status_message_three(self, rxmessage):
         pass
-
-    def update_dict_display(self):
-        if self.settings_dict["Switches"]["Ignition"]["State"]:
-            self.ignition_key_button.setCheckState(Qt.Checked)
-        else:
-            self.ignition_key_button.setCheckState(Qt.Unchecked)
-
 
     def change_setting(self, index):
         print("Change Setting")
@@ -457,7 +486,7 @@ class SSS2Interface(QMainWindow):
         print(index.row())
         print(index.column())
 
-        print(self.settings_tree.model())
+        #print(self.settings_tree.model())
     
     def fill_tree(self):
         self.settings_tree.model().setHorizontalHeaderLabels(['Item', 'Description', "Setting", 'Value'])
@@ -531,17 +560,16 @@ class SSS2Interface(QMainWindow):
                         group.appendRow([pair,pair_label,pair_setting,pair_value])
                     thing.appendRow([group,group_label,group_setting,group_value])        
                 elif key0 == "DACs":
-                    vout = QStandardItem(key1)
-                    vout_label = QStandardItem("Millivolts for {} ({})".format(item1["Name"],item1["Pin"]))
-                    vout_setting = QStandardItem("{:2d}".format(item1["SSS2 setting"]))
-                    vout_value = QStandardItem("{}".format(item1["Average Voltage"]))
-                    
-                    vout.setFlags(Qt.NoItemFlags | Qt.ItemIsEnabled)
-                    vout_label.setFlags(Qt.NoItemFlags | Qt.ItemIsEnabled)
-                    vout_setting.setFlags(Qt.NoItemFlags | Qt.ItemIsEnabled)
-                    self.settings_model[key0][key1] = {}
-                    self.settings_model[key0][key1]["Average Voltage"]=vout_value
-                    thing.appendRow([vout,vout_label,vout_setting,vout_value])
+                        vout = QStandardItem(key1)
+                        vout_label = QStandardItem("Voltage for {} ({})".format(item1["Name"],item1["Pin"]))
+                        vout_setting = QStandardItem("{:2d}".format(item1["SSS2 setting"]))
+                        vout_value = QStandardItem("{}".format(item1["Average Voltage"]))  
+                        vout.setFlags(Qt.NoItemFlags | Qt.ItemIsEnabled)
+                        vout_label.setFlags(Qt.NoItemFlags | Qt.ItemIsEnabled)
+                        vout_setting.setFlags(Qt.NoItemFlags | Qt.ItemIsEnabled)
+                        self.settings_model[key0][key1] = {}
+                        self.settings_model[key0][key1]["Average Voltage"]=vout_value
+                        thing.appendRow([vout,vout_label,vout_setting,vout_value])                    
                 elif key0 == "PWMs":
                     pwm = QStandardItem(key1)
                     pwm_label = QStandardItem("Pulse Width Modulated Signal {} Duty Cycle ({})".format(item1["Name"],item1["Pin"]))
@@ -562,17 +590,19 @@ class SSS2Interface(QMainWindow):
                     self.settings_model[key0][key1]["Frequency"]=freq_value
                     thing.appendRow([pwm,pwm_label,pwm_setting,pwm_value])
                     pwm.appendRow([freq,freq_label,freq_setting,freq_value])
-            if key0 ==  "HVAdjOut":
-                hvout = QStandardItem(key0)
-                hvout_label = QStandardItem("Regulated adjustable voltage (J24:19 and J18:11)")
-                hvout_setting = QStandardItem("{:2d}".format(item0["SSS2 setting"]))
-                hvout_value = QStandardItem("{}".format(item0["Value"]))
-                hvout.setFlags(Qt.NoItemFlags | Qt.ItemIsEnabled)
-                hvout_label.setFlags(Qt.NoItemFlags | Qt.ItemIsEnabled)
-                hvout_setting.setFlags(Qt.NoItemFlags | Qt.ItemIsEnabled)
-                self.settings_model[key0] = {}
-                self.settings_model[key0]["Value"]=hvout_value
-                thing.appendRow([hvout,hvout_label,hvout_setting,hvout_value])
+                elif key0 == "Switches":
+                    switch = QStandardItem(key1)
+                    try:
+                        switch_label = QStandardItem("{}".format(item1["Label"]))
+                    except KeyError:
+                        switch_label = QStandardItem("{} or {}".format(item1["Label A"], item1["Label B"]))
+                    switch_setting = QStandardItem("{:2d}".format(item1["SSS2 setting"]))
+                    switch_value = QStandardItem("{}".format(item1["State"]))
+                    self.settings_model[key0][key1] = {}
+                    self.settings_model[key0][key1]["State"]=switch_value
+                    switch_value.setCheckable(True)
+                    thing.appendRow([switch,switch_label,switch_setting,switch_value])
+            
             self.settings_tree.model().appendRow(thing)
 
         self.settings_tree.expandAll()
