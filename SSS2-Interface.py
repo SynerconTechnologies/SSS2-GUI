@@ -502,28 +502,58 @@ class SSS2Interface(QMainWindow):
     def parse_status_message_three(self, rxmessage):
         pass
 
+    def clicked_setting(self, index):
+        parent = index.parent()
+        model = parent.model()
+        try:
+            if model.itemFromIndex(index).isCheckable():
+                setting_index = index.siblingAtColumn(2)
+                setting_number = int(model.itemFromIndex(setting_index).text())
+                print("Checkable Setting Index: {}".format(setting_number))
+                if model.itemFromIndex(index).checkState() == Qt.Checked:
+                   setting_value = 1
+                else:
+                   setting_value = 0
+                print("Setting Value: {}".format(setting_value))
+                command_string = "{:d},{:d}".format(setting_number,setting_value)
+                self.send_command(command_string) 
+        except:
+            print(traceback.format_exc())
+        self.edit_settings = False
+
+
+
     def change_setting(self, item):
         
+        # try:
+        #     if item.isCheckable():
+        #         self.edit_settings = True
+        # except AttributeError:
+        #     pass
         
         if self.edit_settings:
-            index=item.index()
+            try:
+                index = item.index()
+            except:
+                index = item
             parent = index.parent()
             model = parent.model()
-            print("Index")
-            print("Change Setting")
-            print("Index: {}".format(index))
-            print("Parent: {}".format(parent))
-            row = index.row()
-            print("Row: {}".format(row))
-            col = index.column()
-            print("Col: {}".format(col))
-
+            # print("Index")
+            # print("Change Setting")
+            # print("Index: {}".format(index))
+            # print("Parent: {}".format(parent))
+            # row = index.row()
+            # print("Row: {}".format(row))
+            # col = index.column()
+            # print("Col: {}".format(col))
             try:
-                setting_index = index.siblingAtColumn(2)    
+                setting_index = index.siblingAtColumn(2)
                 setting_number = int(model.itemFromIndex(setting_index).text())
                 print("Setting Index: {}".format(setting_number))
+                print(model.itemFromIndex(index))
+                print(model.itemFromIndex(index).checkState())
                 if setting_number > 16 and setting_number < 25: #Voltage out
-                    setting_value = int(float(model.itemFromIndex(index).text())*1000)
+                    setting_value = int(float(model.itemFromIndex(index).text())*1000)  
                 else:
                     setting_value = int(model.itemFromIndex(index).text())
                 print("Setting Value: {}".format(setting_value))
@@ -657,10 +687,13 @@ class SSS2Interface(QMainWindow):
                     switch.setFlags(Qt.NoItemFlags | Qt.ItemIsEnabled)
                     switch_label.setFlags(Qt.NoItemFlags | Qt.ItemIsEnabled)
                     switch_setting.setFlags(Qt.NoItemFlags | Qt.ItemIsEnabled)
+                    switch_value.setFlags(Qt.NoItemFlags | Qt.ItemIsEnabled)
                     self.settings_model[key0][key1] = {}
                     self.settings_model[key0][key1]["State"]=switch_value
 
                     switch_value.setCheckable(True)
+
+        
 
                     thing.appendRow([switch,switch_label,switch_setting,switch_value])
             
@@ -715,13 +748,13 @@ class SSS2Interface(QMainWindow):
         #Set up the Table Model/View/Proxy
         self.settings_tree = QTreeView(self)
         self.tree_model = QStandardItemModel()
-        self.tree_model.itemChanged.connect(self.change_setting)
         self.settings_tree.setModel(self.tree_model)
         self.settings_tree.setAlternatingRowColors(True)
         #self.settings_tree.setSortingEnabled(True)
         self.settings_tree.setHeaderHidden(False)
         self.settings_tree.setSelectionBehavior(QAbstractItemView.SelectItems)
         self.settings_tree.doubleClicked.connect(self.enable_edit)
+        self.settings_tree.clicked.connect(self.clicked_setting)
         self.fill_tree();
 
      
