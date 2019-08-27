@@ -53,7 +53,7 @@ import usb.core
 import usb.util
 import struct
 import json
-import crc16
+#import crc16
 import traceback
 from operator import itemgetter
 import struct
@@ -578,9 +578,6 @@ class SSS2Interface(QMainWindow):
     def parse_status_message_two(self, rxmessage):
         s  = self.settings_dict["Potentiometers"]
         sm = self.settings_model["Potentiometers"]
-         # "Term. A Connect": true,
-         #                    "Term. B Connect": true,
-         #                    "Wiper Connect": true,
         for i,group,pair,pot in zip(range(1,17),ALL_GROUPS,ALL_PAIRS,ALL_POTS):
             state = bool(rxmessage[i] & WIPER_TCON_MASK)
             s[group]["Pairs"][pair]["Pots"][pot]["Wiper Connect"]   = state
