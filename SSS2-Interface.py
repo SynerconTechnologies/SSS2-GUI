@@ -53,7 +53,7 @@ import usb.core
 import usb.util
 import struct
 import json
-import crc16
+#import crc16
 import traceback
 from operator import itemgetter
 import struct

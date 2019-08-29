@@ -1,10 +1,13 @@
 import usb.core
 import usb.util
 import struct
-import crc16
+#import crc16
 import traceback
 import time
 
+# import usb.backend.libusb1
+# backend = usb.backend.libusb1.get_backend(find_library=lambda x: "libusb0_x86.dll")
+# print(backend)
 # must have usblib installed.
 
 USB_HID_OUTPUT_ENDPOINT_ADDRESS = 0x04
