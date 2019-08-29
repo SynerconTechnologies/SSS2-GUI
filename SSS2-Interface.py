@@ -241,7 +241,10 @@ ALL_GROUPS = ["Group A",
               "Group B",
               "Group B",
               "Group B",
-              "Group B"]
+              "Group B",
+              "Others",
+              "Others",
+              "Others"]
 
 ALL_PAIRS = ["U1U2",
              "U1U2",
@@ -258,7 +261,10 @@ ALL_PAIRS = ["U1U2",
              "U13U14",
              "U13U14",
              "U15U16",
-             "U15U16"]
+             "U15U16",
+             "I2CPots",
+             "I2CPots",
+             "I2CPots"]
 
 ALL_POTS = ["U1",
             "U2",
@@ -275,7 +281,10 @@ ALL_POTS = ["U1",
             "U13",
             "U14",
             "U15",
-            "U16"]
+            "U16",
+            "U34",
+            "U36",
+            "U37"]
 
 
 def crc16_ccitt(crc, data):
@@ -581,7 +590,8 @@ class SSS2Interface(QMainWindow):
          # "Term. A Connect": true,
          #                    "Term. B Connect": true,
          #                    "Wiper Connect": true,
-        for i,group,pair,pot in zip(range(1,17),ALL_GROUPS,ALL_PAIRS,ALL_POTS):
+        # Iterate though all the bytes in the incomming message
+        for i,group,pair,pot in zip(range(1,20),ALL_GROUPS,ALL_PAIRS,ALL_POTS):
             state = bool(rxmessage[i] & WIPER_TCON_MASK)
             s[group]["Pairs"][pair]["Pots"][pot]["Wiper Connect"]   = state
             if state:
@@ -636,12 +646,14 @@ class SSS2Interface(QMainWindow):
                 else:
                    setting_value = 0
                 #print("Setting Value: {}".format(setting_value))
-                if (setting_number >= 51 and setting_number <= 66):# or (setting_index >= 78 and setting_index <= 80):
+                if (setting_number >= 51 and setting_number <= 66) or (setting_number >= 78 and setting_number <= 80):
                     description_index = index.siblingAtColumn(1)
                     description = model.itemFromIndex(description_index).text()
                     print(description)
-                    current_value = (self.status_message_2[setting_number-50])
-                   
+                    if (setting_number >= 51 and setting_number <= 66):
+                        current_value = (self.status_message_2[setting_number-50])
+                    else:
+                        current_value = (self.status_message_2[setting_number-61])
                     if "A" in description:
                         value = TERMA_TCON_MASK
                     elif "W" in description:
@@ -686,6 +698,8 @@ class SSS2Interface(QMainWindow):
                 #print(model.itemFromIndex(index).checkState())
                 if setting_number > 16 and setting_number < 25: #Voltage out
                     setting_value = int(float(model.itemFromIndex(index).text())*1000)  
+                elif setting_number == 49:
+                    setting_value = int(self.setHVOUT_voltage(model.itemFromIndex(index).text()))
                 else:
                     setting_value = int(model.itemFromIndex(index).text())
                 #print("Setting Value: {}".format(setting_value))
@@ -693,6 +707,9 @@ class SSS2Interface(QMainWindow):
                 self.send_command(command_string)            
             except (AttributeError,TypeError):
                 #Some of the items do not have siblings.
+                print(traceback.format_exc())
+            except (ValueError):
+                #Clicking on a thing that doesn't have a check box
                 print(traceback.format_exc())
             
             # The edit_settings flag is to ensure the user is the one editing the settings
