@@ -33,6 +33,9 @@ from PyQt5.QtWidgets import (QMainWindow,
 from PyQt5.QtCore import Qt, QTimer, QAbstractTableModel, QCoreApplication, QSize, QAbstractItemModel
 from PyQt5.QtGui import QIcon, QStandardItemModel, QStandardItem
 
+import winshell
+import hashlib
+
 from TableModel import *
 
 import tkinter as tk
@@ -69,8 +72,11 @@ logger.debug("Starting SSS2 Interface")
 from SSS2_defaults import *
 
 #### CHANGE THIS to False FOR PRODUCTION #####
+release_title = "SSS2 Interface"
 release_date = "1 September 2019"
 release_version = "2.0.0"
+
+MAX_COMMAND_STRING_LENGTH = 50
 
 USB_HID_OUTPUT_ENDPOINT_ADDRESS = 0x04
 USB_HID_INPUT_ENDPOINT_ADDRESS = 0x83
@@ -297,12 +303,17 @@ def crc16_ccitt(crc, data):
         lsb = (x ^ (x << 5)) & 255
     return bytes([lsb, msb])
 
+def calculate_sha256(filename):
+    with open(filename,'rb') as infile:
+        contents = infile.read()
+    return hashlib.sha256(contents).hexdigest()
+
 class USBThread(threading.Thread):
     def __init__(self, parent, rx_queue):
         self.root = parent
         threading.Thread.__init__(self)
         self.rx_queue = rx_queue
-        self.root.signal = True
+        self.root.usb_signal = True
 
     def run(self):
         while True:
@@ -312,50 +323,58 @@ class USBThread(threading.Thread):
                 calculated_crc = crc16_ccitt(0xFFFF, data_stream[0:62])
                 assert data_stream_crc == calculated_crc
                 self.rx_queue.put(data_stream[:62])
-                self.root.signal = True
+                self.root.usb_signal = True
             except usb.core.USBError:
                 break
             except AttributeError:
                 break
             except:
-                print(traceback.format_exc())
+                logger.debug(traceback.format_exc())
                 break
         logger.debug("USBThread Ending.")
         usb.util.release_interface(self.root.sss,self.root.sss_interface)
-        self.root.signal = False
+        self.root.usb_signal = False
 
 class SSS2Interface(QMainWindow):
     def __init__(self):
         super(SSS2Interface, self).__init__()
         self.settings_dict = get_default_settings()
-        with open("default_setting.json",'w') as f:
-            json.dump(self.settings_dict,f,indent=4,sort_keys=True)
-        self.wiring_dict = get_default_wiring()
-        self.setWindowTitle('Smart Sensor Simulator Interface')
-        self.baudrates = ["250000","500000","666666","125000","1000000","5000","10000","20000","31520","333333","40000","50000","80000","100000","200000"]
-        self.can2_baud_value = self.baudrates[0]
-        self.can1_baud_value=self.baudrates[0]
-        self.j1939_baud_value=self.baudrates[0]
-        self.signal = False
+        # self.baudrates = ["250000","500000","666666","125000","1000000","5000","10000","20000","31520","333333","40000","50000","80000","100000","200000"]
+        # self.can2_baud_value = self.baudrates[0]
+        # self.can1_baud_value=self.baudrates[0]
+        # self.j1939_baud_value=self.baudrates[0]
+        self.usb_signal = False
         self.last_usb_message_time = time.time()
         self.edit_settings = False
+        self.load_settings = False
         self.status_message_2 = b'\x00'*64
-
+        self.export_path =  os.path.join(winshell.my_documents(), "SSS2")
+        if not os.path.isdir(self.export_path):
+            os.makedirs(self.export_path)
+        self.filename = "default.SSS2"
+        with open(os.path.join(self.export_path,self.filename),'w') as f:
+            json.dump(self.settings_dict,f,indent=4,sort_keys=True)
+        self.setWindowTitle('{} {} - {}'.format(release_title,
+                                                release_version,
+                                                self.filename))
+        
         read_timer = QTimer(self)
         read_timer.timeout.connect(self.read_usb_hid)
-        read_timer.start(100) #milliseconds
+        read_timer.start(109) #milliseconds
 
         self.init_gui()
         self.show()
+        self.setup_usb()
         
     def send_command(self, command_string):
-        if self.signal:
+        if self.usb_signal:
             data = b'\x10' + command_string.encode('ascii')
             padded_data = data + bytes([0 for i in range(62 - len(data))])
             crc = crc16_ccitt(0xFFFF, bytes(padded_data[0:62]))
             data_to_send = bytes(padded_data[0:62]) + crc
             self.sss.write(USB_HID_OUTPUT_ENDPOINT_ADDRESS, data_to_send, USB_HID_TIMEOUT)
-            print(command_string)
+            logger.debug(command_string)
+            time.sleep(0.001)
         else:
             logger.debug("Failed to Send. No USB.")
 
@@ -371,7 +390,7 @@ class SSS2Interface(QMainWindow):
             #logger.debug("No SSS2 Present.")
             return False
 
-        print(self.sss)
+        logger.debug(self.sss)
         self.sss.set_configuration()
         # get an endpoint instance
         self.usb_cfg = self.sss.get_active_configuration()
@@ -391,10 +410,42 @@ class SSS2Interface(QMainWindow):
         self.read_usb_hid_thread = USBThread(self, self.rx_queue)
         self.read_usb_hid_thread.setDaemon(True) #needed to close the thread when the application closes.
         self.read_usb_hid_thread.start()
+
+        sm = self.settings_model["Potentiometers"]
+        # Iterate though all the bytes in the incomming message
+        for group,pair,pot in zip(ALL_GROUPS,ALL_PAIRS,ALL_POTS):
+            sm[group]["Pairs"][pair]["Pots"][pot]["Wiper Position"].setFlags(Qt.NoItemFlags | Qt.ItemIsEnabled | Qt.ItemIsEditable)
+            sm[group]["Pairs"][pair]["Pots"][pot]["Term. A Connect"].setFlags(Qt.NoItemFlags | Qt.ItemIsEnabled | Qt.ItemIsUserCheckable)
+            sm[group]["Pairs"][pair]["Pots"][pot]["Wiper Connect"].setFlags(Qt.NoItemFlags | Qt.ItemIsEnabled | Qt.ItemIsUserCheckable)
+            sm[group]["Pairs"][pair]["Pots"][pot]["Term. B Connect"].setFlags(Qt.NoItemFlags | Qt.ItemIsEnabled | Qt.ItemIsUserCheckable)
+            sm[group]["Pairs"][pair]["Terminal A Voltage"].setFlags(Qt.NoItemFlags | Qt.ItemIsEnabled | Qt.ItemIsUserCheckable)
+
+        for group in GROUP_NAMES:
+            sm[group]["Terminal A Connection"].setFlags(Qt.NoItemFlags | Qt.ItemIsEnabled | Qt.ItemIsUserCheckable)
+
+        sm = self.settings_model["DACs"]    
+        for dac in VOUT_NAMES:
+            sm[dac]["Average Voltage"].setFlags(Qt.NoItemFlags | Qt.ItemIsEnabled | Qt.ItemIsEditable)
+        
+        self.settings_model["HVAdjOut"]["Average Voltage"].setFlags(Qt.NoItemFlags | Qt.ItemIsEnabled | Qt.ItemIsEditable)
+
+        sm = self.settings_model["Switches"]
+        for name in SWITCH_NAMES:
+            sm[name]["State"].setFlags(Qt.NoItemFlags | Qt.ItemIsEnabled | Qt.ItemIsUserCheckable)
+        
+        sm = self.settings_model["PWMs"]
+        for name in PWM_NAMES:
+            sm[name]["Duty Cycle"].setFlags(Qt.NoItemFlags | Qt.ItemIsEnabled | Qt.ItemIsEditable)
+            sm[name]["Frequency"].setFlags(Qt.NoItemFlags | Qt.ItemIsEnabled | Qt.ItemIsEditable)
+        
+        if self.filename != "default.SSS2":
+            logger.debug("Reloading {}".format(self.filename))
+            self.reload()    
+        
         return True
                     
     def read_usb_hid(self):  
-        if self.signal:
+        if self.usb_signal:
             self.statusBar().showMessage("Success - SSS2 Connected.")
             self.ignition_key_button.setEnabled(True)  
             while self.rx_queue.qsize():
@@ -410,7 +461,7 @@ class SSS2Interface(QMainWindow):
                         self.parse_status_message_two(rxmessage)
                     elif rxmessage[0] & 0x0F == 3:
                         self.parse_status_message_three(rxmessage)    
-                    #print(" ".join(["{:02X}".format(b) for b in rxmessage]))
+                    #logger.debug(" ".join(["{:02X}".format(b) for b in rxmessage]))
                     #self.settings_tree.model().dataChanged.connect(self.change_setting)
                 elif rxmessage_type == COMMAND_TYPE:
                     pass # the SSS2 doesn't send commands to the computer
@@ -422,12 +473,41 @@ class SSS2Interface(QMainWindow):
                     pass
         if (time.time() - self.last_usb_message_time) > USB_MESSAGE_TIMEOUT:
             self.show_no_usb()
-            self.signal = self.setup_usb()        
+            self.usb_signal = self.setup_usb()
+
     
     def show_no_usb(self):
         self.statusBar().showMessage("Missing - SSS2 not detected over USB.")
         self.ignition_key_button.setCheckState(Qt.PartiallyChecked)
         self.ignition_key_button.setEnabled(False)
+       
+        sm = self.settings_model["Potentiometers"]
+        # Iterate though all the bytes in the incomming message
+        for group,pair,pot in zip(ALL_GROUPS,ALL_PAIRS,ALL_POTS):
+            sm[group]["Pairs"][pair]["Pots"][pot]["Wiper Position"].setFlags(Qt.NoItemFlags)
+            sm[group]["Pairs"][pair]["Pots"][pot]["Term. A Connect"].setFlags(Qt.NoItemFlags)
+            sm[group]["Pairs"][pair]["Pots"][pot]["Wiper Connect"].setFlags(Qt.NoItemFlags)
+            sm[group]["Pairs"][pair]["Pots"][pot]["Term. B Connect"].setFlags(Qt.NoItemFlags)
+            sm[group]["Pairs"][pair]["Terminal A Voltage"].setFlags(Qt.NoItemFlags)
+
+        for group in GROUP_NAMES:
+            sm[group]["Terminal A Connection"].setFlags(Qt.NoItemFlags)
+
+        sm = self.settings_model["DACs"]    
+        for dac in VOUT_NAMES:
+            sm[dac]["Average Voltage"].setFlags(Qt.NoItemFlags)
+        
+        self.settings_model["HVAdjOut"]["Average Voltage"].setFlags(Qt.NoItemFlags)
+
+        sm = self.settings_model["Switches"]
+        for name in SWITCH_NAMES:
+            sm[name]["State"].setFlags(Qt.NoItemFlags)
+        
+        sm = self.settings_model["PWMs"]
+        for name in PWM_NAMES:
+            sm[name]["Duty Cycle"].setFlags(Qt.NoItemFlags)
+            sm[name]["Frequency"].setFlags(Qt.NoItemFlags )
+             
 
     def parse_status_message_one(self, rxmessage):
         """
@@ -511,15 +591,15 @@ class SSS2Interface(QMainWindow):
         self.settings_dict["DACs"]["Vout6"]["Average Voltage"] = struct.unpack('<H',rxmessage[27:29])[0]
         self.settings_dict["DACs"]["Vout7"]["Average Voltage"] = struct.unpack('<H',rxmessage[29:31])[0]
         self.settings_dict["DACs"]["Vout8"]["Average Voltage"] = struct.unpack('<H',rxmessage[31:33])[0]
-        self.settings_dict["DACs"]["HVAdjOut"]["Average Voltage"] =  rxmessage[HVADJOUT_LOC]
-        self.settings_model["DACs"]["HVAdjOut"]["Average Voltage"].setText(
-            "{:0.2f}".format(self.getHVOUT_voltage(rxmessage[HVADJOUT_LOC])))
-
+        
         for name in VOUT_NAMES:
             self.settings_model["DACs"][name]["Average Voltage"].setText(
                 "{:0.2f}".format(self.settings_dict["DACs"][name]["Average Voltage"]/1000))
          
-        
+        self.settings_dict["HVAdjOut"]["Average Voltage"] =  rxmessage[HVADJOUT_LOC]
+        self.settings_model["HVAdjOut"]["Average Voltage"].setText(
+            "{:0.2f}".format(self.getHVOUT_voltage(rxmessage[HVADJOUT_LOC])))
+
         s = self.settings_dict["Switches"]
         s["Port 10 or 19"]["State"]              = bool(rxmessage[CONFIGSWITCH_2_LOC] & P10OR19SWITCH_MASK)
         s["Port 15 or 18"]["State"]              = bool(rxmessage[CONFIGSWITCH_2_LOC] & P15OR18SWITCH_MASK)
@@ -587,11 +667,9 @@ class SSS2Interface(QMainWindow):
     def parse_status_message_two(self, rxmessage):
         s  = self.settings_dict["Potentiometers"]
         sm = self.settings_model["Potentiometers"]
-         # "Term. A Connect": true,
-         #                    "Term. B Connect": true,
-         #                    "Wiper Connect": true,
         # Iterate though all the bytes in the incomming message
         for i,group,pair,pot in zip(range(1,20),ALL_GROUPS,ALL_PAIRS,ALL_POTS):
+           
             state = bool(rxmessage[i] & WIPER_TCON_MASK)
             s[group]["Pairs"][pair]["Pots"][pot]["Wiper Connect"]   = state
             if state:
@@ -640,16 +718,16 @@ class SSS2Interface(QMainWindow):
             if model.itemFromIndex(index).isCheckable():
                 setting_index = index.siblingAtColumn(2)
                 setting_number = int(model.itemFromIndex(setting_index).text())
-                #print("Checkable Setting Index: {}".format(setting_number))
+                #logger.debug("Checkable Setting Index: {}".format(setting_number))
                 if model.itemFromIndex(index).checkState() == Qt.Checked:
                    setting_value = 1
                 else:
                    setting_value = 0
-                #print("Setting Value: {}".format(setting_value))
+                #logger.debug("Setting Value: {}".format(setting_value))
                 if (setting_number >= 51 and setting_number <= 66) or (setting_number >= 78 and setting_number <= 80):
                     description_index = index.siblingAtColumn(1)
                     description = model.itemFromIndex(description_index).text()
-                    print(description)
+                    logger.debug(description)
                     if (setting_number >= 51 and setting_number <= 66):
                         current_value = (self.status_message_2[setting_number-50])
                     else:
@@ -673,14 +751,12 @@ class SSS2Interface(QMainWindow):
             #Do nothing if there is no itemFromIndex
             pass
         except:
-            print(traceback.format_exc())
+            logger.debug(traceback.format_exc())
         self.edit_settings = False
-
-
 
     def change_setting(self, item):
         
-        if self.edit_settings:
+        if self.edit_settings or self.load_settings:
             # See if an item was passed in, or is it an index.
             try:
                 index = item.index()
@@ -693,24 +769,23 @@ class SSS2Interface(QMainWindow):
             try:
                 setting_index = index.siblingAtColumn(2)
                 setting_number = int(model.itemFromIndex(setting_index).text())
-                #print("Setting Index: {}".format(setting_number))
-                #print(model.itemFromIndex(index))
-                #print(model.itemFromIndex(index).checkState())
                 if setting_number > 16 and setting_number < 25: #Voltage out
                     setting_value = int(float(model.itemFromIndex(index).text())*1000)  
                 elif setting_number == 49:
                     setting_value = int(self.setHVOUT_voltage(model.itemFromIndex(index).text()))
+                elif (setting_number >= 33 and setting_number <= 36) or (setting_number >= 87 and setting_number <= 88):
+                    setting_value = int(float(model.itemFromIndex(index).text())/100*4096)
                 else:
                     setting_value = int(model.itemFromIndex(index).text())
-                #print("Setting Value: {}".format(setting_value))
+                #logger.debug("Setting Value: {}".format(setting_value))
                 command_string = "{:d},{:d}".format(setting_number,setting_value)
                 self.send_command(command_string)            
             except (AttributeError,TypeError):
                 #Some of the items do not have siblings.
-                print(traceback.format_exc())
+                logger.debug(traceback.format_exc())
             except (ValueError):
                 #Clicking on a thing that doesn't have a check box
-                print(traceback.format_exc())
+                logger.debug(traceback.format_exc())
             
             # The edit_settings flag is to ensure the user is the one editing the settings
             # Setting this flag is done with a mouse click. With out this check, the SSS2 can
@@ -719,10 +794,7 @@ class SSS2Interface(QMainWindow):
          
     
     def fill_tree(self):
-        self.settings_tree.model().setHorizontalHeaderLabels(['Item', 'Description', "Setting", 'Value'])
-        self.settings_tree.model().dataChanged.connect(self.change_setting)
-        self.settings_tree.header().setSectionResizeMode(QHeaderView.ResizeToContents)
-        self.settings_model={}
+        
         for key0,item0 in self.settings_dict.items():
             if "CAN" not in key0:
                 thing = QStandardItem(key0)
@@ -733,22 +805,41 @@ class SSS2Interface(QMainWindow):
                 continue
 
             self.settings_model[key0]={}
+            if key0 == "HVAdjOut":
+                vout = QStandardItem(key0)
+                vout_label = QStandardItem("Voltage for pins J24:19 and J18:11")
+                vout_setting = QStandardItem("{:2d}".format(item0["SSS2 setting"]))
+                vout_value = QStandardItem("{}".format(item0["Average Voltage"]))  
+                
+                vout.setFlags(Qt.NoItemFlags | Qt.ItemIsEnabled)
+                vout_label.setFlags(Qt.NoItemFlags | Qt.ItemIsEnabled)
+                vout_setting.setFlags(Qt.NoItemFlags | Qt.ItemIsEnabled)
+                vout_value.setFlags(Qt.NoItemFlags)
+                
+                self.settings_model[key0]["Average Voltage"]=vout_value
+                thing.appendRow([vout,vout_label,vout_setting,vout_value])
+                
             for key1, item1 in item0.items():
                 if not isinstance(item1, dict):
                     continue 
                 self.settings_model[key0][key1]={}
                 if key0 == "Potentiometers":
                     group = QStandardItem(key1)
-                    if item1["Terminal A Connection"] is None:
-                        group_label = QStandardItem("Terminal A is connected to voltage for {}.".format(item1["Label"]))
-                    else:
-                        group_label = QStandardItem("No Voltage Applied to {}.".format(item1["Label"]))
+                    group_label = QStandardItem("All Terminal A's are connected to voltage for {}.".format(item1["Label"]))
                     try:
                         group_setting = QStandardItem("{:2d}".format(item1["SSS2 Setting"]))
                     except TypeError:
                         group_setting = QStandardItem("")
-                    group_value = QStandardItem(str(item1["Terminal A Connection"]))
-                    group_value.setCheckable(True)
+                    if "Others" == key1:
+                        group_value = QStandardItem("")
+                    else:
+                        group_value = QStandardItem(str(item1["Terminal A Connection"]))
+                        group_value.setCheckable(True)
+                
+                    group.setFlags(Qt.NoItemFlags | Qt.ItemIsEnabled)
+                    group_label.setFlags(Qt.NoItemFlags | Qt.ItemIsEnabled)
+                    group_setting.setFlags(Qt.NoItemFlags | Qt.ItemIsEnabled)
+                    group_value.setFlags(Qt.NoItemFlags)  
                     self.settings_model[key0][key1]["Terminal A Connection"] = group_value
 
                     group.setFlags(Qt.NoItemFlags | Qt.ItemIsEnabled)
@@ -758,9 +849,11 @@ class SSS2Interface(QMainWindow):
                     for p,pots in item1["Pairs"].items():
                         self.settings_model[key0][key1]["Pairs"][p]={}
                         pair = QStandardItem(p)
-                        #pair_value = QStandardItem(pots["Terminal A Voltage"])
-                        pair_value = QStandardItem("{}".format(pots["Terminal A Voltage"]))
-                        pair_value.setCheckable(True)
+                        if "I2CPots" not in p:
+                            pair_value = QStandardItem("{}".format(pots["Terminal A Voltage"]))
+                            pair_value.setCheckable(True)
+                        else:
+                            pair_value = QStandardItem("")
                         self.settings_model[key0][key1]["Pairs"][p]["Terminal A Voltage"] = pair_value
                         try:
                             pair_setting = QStandardItem("{:2d}".format(pots["SSS Setting"]))
@@ -770,7 +863,8 @@ class SSS2Interface(QMainWindow):
                         pair.setFlags(Qt.NoItemFlags | Qt.ItemIsEnabled)
                         pair_label.setFlags(Qt.NoItemFlags | Qt.ItemIsEnabled)
                         pair_setting.setFlags(Qt.NoItemFlags | Qt.ItemIsEnabled)
-                        
+                        pair_value.setFlags(Qt.NoItemFlags)
+
                         self.settings_model[key0][key1]["Pairs"][p]["Pots"]={}
                         for pot_key,vals in pots["Pots"].items():
                             self.settings_model[key0][key1]["Pairs"][p]["Pots"][pot_key]={}
@@ -781,6 +875,7 @@ class SSS2Interface(QMainWindow):
                             pot.setFlags(Qt.NoItemFlags | Qt.ItemIsEnabled)
                             pot_label.setFlags(Qt.NoItemFlags | Qt.ItemIsEnabled)
                             pot_setting.setFlags(Qt.NoItemFlags | Qt.ItemIsEnabled)
+                            pot_value.setFlags(Qt.NoItemFlags)
                             
                             terminalA = QStandardItem("")
                             terminalA_label = QStandardItem("Connect Terminal A")
@@ -800,19 +895,19 @@ class SSS2Interface(QMainWindow):
                             terminalA.setFlags(Qt.NoItemFlags | Qt.ItemIsEnabled)
                             terminalA_label.setFlags(Qt.NoItemFlags | Qt.ItemIsEnabled)
                             terminalA_setting.setFlags(Qt.NoItemFlags | Qt.ItemIsEnabled)
-                            terminalA_value.setFlags(Qt.NoItemFlags | Qt.ItemIsEnabled)
+                            terminalA_value.setFlags(Qt.NoItemFlags)
                             terminalA_value.setCheckable(True)
 
                             wiper.setFlags(Qt.NoItemFlags | Qt.ItemIsEnabled)
                             wiper_label.setFlags(Qt.NoItemFlags | Qt.ItemIsEnabled)
                             wiper_setting.setFlags(Qt.NoItemFlags | Qt.ItemIsEnabled)
-                            wiper_value.setFlags(Qt.NoItemFlags | Qt.ItemIsEnabled)
+                            wiper_value.setFlags(Qt.NoItemFlags)
                             wiper_value.setCheckable(True)
                             
                             terminalB.setFlags(Qt.NoItemFlags | Qt.ItemIsEnabled)
                             terminalB_label.setFlags(Qt.NoItemFlags | Qt.ItemIsEnabled)
                             terminalB_setting.setFlags(Qt.NoItemFlags | Qt.ItemIsEnabled)
-                            terminalB_value.setFlags(Qt.NoItemFlags | Qt.ItemIsEnabled)
+                            terminalB_value.setFlags(Qt.NoItemFlags)
                             terminalB_value.setCheckable(True)
                             
                             pot.appendRow([terminalA, terminalA_label, terminalA_setting, terminalA_value])
@@ -831,12 +926,15 @@ class SSS2Interface(QMainWindow):
                         vout_label = QStandardItem("Voltage for {} ({})".format(item1["Name"],item1["Pin"]))
                         vout_setting = QStandardItem("{:2d}".format(item1["SSS2 setting"]))
                         vout_value = QStandardItem("{}".format(item1["Average Voltage"]))  
+                        
                         vout.setFlags(Qt.NoItemFlags | Qt.ItemIsEnabled)
                         vout_label.setFlags(Qt.NoItemFlags | Qt.ItemIsEnabled)
                         vout_setting.setFlags(Qt.NoItemFlags | Qt.ItemIsEnabled)
+                        vout_value.setFlags(Qt.NoItemFlags)
+                        
                         self.settings_model[key0][key1] = {}
                         self.settings_model[key0][key1]["Average Voltage"]=vout_value
-                        thing.appendRow([vout,vout_label,vout_setting,vout_value])                    
+                        thing.appendRow([vout,vout_label,vout_setting,vout_value])                                   
                 elif key0 == "PWMs":
                     pwm = QStandardItem(key1)
                     pwm_label = QStandardItem("Pulse Width Modulated Signal {} Duty Cycle ({})".format(item1["Name"],item1["Pin"]))
@@ -845,15 +943,18 @@ class SSS2Interface(QMainWindow):
                     pwm.setFlags(Qt.NoItemFlags | Qt.ItemIsEnabled)
                     pwm_label.setFlags(Qt.NoItemFlags | Qt.ItemIsEnabled)
                     pwm_setting.setFlags(Qt.NoItemFlags | Qt.ItemIsEnabled)
+                    pwm_value.setFlags(Qt.NoItemFlags)
+                    
                     freq = QStandardItem("Freq.")
                     freq_label = QStandardItem("Frequency of PWM Signal (Hz)")
                     freq_setting = QStandardItem("{:2d}".format(item1["SSS2 freq setting"]))
-                    freq_value = QStandardItem("{}".format(item1["Frequency"]))
+                    freq_value = QStandardItem("{:d}".format(item1["Frequency"]))
                     
                     freq.setFlags(Qt.NoItemFlags | Qt.ItemIsEnabled)
                     freq_label.setFlags(Qt.NoItemFlags | Qt.ItemIsEnabled)
                     freq_setting.setFlags(Qt.NoItemFlags | Qt.ItemIsEnabled)
-                    
+                    freq_value.setFlags(Qt.NoItemFlags)
+
                     self.settings_model[key0][key1] = {}
                     self.settings_model[key0][key1]["Duty Cycle"]=pwm_value
                     self.settings_model[key0][key1]["Frequency"]=freq_value
@@ -872,10 +973,11 @@ class SSS2Interface(QMainWindow):
                     switch.setFlags(Qt.NoItemFlags | Qt.ItemIsEnabled)
                     switch_label.setFlags(Qt.NoItemFlags | Qt.ItemIsEnabled)
                     switch_setting.setFlags(Qt.NoItemFlags | Qt.ItemIsEnabled)
-                    switch_value.setFlags(Qt.NoItemFlags | Qt.ItemIsEnabled)
+                    switch_value.setCheckable(True)
+                    switch_value.setFlags(Qt.NoItemFlags)
                     self.settings_model[key0][key1] = {}
                     self.settings_model[key0][key1]["State"] = switch_value
-                    switch_value.setCheckable(True)
+                    
                     thing.appendRow([switch,switch_label,switch_setting,switch_value])
             
             self.settings_tree.model().appendRow(thing)
@@ -884,6 +986,149 @@ class SSS2Interface(QMainWindow):
     
     def enable_edit(self):
         self.edit_settings = True
+    
+    def load_file(self):
+        
+        filters = "Smart Sensor Simulator Settings Files (*.SSS2);;All Files (*.*)"
+        selected_filter = "Smart Sensor Simulator Settings Files (*.SSS2)"
+        fname = QFileDialog.getOpenFileName(self, 
+                                            'Open File',
+                                            self.export_path,
+                                            filters,
+                                            selected_filter)
+        if fname[0]:
+            self.export_path, self.filename = os.path.split(fname[0])
+            self.setWindowTitle('{} {} - {}'.format(release_title,
+                                                        release_version,
+                                                        self.filename))
+            self.reload(fname[0])
+
+    def reload(self, filename=False):
+        logger.debug("Trying to load {}".format(filename))
+        if not filename:
+            filename = os.path.join(self.export_path, self.filename)
+        
+        if not self.usb_signal:
+            QMessageBox.warning(self,"Connection Needed",
+                "Smart Sensor Simulator 2 must be connectected and communicating for settings to be loaded.")
+            return False
+
+
+        try:
+            with open(filename,'r') as fp:
+                new_settings = json.load(fp)
+        except:
+            message =traceback.format_exc()
+            logger.debug(message)
+            QMessageBox.warning(self,"Not a valid file","There was an issue opening the file.\n{}".format(message))
+            return False
+        
+        digest = calculate_sha256(filename)
+        logger.info("Opened {} with the following SHA256 digest:\n{}".format(self.filename,digest))
+        
+        for k,v in self.settings_dict.items():
+            try:                    
+                self.settings_dict[k].update(new_settings[k])
+            except AttributeError:
+                self.settings_dict[k] = new_settings[k]
+            except KeyError:
+                pass
+        
+        s = self.settings_dict["Potentiometers"]
+        for group,pair,pot in zip(ALL_GROUPS,ALL_PAIRS,ALL_POTS):
+            setting_number = s[group]["Pairs"][pair]["Pots"][pot]["SSS2 Wiper Setting"]
+            setting_value = s[group]["Pairs"][pair]["Pots"][pot]["Wiper Position"]
+            tcon_setting_number = s[group]["Pairs"][pair]["Pots"][pot]["SSS2 TCON Setting"]
+            tcon_setting_value = (WIPER_TCON_MASK * int(s[group]["Pairs"][pair]["Pots"][pot]["Wiper Connect"])
+                                + TERMB_TCON_MASK * int(s[group]["Pairs"][pair]["Pots"][pot]["Term. B Connect"])
+                                + TERMA_TCON_MASK * int(s[group]["Pairs"][pair]["Pots"][pot]["Term. A Connect"])
+                                )
+            command_string = "{:d},{:d},{:d},{:d}".format(setting_number,
+                                                          setting_value,
+                                                          tcon_setting_number,
+                                                          tcon_setting_value)
+            self.send_command(command_string)
+        
+        command_string = ""    
+        for group in set(GROUP_NAMES): # Use a set since GROUP_NAMES contains duplicates
+            setting_number = s[group]["SSS2 Setting"]
+            setting_value = int(s[group]["Terminal A Connection"])
+            command_string += "{:d},{:d},".format(setting_number, setting_value)
+        self.send_command(command_string)  # Send combined commands   
+        
+        command_string = "" 
+        s = self.settings_dict["DACs"]    
+        for dac in VOUT_NAMES:
+            setting_number = s[dac]["SSS2 setting"] #Watch capitalization. 
+            setting_value  = int(float(s[dac]["Average Voltage"])*1000)
+            command_string += "{:d},{:d},".format(setting_number, setting_value)
+            if len(command_string) > MAX_COMMAND_STRING_LENGTH:
+                self.send_command(command_string)
+                command_string = ""    
+        self.send_command(command_string)  # Send combined commands  
+        
+        command_string = "" 
+        setting_number = self.settings_dict["HVAdjOut"]["SSS2 setting"]
+        setting_value  = self.setHVOUT_voltage(self.settings_dict["HVAdjOut"]["Average Voltage"])
+        command_string += "{:d},{},".format(setting_number, setting_value)
+        self.send_command(command_string) 
+
+        command_string = "" 
+        s = self.settings_dict["Switches"]
+        for name in SWITCH_NAMES:
+            setting_number = s[name]["SSS2 setting"] #Watch capitalization. 
+            setting_value  = int((s[name]["State"]))
+            command_string += "{:d},{:d},".format(setting_number, setting_value)
+            if len(command_string) > MAX_COMMAND_STRING_LENGTH:
+                self.send_command(command_string)
+                command_string = ""    
+        self.send_command(command_string)  # Send combined commands  
+        
+        command_string = "" 
+        s = self.settings_dict["PWMs"]
+        for name in PWM_NAMES:
+            setting_number = s[name]["SSS2 setting"] #Watch capitalization. 
+            setting_value  = int((s[name]["Duty Cycle"])*4096/100)
+            command_string += "{:d},{:d},".format(setting_number, setting_value)
+            setting_number = s[name]["SSS2 freq setting"] #Watch capitalization. 
+            setting_value  = int((s[name]["Frequency"]))
+            command_string += "{:d},{:d},".format(setting_number, setting_value)
+            self.send_command(command_string)
+            command_string = ""    
+        return True
+
+    def save_file(self):
+        filters = "Smart Sensor Simulator Settings Files (*.SSS2);;All Files (*.*)"
+        selected_filter = "Smart Sensor Simulator Settings Files (*.SSS2)"
+        fname = QFileDialog.getSaveFileName(self, 
+                                            'Save File As',
+                                            os.path.join(self.export_path,self.filename),
+                                            filters,
+                                            selected_filter)
+        if fname[0]:
+            if fname[0][-5:] ==".SSS2":
+                self.filename = fname[0]
+            else:
+                self.filename = fname[0]+".SSS2"
+            
+            self.settings_dict["SSS2 Interface Release Date"] = release_date
+            self.settings_dict["SSS2 Interface Version"] = release_version
+             
+            with open(self.filename,'w') as outfile:
+                json.dump(self.settings_dict,outfile,indent=4,sort_keys=True)
+            
+            digest = calculate_sha256(self.filename)
+            logger.info("Saved {} with the following SHA256 digest:\n{}".format(self.filename,digest))
+            with open(self.filename+".SHA256",'w') as outfile:
+                outfile.write(digest)
+            self.export_path, self.filename = os.path.split(fname[0])
+            self.setWindowTitle('{} {} - {}'.format(release_title,
+                                                    release_version,
+                                                    self.filename))
+            
+
+    def write_file(self):
+        self.send_command("SAVE")
 
     def init_gui(self):
         """Builds GUI."""
@@ -891,6 +1136,36 @@ class SSS2Interface(QMainWindow):
         
         # Build common menu options
         menubar = self.menuBar()
+        file_menu = menubar.addMenu('&File')
+        file_toolbar = self.addToolBar("File")
+        
+        load_file = QAction(QIcon(r'icons\icons8_Open_48px_1.png'), '&Load to SSS2', self)
+        load_file.setShortcut('Ctrl+L')
+        load_file.setToolTip('Load settings file to a Smart Sensor Simulator 2')
+        load_file.triggered.connect(self.load_file)
+        file_menu.addAction(load_file)
+        file_toolbar.addAction(load_file)
+
+        save_file = QAction(QIcon(r'icons\icons8_Save_as_48px.png'), '&Save to File', self)
+        save_file.setShortcut('Ctrl+S')
+        save_file.setToolTip('Save the current SSS2 settings to a file')
+        save_file.triggered.connect(self.save_file)
+        file_menu.addAction(save_file)
+        file_toolbar.addAction(save_file)
+
+        write_file = QAction(QIcon(r'icons\icons8_Fingerprint_Scan_48px.png'), '&Write to SSS2', self)
+        write_file.setShortcut('Ctrl+W')
+        write_file.setToolTip('Write the current SSS2 settings to the device memory.')
+        write_file.triggered.connect(self.write_file)
+        file_menu.addAction(write_file)
+        file_toolbar.addAction(write_file)
+
+        reload_file = QAction(QIcon(r'icons\Replay_48px.png'), '&Reload Settings', self)
+        reload_file.setShortcut('Ctrl+R')
+        reload_file.setToolTip('Reload the SSS2 settings from the current file.')
+        reload_file.triggered.connect(self.reload)
+        file_menu.addAction(reload_file)
+        file_toolbar.addAction(reload_file)
 
         self.tabs = QTabWidget()
         self.tabs.setTabShape(QTabWidget.Triangular)
@@ -899,28 +1174,6 @@ class SSS2Interface(QMainWindow):
         self.ignition_key_button =  QCheckBox("Ignition Key Switch")
         self.ignition_key_button.setTristate(True)
         self.ignition_key_button.clicked.connect(self.send_ignition_key_command)
-        
-        # self.settings_tab = QWidget()
-        # self.tabs.addTab(self.settings_tab,"Settings Table")
-        # table_tab_layout = QVBoxLayout()
-
-        # #Set up the Table Model/View/Proxy
-        # self.settings_table = QTableView()
-        # self.settings_data_model = SettingsTableModel()
-        # self.settings_table_proxy = Proxy()
-        # self.settings_data_model.setDataDict(self.settings_dict)
-        # self.settings_table_columns = ["ID","Description","Port","Wire Color","Desired Value","Actual Value","State","Application"]
-        # #self.pgn_resizable_rows = [0,1,2,3,4]
-        # self.settings_data_model.setDataHeader(self.settings_table_columns)
-        # self.settings_table_proxy.setSourceModel(self.settings_data_model)
-        # self.settings_table.setModel(self.settings_table_proxy)
-        # self.settings_table.setSelectionBehavior(QAbstractItemView.SelectRows)
-        # self.settings_table.setSortingEnabled(True)
-        # self.settings_table.setWordWrap(False)
-
-        # #setup the layout to be displayed in the box
-        # table_tab_layout.addWidget(self.settings_table)
-        # self.settings_tab.setLayout(table_tab_layout)
         
         self.tree_tab = QWidget()
         self.tabs.addTab(self.tree_tab,"Settings Tree")
@@ -936,6 +1189,11 @@ class SSS2Interface(QMainWindow):
         self.settings_tree.setSelectionBehavior(QAbstractItemView.SelectItems)
         self.settings_tree.doubleClicked.connect(self.enable_edit)
         self.settings_tree.clicked.connect(self.clicked_setting)
+
+        self.settings_tree.model().setHorizontalHeaderLabels(['Item', 'Description', "Setting", 'Value'])
+        self.settings_tree.model().dataChanged.connect(self.change_setting)
+        self.settings_tree.header().setSectionResizeMode(QHeaderView.ResizeToContents)
+        self.settings_model={}
         self.fill_tree();
 
      
@@ -959,6 +1217,77 @@ class SSS2Interface(QMainWindow):
         
 
        
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
         
         
         
@@ -1135,8 +1464,8 @@ class SSS2Interface(QMainWindow):
             
         
        #Use these messages to determine window size during development.  
-       # print("Window Height: {}".format(self.root.winfo_height()))
-       # print("Window Width: {}".format(self.root.winfo_width()))
+       # logger.debug("Window Height: {}".format(self.root.winfo_height()))
+       # logger.debug("Window Width: {}".format(self.root.winfo_width()))
        
     
                 
@@ -1178,7 +1507,7 @@ class SSS2Interface(QMainWindow):
             f.write("Molex Pins\tColor\tApplication\tECU Pins\n")
             for key,label in sorted_keys:
                 f.write("\t".join([formatted_keys[key],w[key]["Wire Color"],w[key]["Application"],w[key]["ECU Pins"]])+"\n")
-        print("Saved "+wiring_filename)
+        logger.debug("Saved "+wiring_filename)
         self.file_status_string.set("Saved "+wiring_filename)
             
     def print_settings_file(self,event=None):
@@ -1187,10 +1516,10 @@ class SSS2Interface(QMainWindow):
             self.filename += ".txt"
             self.save_settings_file()
             os.startfile(self.filename, "open")
-            print("Saved and opened "+self.filename)
+            logger.debug("Saved and opened "+self.filename)
             
         except Exception as e:
-            print(e)
+            logger.debug(e)
             messagebox.showerror("Print File Error",
                            "There is not a default application to print text (.txt) files. Please configure your system environment to print text files.")
                         
@@ -1219,25 +1548,25 @@ class SSS2Interface(QMainWindow):
             self.settings_dict = update_dict(self.settings_dict,new_settings_dict)
             
         except Exception as e:
-            print(e)
+            logger.debug(e)
             messagebox.showerror("Loading File Error",
                            "The file selected is not the appropriate type for this program. This file may have been corrupted. The file must be a correctly formatted JSON file. Please select a different file.")
                         
             return
 
         digest_from_file=self.settings_dict["SHA256 Digest"]
-        print("digest_from_file: ",end='')
-        print(digest_from_file)
+        logger.debug("digest_from_file: ",end='')
+        logger.debug(digest_from_file)
         
         newhash=self.get_settings_hash()
 
-        print("newhash:          ",end='')
-        print(newhash)
+        logger.debug("newhash:          ",end='')
+        logger.debug(newhash)
         
         ok_to_open = False
    
         if newhash==digest_from_file or UNIVERSAL:
-            print("Hash system OK.")
+            logger.debug("Hash system OK.")
             sss2_id = self.settings_dict["SSS2 Product Code"].strip()
             if  sss2_id == "UNIVERSAL":
                 ok_to_open = True
@@ -1266,13 +1595,13 @@ class SSS2Interface(QMainWindow):
 
 
                 except Exception as e:
-                    print(e)
+                    logger.debug(e)
                     messagebox.showerror("Connect SSS2",
                            "Please connect to the Smart Sensor Simulator 2 unit with serial number {} to open a file. Be sure the SSS2 product code under the\n USB/Serial Interface tab is correct. The current code that is entered is {}.".format(self.settings_dict["Serial Number"],self.settings_dict["SSS2 Product Code"]) )
                     self.connect_to_serial()
                   
         else:
-            print("Hash values different, Reloading defaults.")
+            logger.debug("Hash values different, Reloading defaults.")
             self.settings_dict = get_default_settings()
             messagebox.showerror("File Integrity Error",
                     "The hash value from the file\n {}\n does not match the new calculated hash.\n The file may have been altered. \nReloading defaults.".format(self.filename) )
@@ -1280,7 +1609,7 @@ class SSS2Interface(QMainWindow):
         if ok_to_open:
             self.file_status_string.set("Opened "+self.filename)
             self.settings_file_status_string.set(os.path.basename(self.filename))
-            print("Opened "+self.filename)
+            logger.debug("Opened "+self.filename)
             self.settings_dict["SHA256 Digest"]=self.get_settings_hash()
 
         else:
@@ -1310,7 +1639,7 @@ class SSS2Interface(QMainWindow):
 
         if self.filename is '':
             self.file_status_string.set("File not saved.")
-            print("File not saved.") 
+            logger.debug("File not saved.") 
             return
         
         ok_to_save = False
@@ -1323,7 +1652,7 @@ class SSS2Interface(QMainWindow):
                     self.file_OK_received.set(False)
                     if self.file_authenticated: 
                         ok_to_save = True
-                    print("Authenticated. OK to Save")
+                    logger.debug("Authenticated. OK to Save")
         else:
             if UNIVERSAL:
                 ok_to_save = True 
@@ -1339,7 +1668,7 @@ class SSS2Interface(QMainWindow):
             self.file_status_string.set("Saved "+self.filename)
             self.settings_file_status_string.set(os.path.basename(self.filename))
             
-            print("Saved "+self.filename)
+            logger.debug("Saved "+self.filename)
             self.sss2_product_code['bg']='white'
 
             self.saved_date_text.set(time.strftime("%A, %d %B %Y %H:%M:%S %Z", time.localtime()))
@@ -1358,7 +1687,7 @@ class SSS2Interface(QMainWindow):
         else:
             self.file_status_string.set("")
             self.file_status_string.set("File not saved.")
-            print("File not saved.") 
+            logger.debug("File not saved.") 
             messagebox.showerror("Incompatible SSS2 for Saving",
                             "The unique ID entered for the SSS2 does not match the unit. Please select Get ID from the Connection menu to get the SSS2 Unique ID to populate the form.")
             self.tabs.select(self.profile_tab)
@@ -1374,7 +1703,7 @@ class SSS2Interface(QMainWindow):
         with open(log_filename,'w') as log_file:
             for byte_entry in self.serial_rx_byte_list:
                 log_file.write(byte_entry.decode('ascii',"ignore"))
-        print("Saved {}".format(log_filename))
+        logger.debug("Saved {}".format(log_filename))
         self.file_status_string.set("Saved log data to "+log_filename)
                        
     def get_settings_hash(self):
@@ -1429,12 +1758,12 @@ class SSS2Interface(QMainWindow):
                 else:
                     self.filename += ".AUTOSAVE"
             except Exception as e:
-                print(e)
+                logger.debug(e)
                 self.filename += ".AUTOSAVE"
             with open(self.filename,'w') as outfile:
                 json.dump(self.settings_dict,outfile,indent=4,sort_keys=True)
             self.filename = original_file
-            #print('Autosaving')
+            #logger.debug('Autosaving')
             
         self.lasthash = self.current_hash 
         
@@ -2238,7 +2567,7 @@ class SSS2Interface(QMainWindow):
             
        
         else:
-            print("Too many CAN threads for SSS2. Please redo the CAN messages.")
+            logger.debug("Too many CAN threads for SSS2. Please redo the CAN messages.")
 
     def get_max_threads(self):
         can_thread_list=[]
@@ -2277,7 +2606,7 @@ class SSS2Interface(QMainWindow):
             m += ",{},".format(abs(int(self.can_period_value.get())))
             self.can_period['bg']='white'
         except Exception as e:
-            print(e)
+            logger.debug(e)
             self.root.bell()
             self.can_period.focus()
             self.can_period['bg']='yellow'
@@ -2287,7 +2616,7 @@ class SSS2Interface(QMainWindow):
             m += "{},".format(abs(int(self.can_restart_value.get())))
             self.can_restart['bg']='white'
         except Exception as e:
-            print(e)
+            logger.debug(e)
             self.root.bell()
             self.can_restart.focus()
             self.can_restart['bg']='yellow'
@@ -2297,7 +2626,7 @@ class SSS2Interface(QMainWindow):
             m += "{},".format(abs(int(self.can_total_value.get())))
             self.can_total['bg']='white'
         except Exception as e:
-            print(e)
+            logger.debug(e)
             self.root.bell()
             self.can_total.focus()
             self.can_total['bg']='yellow'
@@ -2312,7 +2641,7 @@ class SSS2Interface(QMainWindow):
                 m += "{:>3X},".format(int(self.can_id_value.get(),16) & 0x7FF)
             self.can_id['bg']='white'
         except Exception as e:
-            print(e)
+            logger.debug(e)
             self.root.bell()
             self.can_id.focus()
             self.can_id['bg']='yellow'
@@ -2322,7 +2651,7 @@ class SSS2Interface(QMainWindow):
             m += "{},".format(abs(int(self.can_dlc_value.get()) & 0x0F))
             self.can_dlc['background']='white'
         except Exception as e:
-            print(e)
+            logger.debug(e)
             self.root.bell()
             self.can_dlc.focus()
             self.can_dlc['background']='yellow'
@@ -2335,7 +2664,7 @@ class SSS2Interface(QMainWindow):
                 self.can_byte_value[i].set(byte_char)
                 self.can_byte[i]['bg']='white'
             except Exception as e:
-                print(e)
+                logger.debug(e)
                 self.root.bell()
                 self.can_byte[i].focus()
                 self.can_byte[i]['bg']='yellow'
@@ -2465,7 +2794,7 @@ class SSS2Interface(QMainWindow):
     def find_next_iid(self):
         iid_list=[0]
         for tree_item in self.get_all_children(self.can_tree):
-            #print(tree_item)
+            #logger.debug(tree_item)
             try:
                 iid_list.append(int(tree_item))
             except:
@@ -2877,7 +3206,7 @@ class SSS2Interface(QMainWindow):
                     self.settings_dict["Analog Calibration"][i][j] = float(self.calibration_variable[i][j].get())
                     self.calibration_entries[i][j]['bg']='white'
                 except Exception as e:
-                    print(e)
+                    logger.debug(e)
                     self.calibration_entries[i][j]['bg']='red'
                     self.root.bell()
                     
@@ -2885,7 +3214,7 @@ class SSS2Interface(QMainWindow):
     def connect_to_serial(self,auto=False):
         if auto:
             try:
-                print("Automatically connecting to SSS2.")
+                logger.debug("Automatically connecting to SSS2.")
                 self.connection_status_string.set("SSS2 connecting automatically.")
                 with open(self.home_directory+"SSS2comPort.txt","r") as comFile:
                     comport = comFile.readline().strip()
@@ -2893,23 +3222,23 @@ class SSS2Interface(QMainWindow):
                                         parity=serial.PARITY_ODD,write_timeout=1,
                                         xonxoff=False, rtscts=False, dsrdtr=False)
             except Exception as e:
-                print(e)
+                logger.debug(e)
                 connection_dialog = setup_serial_connections(self)
                 self.serial = connection_dialog.result
         else:
             connection_dialog = setup_serial_connections(self)
             self.serial = connection_dialog.result
             
-        print("Clearing TX Queue...", end = '')
+        logger.debug("Clearing TX Queue...", end = '')
         while not self.tx_queue.empty():
             dummy = self.tx_queue.get()
-        print("done.")
+        logger.debug("done.")
         
-        print(self.serial)
+        logger.debug(self.serial)
         if self.serial: 
             if self.serial is not None:
                 if self.serial.is_open:
-                    print("SSS2 connected.")
+                    logger.debug("SSS2 connected.")
                     self.thread = SerialThread(self, self.rx_queue)
                     self.thread.signal = True
                     self.thread.daemon = True
@@ -2920,7 +3249,7 @@ class SSS2Interface(QMainWindow):
                     self.TXthread.start()
                     
                     #self.thread.join()
-                    print("Started Serial Thread.")
+                    logger.debug("Started Serial Thread.")
                     self.init_tabs()
                     self.check_serial_connection()
         else:
@@ -3003,7 +3332,7 @@ class SSS2Interface(QMainWindow):
             f.write("Channel,Unix Timestamp,MID,PID,Data,Checksum,OK (Checksum Valid)\n")
             for line in self.received_j1708_messages:
                 f.write(",".join(line)+"\n")
-        print("Saved {}".format(data_file_name))
+        logger.debug("Saved {}".format(data_file_name))
         self.file_status_string.set("Saved log file to "+data_file_name)
 
     def write_lin_log_file(self,data_file_name):
@@ -3011,7 +3340,7 @@ class SSS2Interface(QMainWindow):
             f.write("Timestamp,ID,B0,B1,B2,B3,Checksum,Checksum\n")
             for line in self.received_lin_messages:
                 f.write(",".join(line)+"\n")
-        print("Saved {}".format(data_file_name))
+        logger.debug("Saved {}".format(data_file_name))
         self.file_status_string.set("Saved log file to "+data_file_name)
 
     def write_analog_log_file(self,data_file_name,message_list):
@@ -3024,7 +3353,7 @@ class SSS2Interface(QMainWindow):
             f.write("Time,J24:10,J24:9,J24:8,J18:13\n")
             for line in message_list:
                 f.write(",".join(line)+"\n")
-        print("Saved {}".format(data_file_name))
+        logger.debug("Saved {}".format(data_file_name))
         self.file_status_string.set("Saved log file to "+data_file_name)
         
     def write_can_log_file(self,data_file_name,message_list):    
@@ -3032,7 +3361,7 @@ class SSS2Interface(QMainWindow):
             f.write("Channel,Unix Timestamp,CAN ID (Hex),EXT,DLC,B1,B2,B3,B4,B5,B6,B7,B8\n")
             for line in message_list:
                 f.write(",".join(line)+"\n")
-        print("Saved {}".format(data_file_name))
+        logger.debug("Saved {}".format(data_file_name))
         self.file_status_string.set("Saved log file to "+data_file_name)
 
     def save_j1939_buffer_as(self):
@@ -3147,7 +3476,7 @@ class SSS2Interface(QMainWindow):
         else:
             self.save_j1708_buffer_as()
         self.write_j1708_log_file(data_file_name)
-        print("Saved {}".format(data_file_name))
+        logger.debug("Saved {}".format(data_file_name))
         self.file_status_string.set("Saved log file to "+data_file_name)
         self.clear_j1708_buffer()
 
@@ -3157,7 +3486,7 @@ class SSS2Interface(QMainWindow):
         else:
             self.save_lin_buffer_as()
         self.write_lin_log_file(data_file_name)
-        print("Saved {}".format(data_file_name))
+        logger.debug("Saved {}".format(data_file_name))
         self.file_status_string.set("Saved log file to "+data_file_name)
         self.clear_lin_buffer()
 
@@ -3167,7 +3496,7 @@ class SSS2Interface(QMainWindow):
         else:
             self.save_analog_buffer_as()
         self.write_analog_log_file(data_file_name,self.received_analog_messages)
-        print("Saved {}".format(data_file_name))
+        logger.debug("Saved {}".format(data_file_name))
         self.file_status_string.set("Saved log file to "+data_file_name)
         self.clear_analog_buffer()
         
@@ -3250,7 +3579,7 @@ class SSS2Interface(QMainWindow):
                             self.j1939_tree.see(CANdata[2])
                             self.j1939_tree.tag_configure('dataRow',background='white')
                         except Exception as e:
-                            print(e)
+                            logger.debug(e)
                             self.j1939_tree.tag_configure('dataRow',background='orange')
                     else:
                         self.j1939_tree.tag_configure('dataRow',background='orange')
@@ -3280,7 +3609,7 @@ class SSS2Interface(QMainWindow):
                             self.can1_tree.see(CANdata[2])
                             self.can1_tree.tag_configure('dataRow',background='white')
                         except Exception as e:
-                            print(e)
+                            logger.debug(e)
                             self.can1_tree.tag_configure('dataRow',background='orange')
                     else:
                         self.can1_tree.tag_configure('dataRow',background='orange')
@@ -3310,7 +3639,7 @@ class SSS2Interface(QMainWindow):
                             self.can2_tree.see(CANdata[2])
                             self.can2_tree.tag_configure('dataRow',background='white')
                         except Exception as e:
-                            print(e)
+                            logger.debug(e)
                             self.can2_tree.tag_configure('dataRow',background='orange')
                     else:
                         self.can2_tree.tag_configure('dataRow',background='orange')
@@ -3330,7 +3659,7 @@ class SSS2Interface(QMainWindow):
                     self.analog_count += 1
                     if self.analog_count < limit:
                         analog_data = new_serial_line[7:].decode('ascii',"ignore").strip().split()
-                        #print(analog_data)
+                        #logger.debug(analog_data)
                         analog_time="{:>0.3f}".format(float(analog_data[0])/1000)
                         analog_list = []
                         for i in range(len(self.settings_dict["Analog Calibration"][0])):
@@ -3441,7 +3770,7 @@ class SSS2Interface(QMainWindow):
     def send_ignition_key_command(self):
         commandString = "50,0"    
         if self.ignition_key_button.isChecked():
-            print('\007') #Bell sound
+            logger.debug('\007') #Bell sound
             response =  QMessageBox.question(self,"Turn Key Switch On","Have you loaded or configured the desired settings?\n Would you like to turn on the key switch?")
             if response == QMessageBox.Yes:
                 commandString = "50,1"
@@ -3821,7 +4150,7 @@ class DAC7678(QWidget):
         try:
             self.dac_mean_slider.set(float(entry_value)*100)
         except Exception as e:
-            print(e)
+            logger.debug(e)
             self.root.bell()
             self.dac_mean_position_value['foreground'] = "red"
 
@@ -3930,7 +4259,7 @@ class pwm_out(QWidget):
             self.pwm_frequency_slider.set(float(entry_value))
             self.set_pwm_frequency()
         except Exception as e:
-            print(e)
+            logger.debug(e)
             self.root.bell()
             self.pwm_frequency_value['foreground'] = "red"
     
@@ -3941,7 +4270,7 @@ class pwm_out(QWidget):
             self.pwm_duty_cycle_slider.set(float(entry_value))
             self.set_pwm_duty_cycle()
         except Exception as e:
-            print(e)
+            logger.debug(e)
             self.root.bell()
             self.pwm_duty_cycle_value['foreground'] = "red"
             
