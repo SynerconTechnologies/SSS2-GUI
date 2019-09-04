@@ -564,8 +564,8 @@ class SSS2Interface(QMainWindow):
             else:
                 sm[group]["Pairs"][name]["Terminal A Voltage"].setText("+5V")
         
-        s["Group A"]["Terminal A Connection"] = bool(rxmessage[CONFIGSWITCH_2_LOC] & U28P0AENABLE_MASK)
-        s["Group B"]["Terminal A Connection"] = bool(rxmessage[CONFIGSWITCH_2_LOC] & U31P0AENABLE_MASK)
+        s["Group A"]["Terminal A Connection"] = not (bool(rxmessage[CONFIGSWITCH_2_LOC] & U28P0AENABLE_MASK))
+        s["Group B"]["Terminal A Connection"] = not (bool(rxmessage[CONFIGSWITCH_2_LOC] & U31P0AENABLE_MASK))
         for group in ["Group A", "Group B"]:
             state = s[group]["Terminal A Connection"]
             if state:
@@ -744,7 +744,8 @@ class SSS2Interface(QMainWindow):
                     else:
                         current_value &=  ~value
                     setting_value = current_value
-
+                elif setting_number == 73 or setting_number == 74:
+                    setting_value = not setting_value
                 command_string = "{:d},{:d}".format(setting_number,setting_value)
                 self.send_command(command_string) 
         except AttributeError:
