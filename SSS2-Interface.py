@@ -121,7 +121,7 @@ PWM2_CONNECT_MASK = 0x20
 PWM3_CONNECT_MASK = 0x40
 PWM4_CONNECT_MASK = 0x80
 
-TERMSWITCHES_LOC  = 60
+TERMSWITCHES_LOC  = 52
 CAN0TERM2_MASK    = 0x01
 CAN1TERM2_MASK    = 0x02
 CAN2TERM2_MASK    = 0x04
@@ -169,6 +169,40 @@ PWM5_FREQ_LOC = 58
 WIPER_TCON_MASK = 2
 TERMB_TCON_MASK = 1
 TERMA_TCON_MASK = 4
+
+CAN_4K096BPS  = 0
+CAN_5KBPS     = 1
+CAN_10KBPS    = 2
+CAN_20KBPS    = 3
+CAN_31K25BPS  = 4
+CAN_33K3BPS   = 5
+CAN_40KBPS    = 6
+CAN_50KBPS    = 7
+CAN_80KBPS    = 8
+CAN_100KBPS   = 9
+CAN_125KBPS   = 10
+CAN_200KBPS   = 11
+CAN_250KBPS   = 12
+CAN_500KBPS   = 13
+CAN_1000KBPS  = 14
+CAN_666KBPS   = 15
+
+CAN_SPEEDS = [4096,
+              5000,  
+              10000,  
+              20000,  
+              31250,
+              33333, 
+              40000,  
+              50000,  
+              80000,  
+              100000, 
+              125000, 
+              200000, 
+              250000, 
+              500000, 
+              1000000,
+              666666]
 
 SWITCH_NAMES = ["Port 10 or 19",
                 "Port 15 or 18",
@@ -363,6 +397,7 @@ class SSS2Interface(QMainWindow):
         read_timer.start(109) #milliseconds
 
         self.init_gui()
+        logger.debug("Done Initializing GUI")
         self.show()
         self.setup_usb()
         
@@ -374,7 +409,7 @@ class SSS2Interface(QMainWindow):
             data_to_send = bytes(padded_data[0:62]) + crc
             self.sss.write(USB_HID_OUTPUT_ENDPOINT_ADDRESS, data_to_send, USB_HID_TIMEOUT)
             logger.debug(command_string)
-            time.sleep(0.001)
+            time.sleep(0.01)
         else:
             logger.debug("Failed to Send. No USB.")
 
@@ -561,8 +596,10 @@ class SSS2Interface(QMainWindow):
             state = s[group]["Pairs"][name]["Terminal A Voltage"]
             if state:
                 sm[group]["Pairs"][name]["Terminal A Voltage"].setText("+12V")
+                sm[group]["Pairs"][name]["Terminal A Voltage"].setCheckState(Qt.Checked)
             else:
                 sm[group]["Pairs"][name]["Terminal A Voltage"].setText("+5V")
+                sm[group]["Pairs"][name]["Terminal A Voltage"].setCheckState(Qt.Unchecked)
         
         s["Group A"]["Terminal A Connection"] = not (bool(rxmessage[CONFIGSWITCH_2_LOC] & U28P0AENABLE_MASK))
         s["Group B"]["Terminal A Connection"] = not (bool(rxmessage[CONFIGSWITCH_2_LOC] & U31P0AENABLE_MASK))
@@ -658,6 +695,15 @@ class SSS2Interface(QMainWindow):
         else:
             self.ignition_key_button.setCheckState(Qt.Unchecked)
 
+        s = self.settings_dict["Switches"]
+        s["PWM4_28 Connect"]["State"]            = bool(rxmessage[TERMSWITCHES_LOC] & PWM4_P28_MASK)
+        s["PWM5 Connect"]["State"]               = bool(rxmessage[TERMSWITCHES_LOC] & PWM5_CONNECT_MASK)
+        s["PWM6 Connect"]["State"]               = bool(rxmessage[TERMSWITCHES_LOC] & PWM6_CONNECT_MASK)
+        s["CAN1 Connect"]["State"]               = bool(rxmessage[TERMSWITCHES_LOC] & CAN1_CONNECT_MASK)
+        s["CAN0 Resistor 2"]["State"]            = bool(rxmessage[TERMSWITCHES_LOC] & CAN0TERM2_MASK)
+        s["CAN2 Resistor 2"]["State"]            = bool(rxmessage[TERMSWITCHES_LOC] & CAN2TERM2_MASK)
+        s["CAN1 Resistor 2"]["State"]            = bool(rxmessage[TERMSWITCHES_LOC] & CAN1TERM2_MASK)
+        
     def getHVOUT_voltage(self, reading):
         return reading*0.049441804 + 1.94
 
@@ -697,15 +743,7 @@ class SSS2Interface(QMainWindow):
                 sm[group]["Pairs"][pair]["Pots"][pot]["Term. B Connect"].setText("Open")
                 sm[group]["Pairs"][pair]["Pots"][pot]["Term. B Connect"].setCheckState(Qt.Unchecked)
 
-        s = self.settings_dict["Switches"]
-        s["PWM4_28 Connect"]["State"]            = bool(rxmessage[TERMSWITCHES_LOC] & PWM4_P28_MASK)
-        s["PWM5 Connect"]["State"]               = bool(rxmessage[TERMSWITCHES_LOC] & PWM5_CONNECT_MASK)
-        s["PWM6 Connect"]["State"]               = bool(rxmessage[TERMSWITCHES_LOC] & PWM6_CONNECT_MASK)
-        s["CAN1 Connect"]["State"]               = bool(rxmessage[TERMSWITCHES_LOC] & CAN1_CONNECT_MASK)
-        s["CAN0 Resistor 2"]["State"]            = bool(rxmessage[TERMSWITCHES_LOC] & CAN0TERM2_MASK)
-        s["CAN2 Resistor 2"]["State"]            = bool(rxmessage[TERMSWITCHES_LOC] & CAN2TERM2_MASK)
-        s["CAN1 Resistor 2"]["State"]            = bool(rxmessage[TERMSWITCHES_LOC] & CAN1TERM2_MASK)
-        
+       
         self.status_message_2 = rxmessage
 
     def parse_status_message_three(self, rxmessage):
@@ -1035,28 +1073,6 @@ class SSS2Interface(QMainWindow):
             except KeyError:
                 pass
         
-        s = self.settings_dict["Potentiometers"]
-        for group,pair,pot in zip(ALL_GROUPS,ALL_PAIRS,ALL_POTS):
-            setting_number = s[group]["Pairs"][pair]["Pots"][pot]["SSS2 Wiper Setting"]
-            setting_value = s[group]["Pairs"][pair]["Pots"][pot]["Wiper Position"]
-            tcon_setting_number = s[group]["Pairs"][pair]["Pots"][pot]["SSS2 TCON Setting"]
-            tcon_setting_value = (WIPER_TCON_MASK * int(s[group]["Pairs"][pair]["Pots"][pot]["Wiper Connect"])
-                                + TERMB_TCON_MASK * int(s[group]["Pairs"][pair]["Pots"][pot]["Term. B Connect"])
-                                + TERMA_TCON_MASK * int(s[group]["Pairs"][pair]["Pots"][pot]["Term. A Connect"])
-                                )
-            command_string = "{:d},{:d},{:d},{:d}".format(setting_number,
-                                                          setting_value,
-                                                          tcon_setting_number,
-                                                          tcon_setting_value)
-            self.send_command(command_string)
-        
-        command_string = ""    
-        for group in set(GROUP_NAMES): # Use a set since GROUP_NAMES contains duplicates
-            setting_number = s[group]["SSS2 Setting"]
-            setting_value = int(s[group]["Terminal A Connection"])
-            command_string += "{:d},{:d},".format(setting_number, setting_value)
-        self.send_command(command_string)  # Send combined commands   
-        
         command_string = "" 
         s = self.settings_dict["DACs"]    
         for dac in VOUT_NAMES:
@@ -1066,7 +1082,33 @@ class SSS2Interface(QMainWindow):
             if len(command_string) > MAX_COMMAND_STRING_LENGTH:
                 self.send_command(command_string)
                 command_string = ""    
-        self.send_command(command_string)  # Send combined commands  
+        self.send_command(command_string)  # Send combined commands  command_string = "" 
+        
+        command_string = "" 
+        
+        s = self.settings_dict["Potentiometers"]
+        for group,pair,pot in zip(ALL_GROUPS,ALL_PAIRS,ALL_POTS):
+            setting_number = s[group]["Pairs"][pair]["Pots"][pot]["SSS2 Wiper Setting"]
+            setting_value = s[group]["Pairs"][pair]["Pots"][pot]["Wiper Position"]
+            tcon_setting_number = s[group]["Pairs"][pair]["Pots"][pot]["SSS2 TCON Setting"]
+            tcon_setting_value = (WIPER_TCON_MASK * int(s[group]["Pairs"][pair]["Pots"][pot]["Wiper Connect"])
+                                + TERMB_TCON_MASK * int(s[group]["Pairs"][pair]["Pots"][pot]["Term. B Connect"])
+                                + TERMA_TCON_MASK * int(s[group]["Pairs"][pair]["Pots"][pot]["Term. A Connect"])
+                                )
+            command_string = "{:d},{:d},{:d},{:d},".format(setting_number, 
+                                                           setting_value,
+                                                           tcon_setting_number,
+                                                           tcon_setting_value)
+            self.send_command(command_string)
+            
+        command_string = ""    
+        for group in set(GROUP_NAMES): # Use a set since GROUP_NAMES contains duplicates
+            setting_number = s[group]["SSS2 Setting"]
+            setting_value = int(s[group]["Terminal A Connection"])
+            command_string += "{:d},{:d},".format(setting_number, setting_value)
+        self.send_command(command_string)  # Send combined commands   
+        
+        
         
         command_string = "" 
         setting_number = self.settings_dict["HVAdjOut"]["SSS2 setting"]
@@ -1096,6 +1138,7 @@ class SSS2Interface(QMainWindow):
             command_string += "{:d},{:d},".format(setting_number, setting_value)
             self.send_command(command_string)
             command_string = ""    
+        #self.send_command("LS")
         return True
 
     def save_file(self):
@@ -1130,6 +1173,9 @@ class SSS2Interface(QMainWindow):
 
     def write_file(self):
         self.send_command("SAVE")
+
+    def build_network_tab(self):
+        pass
 
     def init_gui(self):
         """Builds GUI."""
@@ -1179,7 +1225,7 @@ class SSS2Interface(QMainWindow):
         self.tree_tab = QWidget()
         self.tabs.addTab(self.tree_tab,"Settings Tree")
         tree_tab_layout = QVBoxLayout()
-
+        
         #Set up the Table Model/View/Proxy
         self.settings_tree = QTreeView(self)
         self.tree_model = QStandardItemModel()
@@ -1197,12 +1243,18 @@ class SSS2Interface(QMainWindow):
         self.settings_model={}
         self.fill_tree();
 
-     
         #setup the layout to be displayed in the box
         tree_tab_layout.addWidget(self.settings_tree)
         self.tree_tab.setLayout(tree_tab_layout)
 
-        
+        #Add a networking tab
+        self.network_tab = QWidget()
+        self.tabs.addTab(self.network_tab,"Networking")
+        network_tab_layout = QVBoxLayout()
+
+        self.build_network_tab()
+        #setup the layout to be displayed in the box
+        self.network_tab.setLayout(network_tab_layout)
 
 
         self.grid_layout.addWidget(self.ignition_key_button,0,0,1,1)
