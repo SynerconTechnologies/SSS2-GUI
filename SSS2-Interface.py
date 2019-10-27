@@ -76,6 +76,15 @@ release_title = "SSS2 Interface"
 release_date = "1 September 2019"
 release_version = "2.0.0"
 
+CAN_MESSAGE_BASE    = 0x20
+TIMESTAMP_OFFSET    = 0
+CHANNEL_DLC_OFFSET  = 4
+MICROSECONDS_OFFSET = 5
+CAN_ID_OFFSET       = 8
+CAN_DATA_OFFSET     = 12
+CAN_SEND_MS         = 3
+CAN_FRAME_LENGTH    = 20
+
 MAX_COMMAND_STRING_LENGTH = 50
 
 USB_HID_OUTPUT_ENDPOINT_ADDRESS = 0x04
@@ -486,6 +495,8 @@ class SSS2Interface(QMainWindow):
             while self.rx_queue.qsize():
                 #Get a message from the queue. These are raw bytes
                 rxmessage = self.rx_queue.get()
+                logger.debug(" ".join(["{:02X}".format(b) for b in rxmessage]))
+                    
                 self.last_usb_message_time = time.time()
                 rxmessage_type = rxmessage[USB_FRAME_TYPE_LOC] & USB_FRAME_TYPE_MASK
                 if rxmessage_type == STATUS_TYPE:
@@ -495,14 +506,13 @@ class SSS2Interface(QMainWindow):
                     elif rxmessage[0] & 0x0F == 2:
                         self.parse_status_message_two(rxmessage)
                     elif rxmessage[0] & 0x0F == 3:
-                        self.parse_status_message_three(rxmessage)    
-                    #logger.debug(" ".join(["{:02X}".format(b) for b in rxmessage]))
+                        self.parse_status_message_three(rxmessage)
                     #self.settings_tree.model().dataChanged.connect(self.change_setting)
                 elif rxmessage_type == COMMAND_TYPE:
                     pass # the SSS2 doesn't send commands to the computer
                 elif rxmessage_type == MESSAGE_TYPE:
                     # Received a network message
-                    pass
+                    self.parse_can_message(rxmessage)    
                 elif rxmessage_type == ESCAPE_TYPE:
                     #Future stuff
                     pass
@@ -510,7 +520,26 @@ class SSS2Interface(QMainWindow):
             self.show_no_usb()
             self.usb_signal = self.setup_usb()
 
-    
+    def parse_can_message(self, rxmessage):
+        message_type = rxmessage[0]
+        if (message_type & 0x20) != 0x20:
+            return
+        num_can_messages = message_type & 0x03
+        for i in range(num_can_messages):
+            can_message_index = i * CAN_FRAME_LENGTH + 1
+            time_buff = rxmessage[(can_message_index + TIMESTAMP_OFFSET):(can_message_index + TIMESTAMP_OFFSET + 4)]
+            timestamp = struct.unpack("<L",time_buff)[0]
+            channel_dlc = rxmessage[can_message_index + CHANNEL_DLC_OFFSET]
+            channel = (channel_dlc & 0xF0) >> 4
+            dlc = (channel_dlc & 0x0F)
+            microseconds_per_second = struct.unpack("<L",rxmessage[can_message_index + MICROSECONDS_OFFSET:can_message_index + MICROSECONDS_OFFSET  + 3]+b'\x00')[0]
+            canID_EXT = struct.unpack("<L",rxmessage[can_message_index + CAN_ID_OFFSET:can_message_index + CAN_ID_OFFSET + 4])[0]
+            canID = canID_EXT & 0x1FFFFFFF
+            extended = bool((canID_EXT & 0x80000000) >> 31)
+            can_data = struct.unpack("BBBBBBBB", rxmessage[can_message_index + CAN_DATA_OFFSET:can_message_index + CAN_DATA_OFFSET + 8])
+            timestamp += microseconds_per_second * 0.000001
+            print("{:d} {:12.6f} {:08X} {} {:d} {}".format(channel,timestamp,canID,extended,dlc," ".join(["{:02X}".format(b) for b in can_data])))
+
     def show_no_usb(self):
         self.statusBar().showMessage("Missing - SSS2 not detected over USB.")
         self.ignition_key_button.setCheckState(Qt.PartiallyChecked)
