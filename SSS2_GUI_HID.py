@@ -5,9 +5,9 @@ import struct
 import traceback
 import time
 
-# import usb.backend.libusb1
-# backend = usb.backend.libusb1.get_backend(find_library=lambda x: "libusb0_x86.dll")
-# print(backend)
+import usb.backend.libusb1
+backend = usb.backend.libusb1.get_backend(find_library=lambda x: "libusb0_x86.dll")
+print(backend)
 # must have usblib installed.
 
 USB_HID_OUTPUT_ENDPOINT_ADDRESS = 0x04
@@ -29,7 +29,7 @@ def crc16_ccitt(crc, data):
 # find our device
 sss = usb.core.find(idVendor=0x16c0, idProduct=0x0486)
 
-# was it found?
+# was the usb instance found?
 if sss is None:
     raise ValueError('Device not found')
 print(sss)

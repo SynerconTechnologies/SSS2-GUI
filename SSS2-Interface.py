@@ -1,3 +1,9 @@
+#Python 3
+"""
+This program requires the usb driver libusb0_x86.dll
+to be installed in a system path, like c:\Windows\System32
+"""
+#
 from PyQt5.QtWidgets import (QMainWindow,
                              QWidget,
                              QTreeView,
@@ -297,11 +303,13 @@ class USBThread(threading.Thread):
 
     def run(self):
         while True:
+            time.sleep(0.002)
             try:
                 data_stream = bytes(self.root.sss.read(USB_HID_INPUT_ENDPOINT_ADDRESS, USB_HID_LENGTH, USB_HID_TIMEOUT))
                 data_stream_crc = data_stream[62:64]
                 calculated_crc = crc16_ccitt(0xFFFF, data_stream[0:62])
                 assert data_stream_crc == calculated_crc
+                print(data_stream[61])
                 self.rx_queue.put(data_stream[:62])
                 self.root.signal = True
             except usb.core.USBError:
@@ -334,7 +342,7 @@ class SSS2Interface(QMainWindow):
 
         read_timer = QTimer(self)
         read_timer.timeout.connect(self.read_usb_hid)
-        read_timer.start(100) #milliseconds
+        read_timer.start(50) #milliseconds
 
         self.init_gui()
         self.show()
