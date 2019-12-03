@@ -435,7 +435,7 @@ def get_default_settings():
     settings["DACs"]={}
     for i in range(1,9):
         settings["DACs"]["Vout{}".format(i)]={}
-    settings["DACs"]["HVAdjOut"]={}
+    
 
     d=settings["DACs"]["Vout1"]
     d["Lowest Voltage"]=0
@@ -590,7 +590,8 @@ def get_default_settings():
     d["Alt. Pin Connect"]=False
     d["Name"] = "Vout H"
 
-    d=settings["DACs"]["HVAdjOut"]
+    settings["HVAdjOut"]={}
+    d=settings["HVAdjOut"]
     d["Shape"]="Constant" #Sine, Square, Triangle or Sawtooth
     d["ECU Pins"]="ECU Pins"
     d["Show Amplitude"]=False
