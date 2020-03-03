@@ -35,14 +35,16 @@ from PyQt5.QtWidgets import (QMainWindow,
                              QDialogButtonBox,
                              QInputDialog,
                              QProgressDialog,
+                             QPlainTextEdit,
+                             QSizePolicy,
                              QTabWidget)
-from PyQt5.QtCore import Qt, QTimer, QAbstractTableModel, QCoreApplication, QSize, QAbstractItemModel
+from PyQt5.QtCore import Qt, QTimer, QAbstractTableModel, QCoreApplication, QSize, QAbstractItemModel, QSortFilterProxyModel, QVariant
 from PyQt5.QtGui import QIcon, QStandardItemModel, QStandardItem
 
 import winshell
 import hashlib
 
-from TableModel import *
+#from TableModel import *
 
 import os
 import sys
@@ -92,6 +94,7 @@ USB_FRAME_TYPE_LOC  =     0
 STATUS_TYPE         =  0x00
 COMMAND_TYPE        =  0x10
 MESSAGE_TYPE        =  0x20
+CAN_THREADS_TYPE    =  0x40
 ESCAPE_TYPE         =  0x80
 
 CONFIGSWITCH_1_LOC   = 34
@@ -229,6 +232,7 @@ CAN1_TX_COUNT_LOC  = 45
 CAN2_TX_COUNT_LOC  = 49
 J1708_RX_COUNT_LOC = 53
 LIN_RX_COUNT_LOC   = 55
+LIN_TX_COUNT_LOC   = 57
 
 SWITCH_NAMES = ["Port 10 or 19",
                 "Port 15 or 18",
@@ -377,7 +381,7 @@ class USBThread(threading.Thread):
 
     def run(self):
         while True:
-            time.sleep(0.002)
+            time.sleep(0.001)
             try:
                 data_stream = bytes(self.root.sss.read(USB_HID_INPUT_ENDPOINT_ADDRESS, USB_HID_LENGTH, USB_HID_TIMEOUT))
                 data_stream_crc = data_stream[62:64]
@@ -397,6 +401,7 @@ class USBThread(threading.Thread):
         logger.debug("USBThread Ending.")
         usb.util.release_interface(self.root.sss,self.root.sss_interface)
         self.root.usb_signal = False
+        time.sleep(1)
 
 class SSS2Interface(QMainWindow):
     def __init__(self):
@@ -406,6 +411,9 @@ class SSS2Interface(QMainWindow):
         self.last_usb_message_time = time.time()
         self.edit_settings = False
         self.load_settings = False
+        self.can_dict={}
+        self.can_generator_dict = {}
+        #self.entryset = set()
         self.status_message_2 = b'\x00'*64
         self.export_path =  os.path.join(winshell.my_documents(), "SSS2")
         if not os.path.isdir(self.export_path):
@@ -508,7 +516,7 @@ class SSS2Interface(QMainWindow):
             self.ignition_key_button.setEnabled(True)  
             self.can0_stream_box.setEnabled(True)
             self.can1_stream_box.setEnabled(True)
-            self.can2_stream_box.setEnabled(True)
+            #self.can2_stream_box.setEnabled(True)
             self.J1708_stream_box.setEnabled(True)
             self.LIN_stream_box.setEnabled(True)
             self.LIN_suppress_box.setEnabled(True)
@@ -533,6 +541,9 @@ class SSS2Interface(QMainWindow):
                 elif rxmessage_type == MESSAGE_TYPE:
                     # Received a network message
                     self.parse_can_message(rxmessage)    
+                elif rxmessage_type == CAN_THREADS_TYPE:
+                    # Received a network message
+                    self.fill_can_table(rxmessage)    
                 elif rxmessage_type == ESCAPE_TYPE:
                     #Future stuff
                     pass
@@ -558,7 +569,16 @@ class SSS2Interface(QMainWindow):
             extended = bool((canID_EXT & 0x80000000) >> 31)
             can_data = struct.unpack("BBBBBBBB", rxmessage[can_message_index + CAN_DATA_OFFSET:can_message_index + CAN_DATA_OFFSET + 8])
             timestamp += microseconds_per_second * 0.000001
-            print("{:d} {:12.6f} {:08X} {} {:d} {}".format(channel,timestamp,canID,extended,dlc," ".join(["{:02X}".format(b) for b in can_data])))
+            #can_message = "{:d} {:12.6f} {:08X} {} {:d} {}".format(channel,timestamp,canID,extended,dlc," ".join(["{:02X}".format(b) for b in can_data]))
+            self.can_dict["{:08X}".format(canID)]={'channel': channel,
+                                    'timestamp':'{:12.6f}'.format(timestamp),
+                                    'dlc':"{:d}".format(dlc),
+                                    'bytes': " ".join(["{:02X}".format(b) for b in can_data])}
+            can_message="CH Timestamp CANID DLC Data\n"
+            for k,v in sorted(self.can_dict.items()):
+                can_message += "{} {} {} [{}] {}\n".format(v['channel'],v['timestamp'],k,v['dlc'],v['bytes'])
+            self.CAN_RX_text_box.setPlainText(can_message)
+            #print(can_message)
 
     def show_no_usb(self):
         self.statusBar().showMessage("Missing - SSS2 not detected over USB.")
@@ -598,8 +618,8 @@ class SSS2Interface(QMainWindow):
         self.can1_stream_box.setCheckState(Qt.PartiallyChecked)
         self.can1_stream_box.setEnabled(False)
         
-        self.can2_stream_box.setCheckState(Qt.PartiallyChecked)
-        self.can2_stream_box.setEnabled(False)
+        # self.can2_stream_box.setCheckState(Qt.PartiallyChecked)
+        # self.can2_stream_box.setEnabled(False)
         
         self.J1708_stream_box.setCheckState(Qt.PartiallyChecked) 
         self.J1708_stream_box.setEnabled(False)
@@ -824,10 +844,10 @@ class SSS2Interface(QMainWindow):
         else:
             self.can1_stream_box.setCheckState(Qt.Unchecked)
 
-        if (bool(rxmessage[NET_STATUS_LOC] & STREAM_CAN2_MASK)):
-            self.can2_stream_box.setCheckState(Qt.Checked)
-        else:
-            self.can2_stream_box.setCheckState(Qt.Unchecked)
+        # if (bool(rxmessage[NET_STATUS_LOC] & STREAM_CAN2_MASK)):
+        #     self.can2_stream_box.setCheckState(Qt.Checked)
+        # else:
+        #     self.can2_stream_box.setCheckState(Qt.Unchecked)
 
         if (bool(rxmessage[NET_STATUS_LOC] & STREAM_J1708_MASK)):
             self.J1708_stream_box.setCheckState(Qt.Checked)
@@ -867,6 +887,25 @@ class SSS2Interface(QMainWindow):
 
         self.can2_rx_count.setText("{}".format(struct.unpack("<L",
             rxmessage[CAN2_RX_COUNT_LOC:CAN2_RX_COUNT_LOC+4])[0]))
+
+        self.can0_tx_count.setText("{}".format(struct.unpack("<L",
+            rxmessage[CAN0_TX_COUNT_LOC:CAN0_TX_COUNT_LOC+4])[0]))
+
+        self.can1_tx_count.setText("{}".format(struct.unpack("<L",
+            rxmessage[CAN1_TX_COUNT_LOC:CAN1_TX_COUNT_LOC+4])[0]))
+
+        self.can2_tx_count.setText("{}".format(struct.unpack("<L",
+            rxmessage[CAN2_TX_COUNT_LOC:CAN2_TX_COUNT_LOC+4])[0]))
+
+        self.j1708_rx_count.setText("{}".format(struct.unpack("<H",
+            rxmessage[J1708_RX_COUNT_LOC:J1708_RX_COUNT_LOC+2])[0]))
+
+        self.lin_rx_count.setText("{}".format(struct.unpack("<H",
+            rxmessage[LIN_RX_COUNT_LOC:LIN_RX_COUNT_LOC+2])[0]))
+
+        self.lin_tx_count.setText("{}".format(struct.unpack("<H",
+            rxmessage[LIN_TX_COUNT_LOC:LIN_TX_COUNT_LOC+2])[0]))
+
 
     def parse_status_message_three(self, rxmessage):
         pass
@@ -1291,7 +1330,201 @@ class SSS2Interface(QMainWindow):
             self.setWindowTitle('{} {} - {}'.format(release_title,
                                                     release_version,
                                                     self.filename))
+    
+    def build_can_generator_tab(self):
+        # Setup the Model Viewer and Controller for the table for th CAN generator status messages
+        self.can_table = QTableView()
+        self.can_data_model = CANTableModel()
+        self.can_table_proxy = Proxy()
+        self.can_data_model.setDataDict(self.can_generator_dict)
+        self.can_table_columns = ["Thread","Count","Index","Send","Channel","Period",
+                                    "Restart","Total","TX Count","CAN HEX ID","DLC",
+                                    "B1","B2","B3","B4","B5","B6","B7","B8","Label"]
+        self.can_data_model.setDataHeader(self.can_table_columns)
+        self.can_table_proxy.setSourceModel(self.can_data_model)
+        self.can_table.setModel(self.can_table_proxy)
+        self.can_table.setSelectionBehavior(QAbstractItemView.SelectRows)
+        self.can_table.setSortingEnabled(True)
+        self.can_table.setWordWrap(False)
+        self.can_table.setSizeAdjustPolicy(QAbstractScrollArea.AdjustToContents)
+        self.can_table.horizontalHeader().setSectionResizeMode(QHeaderView.ResizeToContents)
+        self.can_table.setAlternatingRowColors(True)
+        self.can_tab_layout.addWidget(self.can_table,0,0,1,3)
+        
+        # self.add_row_button = QPushButton("Add Row to Table", self)
+        # self.add_row_button.clicked.connect(self.add_can_table_row)
+        # self.can_tab_layout.addWidget(self.add_row_button,1,1,1,1)
+
+        clear_button = QPushButton("Clear Table")
+        clear_button.clicked.connect(self.clear_can_table)
+        self.can_tab_layout.addWidget(clear_button,1,2,1,1)
+    
+    def clear_can_table(self):
+        self.can_generator_dict = {}
+        self.can_data_model.aboutToUpdate()
+        self.can_data_model.setDataDict(self.can_generator_dict)
+        self.can_data_model.signalUpdate()
+        self.can_table.resizeRowsToContents()     
+        self.can_table.scrollToBottom()
+        self.can_table.resizeColumnsToContents()
+
+    
+    # def add_can_table_row(self):
+    #     current_row = self.can_table.currentRow()
+    #     if current_row < 0:
+    #         current_row = self.can_table.rowCount()
+    #     self.can_table.insertRow(current_row)
+
+    def fill_can_table(self,rxmessage):
+        """ Arduino code generating message
+          status_buffer_4[1] = can_messages[buffer4_index]->channel;
+          memcpy(&status_buffer_4[2],&buffer4_index,2);
+          memcpy(&status_buffer_4[4],&buffer4_message_index,2);
+          status_buffer_4[6] = can_messages[buffer4_index]->txmsg.len;
+          memcpy(&status_buffer_4[7],&can_messages[buffer4_index]->tx_period,4);
+          memcpy(&status_buffer_4[11],&can_messages[buffer4_index]->loop_cycles,4);
+          status_buffer_4[15] = can_messages[buffer4_index]->num_messages;
+          memcpy(&status_buffer_4[16],&can_messages[buffer4_index]->stop_after_count,4);
+          memcpy(&status_buffer_4[20],&can_messages[buffer4_index]->id_list[buffer4_message_index],4);   
+          memcpy(&status_buffer_4[24],&can_messages[buffer4_index]->message_list[buffer4_message_index],8);   
+          status_buffer_4[32] = can_messages[buffer4_index]->ok_to_send;
+          memcpy(&status_buffer_4[33],&can_messages[buffer4_index]->transmit_number,4);   
+          memset(&status_buffer_4[37],0x00,24); //Clear string
+          memcpy(&status_buffer_4[37],&can_messages[buffer4_index]->ThreadName[0],24);   
+          buffer4_message_index++;
+          if (buffer4_message_index >= can_messages[buffer4_index]->num_messages ) {
+            buffer4_message_index = 0;
+            buffer4_index++;
+            if (buffer4_index > can_thread_controller.size(false)) buffer4_index = 0; 
+          }
+        """
+        needs_updating = False
+        entry = struct.unpack(">L",rxmessage[2:6])[0]
+        print(entry) 
+        if entry not in self.can_generator_dict:
+            self.can_generator_dict[entry] = {'previous':[None for i in rxmessage]}
+               
+        #    return
+        # else:
+        #     if ( self.can_generator_dict[entry]['previous'][6:33] == rxmessage[6:33] and
+        #            self.can_generator_dict[entry]['previous'][37:61] == rxmessage[37:61]):
+        #         needs_updating = False
+        #     else:
+        #         needs_updating = True
+                
+        row = list(self.can_generator_dict.keys()).index(entry)
+        
+        if self.can_generator_dict[entry]['previous'][33:37] != rxmessage[33:37]:
+            col = self.can_table_columns.index("TX Count")
+            idx = self.can_data_model.index(row, col)
+            self.can_generator_dict[entry]["TX Count"] = "{:10d}".format(struct.unpack("<L",rxmessage[33:37])[0])
+            self.can_data_model.setData(idx, self.can_generator_dict[entry]["TX Count"])
+            needs_updating = True
+        
+        if self.can_generator_dict[entry]['previous'][1] != rxmessage[1]:
+            col = self.can_table_columns.index("Channel")
+            idx = self.can_data_model.index(row, col)
+            self.can_generator_dict[entry]["Channel"] = rxmessage[1]
+            self.can_data_model.setData(idx, self.can_generator_dict[entry]["Channel"])
+            needs_updating = True
+        
+        if self.can_generator_dict[entry]['previous'][2:4] != rxmessage[2:4]:
+            col = self.can_table_columns.index("Thread")
+            idx = self.can_data_model.index(row, col)
+            self.can_generator_dict[entry]["Thread"] = "{:4d}".format(struct.unpack("<H",rxmessage[2:4])[0])
+            self.can_data_model.setData(idx, self.can_generator_dict[entry]["Thread"])
+            needs_updating = True
+        
+        if self.can_generator_dict[entry]['previous'][4:6] != rxmessage[4:6]:
+            col = self.can_table_columns.index("Index")
+            idx = self.can_data_model.index(row, col)
+            self.can_generator_dict[entry]["Index"] = "{:4d}".format(struct.unpack("<H",rxmessage[4:6])[0])
+            self.can_data_model.setData(idx, self.can_generator_dict[entry]["Index"])
+            needs_updating = True
+        
+        if self.can_generator_dict[entry]['previous'][6] != rxmessage[6]:
+            col = self.can_table_columns.index("DLC")
+            idx = self.can_data_model.index(row, col)
+            self.can_generator_dict[entry]["DLC"] = rxmessage[6]
+            self.can_data_model.setData(idx, self.can_generator_dict[entry]["DLC"])
+            needs_updating = True
+        
+        if self.can_generator_dict[entry]['previous'][32] != rxmessage[32]:
+            send = rxmessage[32]
+            col = self.can_table_columns.index("Send")
+            idx = self.can_data_model.index(row, col)
+            if send == 0:
+                self.can_generator_dict[entry]["Send"] = "No"
+            else:
+                self.can_generator_dict[entry]["Send"] = "Yes"
+            self.can_data_model.setData(idx, self.can_generator_dict[entry]["Send"])
+            needs_updating = True
+        
+        if self.can_generator_dict[entry]['previous'][7:11] != rxmessage[7:11]:
+            col = self.can_table_columns.index("Period")
+            idx = self.can_data_model.index(row, col)
+            self.can_generator_dict[entry]["Period"] = "{:6d}".format(struct.unpack("<L",rxmessage[7:11])[0])
+            self.can_data_model.setData(idx, self.can_generator_dict[entry]["Period"])
+            needs_updating = True
+        
+        if self.can_generator_dict[entry]['previous'][11:15] != rxmessage[11:15]:
+            col = self.can_table_columns.index("Restart")
+            idx = self.can_data_model.index(row, col)
+            self.can_generator_dict[entry]["Restart"] = "{:6d}".format(struct.unpack("<L",rxmessage[11:15])[0])
+            self.can_data_model.setData(idx, self.can_generator_dict[entry]["Restart"])
+            needs_updating = True
+        
+        if self.can_generator_dict[entry]['previous'][15] != rxmessage[15]:
+            col = self.can_table_columns.index("Count")
+            idx = self.can_data_model.index(row, col)
+            self.can_generator_dict[entry]["Count"] =  rxmessage[15]
+            self.can_data_model.setData(idx, self.can_generator_dict[entry]["Count"])
+            needs_updating = True
+        
+        if self.can_generator_dict[entry]['previous'][16:20] != rxmessage[16:20]:
+            col = self.can_table_columns.index("Total")
+            idx = self.can_data_model.index(row, col)
+            self.can_generator_dict[entry]["Total"] = struct.unpack("<L",rxmessage[16:20])[0]
+            self.can_data_model.setData(idx, self.can_generator_dict[entry]["Total"])
+            needs_updating = True
+        
+        if self.can_generator_dict[entry]['previous'][20:24] != rxmessage[20:24]:
+            can_id = struct.unpack("<L",rxmessage[20:24])[0]
+            col = self.can_table_columns.index("CAN HEX ID")
+            idx = self.can_data_model.index(row, col)
+            self.can_generator_dict[entry]["CAN HEX ID"] = "{:08X}".format(can_id)
+            self.can_data_model.setData(idx, self.can_generator_dict[entry]["CAN HEX ID"])
+            needs_updating = True
+        
+        if self.can_generator_dict[entry]['previous'][24:32] != rxmessage[24:32]:
+            data_bytes = struct.unpack("BBBBBBBB",rxmessage[24:32])
+            col = self.can_table_columns.index("B1")
+            for b,c,d in zip(data_bytes,range(col,col+8),range(8)):
+                idx = self.can_data_model.index(row, c)
+                self.can_generator_dict[entry]["B{}".format(d+1)] = "{:02X}".format(b)
+                self.can_data_model.setData(idx, self.can_generator_dict[entry]["B{}".format(d+1)])
+            needs_updating = True
+
+        if self.can_generator_dict[entry]['previous'][37:61] != rxmessage[37:61]:
+            name = rxmessage[37:61].decode('ascii','ignore')
+            col = self.can_table_columns.index("Label")
+            idx = self.can_data_model.index(row, col)
+            self.can_generator_dict[entry]["Label"] = "{}".format(name)
+            self.can_data_model.setData(idx, self.can_generator_dict[entry]["Label"])
+            needs_updating = True
+
+        self.can_generator_dict[entry]['previous'] = rxmessage
+        
+        if needs_updating:
+            self.can_data_model.aboutToUpdate()
+            self.can_data_model.setDataDict(self.can_generator_dict)
+            self.can_data_model.signalUpdate()
+            self.can_table.resizeRowsToContents()     
+            self.can_table.scrollToBottom()
+            self.can_table.resizeColumnsToContents()
             
+
+
 
     def write_file(self):
         self.send_command("SAVE")
@@ -1301,13 +1534,14 @@ class SSS2Interface(QMainWindow):
         self.can0_stream_box.clicked.connect(self.send_stream_can0)
         self.network_tab_layout.addWidget(self.can0_stream_box,0,0,1,1)
 
-        self.can1_stream_box =  QCheckBox("Stream CAN0/(PT CAN)")
+        self.can1_stream_box =  QCheckBox("Stream CAN1/(PT CAN)")
         self.can1_stream_box.clicked.connect(self.send_stream_can1)
         self.network_tab_layout.addWidget(self.can1_stream_box,0,2,1,1)
 
+        #The CAN2 seems to be broken
         self.can2_stream_box =  QCheckBox("Stream CAN2 (MCP CAN)")
         self.can2_stream_box.clicked.connect(self.send_stream_can2)
-        self.network_tab_layout.addWidget(self.can2_stream_box,0,4,1,1)
+        #self.network_tab_layout.addWidget(self.can2_stream_box,0,4,1,1)
 
         self.J1708_stream_box =  QCheckBox("Stream J1708/J1587")
         self.J1708_stream_box.clicked.connect(self.send_stream_j1708)
@@ -1320,6 +1554,8 @@ class SSS2Interface(QMainWindow):
         self.LIN_suppress_box =  QCheckBox("Suppress LIN")
         self.LIN_suppress_box.clicked.connect(self.send_supress_lin)
         self.network_tab_layout.addWidget(self.LIN_suppress_box,2,6,1,1)
+
+
 
         baud_label = QLabel("CAN0/J1939 Baudrate:")
         self.network_tab_layout.addWidget(baud_label,1,0,1,1)
@@ -1340,30 +1576,64 @@ class SSS2Interface(QMainWindow):
         self.network_tab_layout.addWidget(self.can1_baud_box,1,3,1,1)
 
         baud_label = QLabel("CAN2/MCP-CAN Baudrate:")
-        self.network_tab_layout.addWidget(baud_label,1,4,1,1)
+        #self.network_tab_layout.addWidget(baud_label,1,4,1,1)
         self.can2_baud_box = QComboBox()
         self.can2_baud_box.addItem("Auto")
         for speed in CAN_SPEEDS:
             self.can2_baud_box.addItem("{}".format(speed))
         self.can2_baud_box.activated.connect(self.change_can2_baud)
-        self.network_tab_layout.addWidget(self.can2_baud_box,1,5,1,1)
+        #self.network_tab_layout.addWidget(self.can2_baud_box,1,5,1,1)
 
         rx_label = QLabel("CAN0/J1939 Receive Count:")
         self.network_tab_layout.addWidget(rx_label,2,0,1,1)
         self.can0_rx_count = QLineEdit()
         self.network_tab_layout.addWidget(self.can0_rx_count,2,1,1,1)
 
+        tx_label = QLabel("CAN0/J1939 Transmit Count:")
+        self.network_tab_layout.addWidget(tx_label,3,0,1,1)
+        self.can0_tx_count = QLineEdit()
+        self.network_tab_layout.addWidget(self.can0_tx_count,3,1,1,1)
+
         rx_label = QLabel("CAN1/PT-CAN Receive Count:")
         self.network_tab_layout.addWidget(rx_label,2,2,1,1)
         self.can1_rx_count = QLineEdit()
         self.network_tab_layout.addWidget(self.can1_rx_count,2,3,1,1)
+        
+        tx_label = QLabel("CAN1/PT-CAN Transmit Count:")
+        self.network_tab_layout.addWidget(tx_label,3,2,1,1)
+        self.can1_tx_count = QLineEdit()
+        self.network_tab_layout.addWidget(self.can1_tx_count,3,3,1,1)
 
         rx_label = QLabel("CAN2/MCP-CAN Receive Count:")
-        self.network_tab_layout.addWidget(rx_label,2,4,1,1)
+        #self.network_tab_layout.addWidget(rx_label,3,4,1,1)
         self.can2_rx_count = QLineEdit()
-        self.network_tab_layout.addWidget(self.can2_rx_count,2,5,1,1)
-
+        #self.network_tab_layout.addWidget(self.can2_rx_count,3,5,1,1)
         
+        rx_label = QLabel("CAN2/MCP-CAN Transmit Count:")
+        #self.network_tab_layout.addWidget(rx_label,3,4,1,1)
+        self.can2_tx_count = QLineEdit()
+        #self.network_tab_layout.addWidget(self.can2_tx_count,3,5,1,1)
+
+        self.CAN_RX_text_box =  QPlainTextEdit(self)
+        self.network_tab_layout.addWidget(self.CAN_RX_text_box,4,0,1,4)
+        
+        rx_label = QLabel("J1708/J1587 Receive Count:")
+        self.network_tab_layout.addWidget(rx_label,0,4,1,1)
+        self.j1708_rx_count = QLineEdit()
+        self.network_tab_layout.addWidget(self.j1708_rx_count,0,5,1,1)
+
+        rx_label = QLabel("LIN Receive Count:")
+        self.network_tab_layout.addWidget(rx_label,1,4,1,1)
+        self.lin_rx_count = QLineEdit()
+        self.network_tab_layout.addWidget(self.lin_rx_count,1,5,1,1)
+
+        tx_label = QLabel("LIN Transmit Count:")
+        self.network_tab_layout.addWidget(tx_label,2,4,1,1)
+        self.lin_tx_count = QLineEdit()
+        self.network_tab_layout.addWidget(self.lin_tx_count,2,5,1,1)
+        
+
+       
 
     def change_can0_baud(self):
         selection = self.can0_baud_box.currentText()
@@ -1522,6 +1792,14 @@ class SSS2Interface(QMainWindow):
         #setup the layout to be displayed in the box
         self.network_tab.setLayout(self.network_tab_layout)
 
+        self.can_tab = QWidget()
+        self.tabs.addTab(self.can_tab,"Message Generator")
+        self.can_tab_layout = QGridLayout()
+
+        self.build_can_generator_tab()
+        #setup the layout to be displayed in the box
+        self.can_tab.setLayout(self.can_tab_layout)
+        
 
         self.grid_layout.addWidget(self.ignition_key_button,0,0,1,1)
         self.grid_layout.addWidget(self.tabs,1,0,1,1)
@@ -1534,8 +1812,71 @@ class SSS2Interface(QMainWindow):
         
         return
         
+class CANTableModel(QAbstractTableModel):
+    ''' data model for a J1939 Data class '''
+    def __init__(self):
+        super(CANTableModel, self).__init__()
+        self.data_dict = {}
+        self.header = []
+        self.table_rows = []
 
-       
+    def setDataHeader(self, header):
+        self.header = header
+        self.first = self.header[0]
+        self.header_len = len(self.header)
+        
+    def setDataDict(self, new_dict):
+        self.data_dict = new_dict
+        self.table_rows = list(sorted(new_dict.keys()))
+        
+    def aboutToUpdate(self):
+        self.layoutAboutToBeChanged.emit()
+
+    def signalUpdate(self):
+        ''' tell viewers to update their data (this is full update, not
+        efficient)'''
+        self.layoutChanged.emit()
+
+    def headerData(self, section, orientation = Qt.Horizontal, role=Qt.DisplayRole):
+        if orientation == Qt.Horizontal and role == Qt.DisplayRole:
+            return self.header[section]
+        elif orientation == Qt.Vertical and role == Qt.DisplayRole:
+            return section + 1
+        else:
+            return QVariant()
+
+    def data(self, index, role=Qt.DisplayRole):
+        if index.isValid() and role == Qt.DisplayRole:
+            key = self.table_rows[index.row()]
+            col_name = self.header[index.column()]
+            return str(self.data_dict[key][col_name])
+        else:
+            return QVariant()
+
+    def flags(self, index):
+            flags = super(CANTableModel, self).flags(index)
+            flags |= ~Qt.ItemIsEditable
+            return flags
+
+    def setData(self, index, value, role = Qt.DisplayRole):
+        if role == Qt.DisplayRole and index.isValid():
+            self.dataChanged.emit(index, index)
+            return True
+        else:
+            return False
+
+    def rowCount(self, index=QVariant()):
+        return len(self.data_dict)
+
+    def columnCount(self, index=QVariant()):
+        return len(self.header)
+
+class Proxy(QSortFilterProxyModel):
+    def __init__(self):
+        super(Proxy, self).__init__()
+
+    def headerData(self, section, orientation, role):
+        return self.sourceModel().headerData(section, orientation, role)
 
 
 
